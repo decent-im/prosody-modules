@@ -68,7 +68,7 @@ local function presence_stanza_handler(event)
 
 	local caps = stanza:get_child("c", "http://jabber.org/protocol/caps");
 	if caps == nil then
-		origin.log("debug", "Presence without caps received, skipping");
+		origin.log("debug", "Presence from %s without caps received, skipping", from);
 		return;
 	end
 
@@ -79,7 +79,7 @@ local function presence_stanza_handler(event)
 		return;
 	end
 	if hash ~= "sha-1" then
-		origin.log("warn", "Non-SHA-1 caps received: %s", hash);
+		origin.log("warn", "Presence from %s with non-SHA-1 caps : %s", from, hash);
 		return;
 	end
 
@@ -89,7 +89,7 @@ local function presence_stanza_handler(event)
 		return;
 	end
 
-	origin.log("debug", "Received presence from %s with SHA-1 caps %s, querying disco#info", from, node_query);
+	origin.log("debug", "Presence from %s with SHA-1 caps %s, querying disco#info", from, node_query);
 
 	local id = uuid_gen();
 	iq_node_map[from..id] = node_query
