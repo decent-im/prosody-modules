@@ -86,10 +86,6 @@ module:hook("message/host", function (event)
 	end
 	reply:reset();
 
-	if stanza:get_child("request", "urn:xmpp:receipts") then
-		reply:tag("received", { xmlns = "urn:xmpp:receipts", id = stanza.attr.id }):up();
-	end
-
 	if stanza:get_child("no-copy", "urn:xmpp:hints") then
 		reply:tag("no-copy", { xmlns = "urn:xmpp:hints" }):up();
 	end
