@@ -73,7 +73,7 @@ One or more rule files can be specified in the configuration using:
 
     firewall_scripts = { "path/to/ruleset.pfw", "path/to/ruleset2.pfw" }
 
-If multiple files are specified and they both add rules to the same chains,
+If multiple files are specified and they both add rules to the same [chains](#chains),
 each file's rules will be processed in order, but the order of files is undefined.
 
 Reloading Prosody's configuration also reloads firewall rules.
@@ -179,7 +179,7 @@ as in Prosody 0.11.6 and earlier.
 
 #### CHECK LIST
 
-Checks whether a simple expression is found in a given list.
+Checks whether a simple [expression](#expressions) is found in a given list.
 
 Example:
 
@@ -259,8 +259,8 @@ Similarly, a message stanza with no type is equivalent to one of type
   `TO SELF`     The stanza is sent by any of a user's resources to their own bare JID.
   `TO FULL JID` The stanza is addressed to a valid full JID on the local server (full JIDs include a resource at the end, and only exist for the lifetime of a single session, therefore the recipient must be online, or this check will not match).
 
-The TO and FROM conditions both accept wildcards in the JID when the wildcard
-expression is enclosed in angle brackets ('\<...\>'). For example:
+The TO and FROM conditions both accept wildcards in the JID when it is
+enclosed in angle brackets ('\<...\>'). For example:
 
     # All users at example.com
     FROM: <*>@example.com
@@ -280,7 +280,7 @@ end (so it must match the entire portion of the JID).
 
 **Note:** It is important to know that 'example.com' is a valid JID on
 its own, and does **not** match 'user@example.com'. To perform domain
-whitelists or blacklists, use Zones.
+whitelists or blacklists, use [Zones](#zones).
 
   Condition        Matches
   ---------------- ---------------------------------------------------------------
@@ -295,7 +295,7 @@ match all resources if no resource is specified to match.
 **Note:** Some chains execute before Prosody has performed any
 normalisation or validity checks on the to/from JIDs on an incoming
 stanza. It is not advisable to perform access control or similar rules
-on JIDs in these chains (see the chain documentation for more info).
+on JIDs in these chains (see the [chain documentation](#chains) for more info).
 
 #### INSPECT
 
@@ -360,7 +360,7 @@ TYPE and PAYLOAD matched what we wanted before reaching the INSPECT rule).
 ### Roster
 
 These functions access the roster of the recipient (only). Therefore they cannot (currently)
-be used in some chains, such as for outgoing messages (the recipient may be on another server).
+be used in some [chains](#chains), such as for outgoing messages (the recipient may be on another server).
 
 Performance note: this check can potentially cause storage access (especially if the recipient
 is currently offline), so you may want to limit its use in high-traffic situations, and place
@@ -383,7 +383,7 @@ Tests whether the sender is in the recipient's roster, and in the named group.
 Tests whether the recipient is subscribed to the sender, ie will receive
 presence updates from them.
 
-Note that this *does* work, regardless of direction and which chain is
+Note that this *does* work, regardless of direction and which [chain](#chain) is
 used, since both the sender and the recipient will have mirrored roster
 entries.
 
@@ -518,7 +518,7 @@ You can use the 'on' keyword for this, like so:
 
     LIMIT: normal on EXPRESSION
 
-For more information on expressions, see the section later in this document.
+For more information on [expressions](#expressions), see the section later in this document.
 
 Each value of 'EXPRESSION' has to be tracked individually in a table, which uses a small amount of memory. To prevent
 memory exhaustion, the number of tracked values is limited to 1000 by default. You can override this by setting the
@@ -620,9 +620,8 @@ It is possible to have multiple marks on an origin at any given time.
   --------------- ------------------------------------------------------------------------------------------------------------------------
   `LOG=message`   Logs the given message to Prosody's log file. Optionally prefix it with a log level in square brackets, e.g. `[debug]`
 
-You can include expressions in log messages, using `$(...)` syntax. For example, to log the stanza that matched the rule, you can use `$(stanza)`,
-or to log just the top tag of the stanza, use `$(stanza:top_tag())`.
-To fetch the sender JID, use `$(stanza.attr.from)`.
+You can include [expressions](#expressions) in log messages, using `$(...)` syntax. For example, to log the stanza that matched the rule,
+you can use `$(stanza)`, or to log just the top tag of the stanza, use `$(stanza:top_tag())`. To fetch the sender JID, use `$(stanza.attr.from)`.
 
 Example:
 
