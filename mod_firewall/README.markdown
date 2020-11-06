@@ -329,14 +329,33 @@ returned. If the path ends with '@name' then the value of the attribute
 'name' will be returned.
 
 You can use INSPECT to test for the existence of an element or attribute,
-or you can see if it is equal to a string by appending `=STRING` (as in the
-example above). Finally, you can also test whether it matches a given Lua
-pattern by using `~=PATTERN`.
+or you can check if it matches a specific value, e.g. by appending `=VALUE`
+(like in the example above, that checks if the content of username is 'admin').
 
-INSPECT is somewhat slower than the other stanza matching conditions. To
+#### INSPECT comparison operators
+
+As well as checking for an exact string match, there are some other modifiers
+you can apply to the comparison:
+
+  Comparison    Matches when
+  ------------- -------------------------------------------------------
+  `=`           The value is exactly the given string.
+  `/=`          The value is or *contains* the given string (e.g. `/=admin` would match `administrator` or `myadmin`).
+  `~=`          The value matches the given [Lua pattern](https://www.lua.org/manual/5.2/manual.html#6.4.1).
+
+Finally, if the comparison operator is preceded by a `$` character, [expressions](#expressions)
+will be interpreted in the string following the comparison operator.
+
+e.g. `INSPECT: {jabber:iq:register}query/username}$/=$(session.host)` would match
+if the username of an account registration contained the session's current hostname
+somewhere in it.
+
+#### INSPECT performance
+
+INSPECT can be somewhat slower than the other stanza matching conditions. To
 minimise performance impact, always place it below other faster
-condition checks where possible (e.g. above we first checked KIND, TYPE
-and PAYLOAD matched before INSPECT).
+condition checks where possible (e.g. in the example above we first checked KIND,
+TYPE and PAYLOAD matched what we wanted before reaching the INSPECT rule).
 
 ### Roster
 
