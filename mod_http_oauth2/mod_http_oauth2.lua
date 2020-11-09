@@ -32,7 +32,7 @@ function grant_type_handlers.password(params)
 	local request_jid = assert(params.username, oauth_error("invalid_request", "missing 'username' (JID)"));
 	local request_password = assert(params.password, oauth_error("invalid_request", "missing 'password'"));
 	local request_username, request_host, request_resource = jid.prepped_split(request_jid);
-	if params.scope and param.scope ~= "" then
+	if params.scope and params.scope ~= "" then
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
 	if not (request_username and request_host) or request_host ~= module.host then
