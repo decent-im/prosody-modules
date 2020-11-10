@@ -29,6 +29,12 @@ statistics = "internal"
 statistics_interval = 15 -- in seconds
 ```
 
+::: {.alert .alert-warning}
+**NOTE:** Make sure to put the statistics variables in the global section of
+the configuration, **not** in a `VirtualHost` or `Component` section.  You can
+use `prosodyctl check` if you are unsure and want to check your configuration.
+:::
+
 See also the documentation of Prosody’s [HTTP
 server](https://prosody.im/doc/http), since Prometheus is an HTTP
 protocol that is how you can customise its URL.  The default one being
