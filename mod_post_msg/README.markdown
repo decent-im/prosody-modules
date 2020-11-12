@@ -70,3 +70,10 @@ Acknowledgements
 ================
 
 Some code originally borrowed from mod\_webpresence
+
+See also
+========
+
+[mod_rest] is a more advanced way to send messages and more via HTTP,
+with a very similar API.
+
