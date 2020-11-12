@@ -186,15 +186,18 @@ local function handle_post(event)
 		end
 		return errors.new("parse", ctx, post_errors);
 	end
+
 	if payload.attr.xmlns then
 		return errors.new("xmlns", nil, post_errors);
 	elseif payload.name ~= "message" and payload.name ~= "presence" and payload.name ~= "iq" then
 		return errors.new("name", nil, post_errors);
 	end
+
 	local to = jid.prep(payload.attr.to);
 	if not to then
 		return errors.new("to", nil, post_errors);
 	end
+
 	if payload.attr.from then
 		local requested_from = jid.prep(payload.attr.from);
 		if not requested_from then
@@ -206,6 +209,7 @@ local function handle_post(event)
 			return errors.new("from_auth", nil, post_errors);
 		end
 	end
+
 	payload.attr = {
 		from = from,
 		to = to,
@@ -213,17 +217,20 @@ local function handle_post(event)
 		type = payload.attr.type,
 		["xml:lang"] = payload.attr["xml:lang"],
 	};
+
 	module:log("debug", "Received[rest]: %s", payload:top_tag());
 	local send_type = decide_type((request.headers.accept or "") ..",".. request.headers.content_type, supported_outputs)
 	if payload.name == "iq" then
 		function origin.send(stanza)
 			module:send(stanza);
 		end
+
 		if payload.attr.type ~= "get" and payload.attr.type ~= "set" then
 			return errors.new("iq_type", nil, post_errors);
 		elseif #payload.tags ~= 1 then
 			return errors.new("iq_tags", nil, post_errors);
 		end
+
 		return module:send_iq(payload, origin):next(
 			function (result)
 				module:log("debug", "Sending[rest]: %s", result.stanza:top_tag());
@@ -249,6 +256,7 @@ local function handle_post(event)
 			response:send(encode(send_type, stanza));
 			return true;
 		end
+
 		module:send(payload, origin);
 		return 202;
 	end
