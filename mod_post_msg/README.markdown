@@ -67,6 +67,6 @@ The form data and JSON formats allow the following fields:
 :   Plain text message payload which goes in the `<body>` element.
 
 Acknowledgements
-----------------
+================
 
 Some code originally borrowed from mod\_webpresence
