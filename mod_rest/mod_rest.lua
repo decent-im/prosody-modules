@@ -148,7 +148,7 @@ local function encode(type, s)
 	return tostring(s);
 end
 
-local post_errors = {
+local post_errors = errors.init("mod_rest", {
 	noauthz = { code = 401, type = "auth", condition = "not-authorized", text = "No credentials provided" },
 	unauthz = { code = 403, type = "auth", condition = "not-authorized", text = "Credentials not accepted" },
 	parse = { code = 400, condition = "not-well-formed", text = "Failed to parse payload", },
@@ -160,7 +160,7 @@ local post_errors = {
 	iq_type = { code = 422, condition = "invalid-xml", text = "'iq' stanza must be of type 'get' or 'set'", },
 	iq_tags = { code = 422, condition = "bad-format", text = "'iq' stanza must have exactly one child tag", },
 	mediatype = { code = 415, condition = "bad-format", text = "Unsupported media type" },
-};
+});
 
 local function handle_post(event)
 	local request, response = event.request, event.response;
@@ -169,11 +169,11 @@ local function handle_post(event)
 
 	if not request.headers.authorization then
 		response.headers.www_authenticate = www_authenticate_header;
-		return errors.new("noauthz", nil, post_errors);
+		return post_errors.new("noauthz");
 	else
 		origin = check_credentials(request);
 		if not origin then
-			return errors.new("unauthz", nil, post_errors);
+			return post_errors.new("unauthz");
 		end
 		from = jid.join(origin.username, origin.host, origin.resource);
 	end
@@ -182,31 +182,31 @@ local function handle_post(event)
 		-- parse fail
 		local ctx = { error = err, type = request.headers.content_type, data = request.body, };
 		if err == "unknown-payload-type" then
-			return errors.new("mediatype", ctx, post_errors);
+			return post_errors.new("mediatype", ctx);
 		end
-		return errors.new("parse", ctx, post_errors);
+		return post_errors.new("parse", ctx);
 	end
 
 	if payload.attr.xmlns then
-		return errors.new("xmlns", nil, post_errors);
+		return post_errors.new("xmlns");
 	elseif payload.name ~= "message" and payload.name ~= "presence" and payload.name ~= "iq" then
-		return errors.new("name", nil, post_errors);
+		return post_errors.new("name");
 	end
 
 	local to = jid.prep(payload.attr.to);
 	if not to then
-		return errors.new("to", nil, post_errors);
+		return post_errors.new("to");
 	end
 
 	if payload.attr.from then
 		local requested_from = jid.prep(payload.attr.from);
 		if not requested_from then
-			return errors.new("from", nil, post_errors);
+			return post_errors.new("from");
 		end
 		if jid.compare(requested_from, from) then
 			from = requested_from;
 		else
-			return errors.new("from_auth", nil, post_errors);
+			return post_errors.new("from_auth");
 		end
 	end
 
@@ -226,9 +226,9 @@ local function handle_post(event)
 		end
 
 		if payload.attr.type ~= "get" and payload.attr.type ~= "set" then
-			return errors.new("iq_type", nil, post_errors);
+			return post_errors.new("iq_type");
 		elseif #payload.tags ~= 1 then
-			return errors.new("iq_tags", nil, post_errors);
+			return post_errors.new("iq_tags");
 		end
 
 		return module:send_iq(payload, origin):next(
