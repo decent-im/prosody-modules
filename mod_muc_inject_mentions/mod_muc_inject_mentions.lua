@@ -3,17 +3,62 @@ module:depends("muc");
 local jid_resource = require "util.jid".resource;
 local st = require "util.stanza";
 
-local prefixes = module:get_option("muc_inject_mentions_prefixes", nil)
-local suffixes = module:get_option("muc_inject_mentions_suffixes", nil)
+local prefixes = module:get_option_set("muc_inject_mentions_prefixes", {})
+local suffixes = module:get_option_set("muc_inject_mentions_suffixes", {})
 local enabled_rooms = module:get_option("muc_inject_mentions_enabled_rooms", nil)
 local disabled_rooms = module:get_option("muc_inject_mentions_disabled_rooms", nil)
-local mention_delimiters = module:get_option_set("muc_inject_mentions_mention_delimiters",  {" ", "", "\n"})
+local mention_delimiters = module:get_option_set("muc_inject_mentions_mention_delimiters",  {" ", "", "\n", "\t"})
 local append_mentions = module:get_option("muc_inject_mentions_append_mentions", false)
 local strip_out_prefixes = module:get_option("muc_inject_mentions_strip_out_prefixes", false)
 local reserved_nicks = module:get_option("muc_inject_mentions_reserved_nicks", false)
-
+local use_real_jid = module:get_option("muc_inject_mentions_use_real_jid", false)
+local reserved_nicknames = {}
 
 local reference_xmlns = "urn:xmpp:reference:0"
+
+local function update_reserved_nicknames(event)
+    local room, data, jid = event.room.jid, event.data, event.jid
+    load_room_reserved_nicknames(event.room)
+    local nickname = (data or {})["reserved_nickname"]
+
+    if nickname then
+        reserved_nicknames[room][nickname] = jid
+    else
+        local nickname_to_remove
+        for _nickname, _jid in pairs(reserved_nicknames[room]) do
+            if _jid == jid then
+                nickname_to_remove = _nickname
+                break
+            end
+        end
+        if nickname_to_remove then
+            reserved_nicknames[room][nickname_to_remove] = nil
+        end
+    end
+end
+
+function load_room_reserved_nicknames(room)
+    if not reserved_nicknames[room.jid] then
+        reserved_nicknames[room.jid] = {}
+        for jid, data in pairs(room._affiliations_data or {}) do
+            local reserved_nickname = data["reserved_nickname"]
+            if reserved_nicknames then
+                reserved_nicknames[room.jid][reserved_nickname] = jid
+            end
+        end
+    end
+end
+
+local function get_jid(room, nickname)
+    local real_jid = reserved_nicknames[room.jid][nickname]
+    if real_jid and use_real_jid then
+        return real_jid
+    end
+
+    if real_jid and not use_real_jid then
+        return room.jid .. "/" .. nickname
+    end
+end
 
 local function get_participants(room)
     if not reserved_nicks then
@@ -137,55 +182,45 @@ local function has_nick_suffix(body, last)
 end
 
 local function search_mentions(room, body, client_mentions)
+    load_room_reserved_nicknames(room)
     local mentions, prefix_indices = {}, {}
-
-    for bare_jid, nick in get_participants(room) do
-        -- Check for multiple mentions to the same nickname in a message
-        -- Hey @nick remember to... Ah, also @nick please let me know if...
-        local matches = {}
-        local _first
-        local _last = 0
-        while true do
-            -- Use plain search as nick could contain
-            -- characters used in Lua patterns
-            _first, _last = body:find(nick, _last + 1, true)
-            if _first == nil then break end
-            table.insert(matches, {first=_first, last=_last})
-        end
-
-        -- Filter out intentional mentions from unintentional ones
-        for _, match in ipairs(matches) do
-            local first, last = match.first, match.last
-            -- Only append new mentions in case the client already sent some
-            if not client_mentions[first] then
-                -- Body only contains nickname or is between spaces, new lines or at the end/start of the body
-                if mention_delimiters:contains(body:sub(first - 1, first - 1)) and
-                    mention_delimiters:contains(body:sub(last + 1, last + 1))
-                then
-                    add_mention(mentions, bare_jid, first, last, prefix_indices, false)
-                else
-                    -- Check if occupant is mentioned using affixes
-                    local has_prefix = has_nick_prefix(body, first)
-                    local has_suffix = has_nick_suffix(body, last)
-
-                    -- @nickname: ...
-                    if has_prefix and has_suffix then
-                        add_mention(mentions, bare_jid, first, last, prefix_indices, has_prefix)
-
-                    -- @nickname ...
-                    elseif has_prefix and not has_suffix then
-                        if mention_delimiters:contains(body:sub(last + 1, last + 1)) then
-                            add_mention(mentions, bare_jid, first, last, prefix_indices, has_prefix)
-                        end
-
-                    -- nickname: ...
-                    elseif not has_prefix and has_suffix then
-                        if mention_delimiters:contains(body:sub(first - 1, first - 1)) then
-                            add_mention(mentions, bare_jid, first, last, prefix_indices, has_prefix)
-                        end
+    local current_word = ""
+    local current_word_start
+    for i = 1, #body+1 do
+        local char = body:sub(i,i)
+        -- Mention delimiter found, current_word is completed now
+        if mention_delimiters:contains(char) and current_word_start then
+            -- Check for nickname without prefix
+            local jid = get_jid(room, current_word)
+            if jid then
+                add_mention(mentions, jid, current_word_start, i - 1, prefix_indices, false)
+            else
+                -- Check for nickname with affixes
+                local prefix = prefixes:contains(current_word:sub(1,1))
+                local suffix = suffixes:contains(current_word:sub(-1))
+                if prefix and suffix then
+                    jid = get_jid(room, current_word:sub(2, -2))
+                    if jid then
+                        add_mention(mentions, jid, current_word_start + 1, i - 2, prefix_indices, true)
+                    end
+                elseif prefix then
+                    jid = get_jid(room, current_word:sub(2))
+                    if jid then
+                        add_mention(mentions, jid, current_word_start + 1, i - 1, prefix_indices, true)
+                    end
+                elseif suffix then
+                    jid = get_jid(room, current_word:sub(1, -2))
+                    if jid then
+                        add_mention(mentions, jid, current_word_start, i - 2, prefix_indices, false)
                     end
                 end
             end
+
+            current_word = ""
+            current_word_start = nil
+        elseif not mention_delimiters:contains(char) then
+            current_word_start = current_word_start or i
+            current_word = current_word .. char
         end
     end
 
@@ -194,9 +229,9 @@ end
 
 local function muc_inject_mentions(event)
     local room, stanza = event.room, event.stanza;
-    local body = stanza:get_child("body")
+    local body = stanza:get_child_text("body")
 
-    if not body then return; end
+    if not body or #body < 1 then return; end
 
     -- Inject mentions only if the room is configured for them
     if not is_room_eligible(room.jid) then return; end
@@ -206,8 +241,7 @@ local function muc_inject_mentions(event)
     local has_mentions, client_mentions = get_client_mentions(stanza)
     if has_mentions and not append_mentions then return; end
 
-    local body_text = body:get_text()
-    local mentions, prefix_indices = search_mentions(room, body_text, client_mentions)
+    local mentions, prefix_indices = search_mentions(room, body, client_mentions)
     for _, mention in pairs(mentions) do
         -- https://xmpp.org/extensions/xep-0372.html#usecase_mention
         stanza:tag(
@@ -226,10 +260,10 @@ local function muc_inject_mentions(event)
         local from = 0
         if #prefix_indices > 0 then
             for _, prefix_index in ipairs(prefix_indices) do
-                body_without_prefixes = body_without_prefixes .. body_text:sub(from, prefix_index-1)
+                body_without_prefixes = body_without_prefixes .. body:sub(from, prefix_index-1)
                 from = prefix_index + 1
             end
-            body_without_prefixes = body_without_prefixes .. body_text:sub(from, #body_text)
+            body_without_prefixes = body_without_prefixes .. body:sub(from, #body)
 
             -- Replace original body containing prefixes
             stanza:maptags(
@@ -245,3 +279,4 @@ local function muc_inject_mentions(event)
 end
 
 module:hook("muc-occupant-groupchat", muc_inject_mentions)
+module:hook("muc-set-affiliation", update_reserved_nicknames)
