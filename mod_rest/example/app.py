@@ -31,11 +31,7 @@ def hello():
             return jsonify({"body": "Yes this is flask app"})
 
         elif data["kind"] == "iq" and data["type"] == "get":
-            if "ping" in data:
-                # Respond to ping
-                return Response(status=204)
-
-            elif "disco" in data:
+            if "disco" in data:
                 # Return supported features
                 return jsonify(
                     {
@@ -66,6 +62,10 @@ def hello():
             elif "version" in data:
                 # Version info
                 return jsonify({"version": {"name": "app.py", "version": "0"}})
+
+            elif "ping" in data:
+                # Respond to ping
+                return Response(status=204)
 
     return Response(status=501)
 
