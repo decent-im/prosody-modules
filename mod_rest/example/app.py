@@ -50,6 +50,7 @@ def hello():
                             "features": [
                                 "http://jabber.org/protocol/disco#info",
                                 "http://jabber.org/protocol/disco#items",
+                                "jabber:iq:version",
                                 "urn:xmpp:ping",
                             ],
                         }
