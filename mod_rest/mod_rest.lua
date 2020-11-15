@@ -322,16 +322,11 @@ if rest_url then
 					["Content-Language"] = stanza.attr["xml:lang"],
 					Accept = table.concat(supported_inputs, ", ");
 				},
-			}, function (body, code, response)
-				if code == 0 then
-					module:log_status("error", "Could not connect to callback URL %q: %s", rest_url, body);
-					origin.send(st.error_reply(stanza, "wait", "recipient-unavailable", body));
-					return;
-				else
-					module:set_status("info", "Connected");
-				end
+			}):next(function (response)
+				module:set_status("info", "Connected");
 				local reply;
 
+				local code, body = response.code, response.body;
 				if code == 202 or code == 204 then
 					if not reply_needed then
 						-- Delivered, no reply
@@ -393,6 +388,10 @@ if rest_url then
 				module:log("debug", "Received[rest]: %s", reply:top_tag());
 
 				origin.send(reply);
+			end,
+			function (err)
+				module:log_status("error", "Could not connect to callback URL %q: %s", rest_url, err);
+				origin.send(st.error_reply(stanza, "wait", "recipient-unavailable", err.text));
 			end);
 
 		return true;
