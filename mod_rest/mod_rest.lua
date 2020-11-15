@@ -392,6 +392,8 @@ if rest_url then
 			function (err)
 				module:log_status("error", "Could not connect to callback URL %q: %s", rest_url, err);
 				origin.send(st.error_reply(stanza, "wait", "recipient-unavailable", err.text));
+			end):catch(function (err)
+				module:log("error", "Error[rest]: %s", err);
 			end);
 
 		return true;
