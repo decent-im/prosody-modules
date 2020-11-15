@@ -297,14 +297,11 @@ if rest_url then
 
 	local function handle_stanza(event)
 		local stanza, origin = event.stanza, event.origin;
-		local reply_needed = stanza.name == "iq";
+		local reply_allowed = stanza.attr.type ~= "error";
+		local reply_needed = reply_allowed and stanza.name == "iq";
 		local receipt;
 
-		if stanza.attr.type == "error" then
-			reply_needed = false;
-		end
-
-		if stanza.name == "message" and stanza.attr.id and stanza:get_child("urn:xmpp:receipts", "request") then
+		if reply_allowed and stanza.name == "message" and stanza.attr.id and stanza:get_child("urn:xmpp:receipts", "request") then
 			reply_needed = true;
 			receipt = st.stanza("received", { xmlns = "urn:xmpp:receipts", id = stanza.id });
 		end
@@ -327,7 +324,9 @@ if rest_url then
 				local reply;
 
 				local code, body = response.code, response.body;
-				if code == 202 or code == 204 then
+				if not reply_allowed then
+					return;
+				elseif code == 202 or code == 204 then
 					if not reply_needed then
 						-- Delivered, no reply
 						return;
