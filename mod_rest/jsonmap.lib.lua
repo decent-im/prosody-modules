@@ -467,7 +467,7 @@ local function st2json(s)
 			type = err_typ,
 			condition = err_condition,
 			text = err_text,
-			by = error.attr.by,
+			by = error and error.attr.by or nil,
 		};
 		return t;
 	end
