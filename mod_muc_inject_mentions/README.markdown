@@ -91,9 +91,20 @@ if the nickname (with or without affixes) is between spaces, new lines, or at th
 This can be changed using:
 
 ```
--- muc_inject_mentions_mention_delimiters =  {" ", "", "\n"}
+-- muc_inject_mentions_mention_delimiters =  {" ", "", "\n", "\t"}
 ```
 Generally speaking and unless the use-case is very specific, there should be no need to modify the defaults of this setting.
+
+When triggering a mention must only happen if that mention includes a prefix, this can be configured with:
+```
+-- muc_inject_mentions_prefix_mandatory = true
+```
+
+By default, mentions use the bare jid of the participant as the URI attribute.
+If the MUC jid of the participant (eg. room@chat.example.org/Romeo) is preferred, this can be set using:
+```
+-- muc_inject_mentions_use_real_jid = false
+```
 
 
 # Example stanzas

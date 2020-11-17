@@ -11,7 +11,8 @@ local mention_delimiters = module:get_option_set("muc_inject_mentions_mention_de
 local append_mentions = module:get_option("muc_inject_mentions_append_mentions", false)
 local strip_out_prefixes = module:get_option("muc_inject_mentions_strip_out_prefixes", false)
 local reserved_nicks = module:get_option("muc_inject_mentions_reserved_nicks", false)
-local use_real_jid = module:get_option("muc_inject_mentions_use_real_jid", false)
+local use_bare_jid = module:get_option("muc_inject_mentions_use_bare_jid", true)
+local prefix_mandatory = module:get_option("muc_inject_mentions_prefix_mandatory", false)
 local reserved_nicknames = {}
 
 local reference_xmlns = "urn:xmpp:reference:0"
@@ -50,12 +51,12 @@ function load_room_reserved_nicknames(room)
 end
 
 local function get_jid(room, nickname)
-    local real_jid = reserved_nicknames[room.jid][nickname]
-    if real_jid and use_real_jid then
-        return real_jid
+    local bare_jid = reserved_nicknames[room.jid][nickname]
+    if bare_jid and use_bare_jid then
+        return bare_jid
     end
 
-    if real_jid and not use_real_jid then
+    if bare_jid and not use_bare_jid then
         return room.jid .. "/" .. nickname
     end
 end
@@ -193,7 +194,9 @@ local function search_mentions(room, body, client_mentions)
             -- Check for nickname without prefix
             local jid = get_jid(room, current_word)
             if jid then
-                add_mention(mentions, jid, current_word_start, i - 1, prefix_indices, false)
+                if not prefix_mandatory then
+                    add_mention(mentions, jid, current_word_start, i - 1, prefix_indices, false)
+                end
             else
                 -- Check for nickname with affixes
                 local prefix = prefixes:contains(current_word:sub(1,1))
@@ -208,7 +211,7 @@ local function search_mentions(room, body, client_mentions)
                     if jid then
                         add_mention(mentions, jid, current_word_start + 1, i - 1, prefix_indices, true)
                     end
-                elseif suffix then
+                elseif suffix and not prefix_mandatory then
                     jid = get_jid(room, current_word:sub(1, -2))
                     if jid then
                         add_mention(mentions, jid, current_word_start, i - 2, prefix_indices, false)
