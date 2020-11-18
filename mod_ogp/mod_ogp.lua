@@ -30,32 +30,40 @@ local function ogp_handler(event)
 			local fastening = st.message({to = to, from = from}):tag("apply-to", {xmlns = "urn:xmpp:fasten:0", id = origin_id})
 			local found_metadata = false
 			local message_body = ""
-			for property, content in response_body:gmatch(ogp_pattern) do
-				module:log("info", property .. "\t" .. content)
-				fastening:tag(
-					"meta",
-					{
-						xmlns = "http://www.w3.org/1999/xhtml",
-						property = property,
-						content = content
-					}
-				):up()
-				found_metadata = true
-				message_body = message_body .. property .. "\t" .. content .. "\n"
+
+			local meta_pattern = [[<meta (.-)/?>]]
+			for match in response_body:gmatch(meta_pattern) do
+				local property = match:match([[property=%s*["']?(og:.-)["']?%s]])
+				if not property then
+					property = match:match([[property=["']?(og:.-)["']$]])
+				end
+
+				local content = match:match([[content=%s*["'](.-)["']%s]])
+				if not content then
+					content = match:match([[content=["']?(.-)["']$]])
+				end
+				if not content then
+					content = match:match([[content=(.-) property]])
+				end
+				if not content then
+					content = match:match([[content=(.-)$]])
+				end
+
+				if property and content then
+					module:log("info", property .. "\t" .. content)
+					fastening:tag(
+						"meta",
+						{
+							xmlns = "http://www.w3.org/1999/xhtml",
+							property = property,
+							content = content
+						}
+					):up()
+					found_metadata = true
+					message_body = message_body .. property .. "\t" .. content .. "\n"
+				end
 			end
-			for content, property in response_body:gmatch(ogp_pattern2) do
-				module:log("info", property .. "\t" .. content)
-				fastening:tag(
-					"meta",
-					{
-						xmlns = "http://www.w3.org/1999/xhtml",
-						property = property,
-						content = content
-					}
-				):up()
-				found_metadata = true
-				message_body = message_body .. property .. "\t" .. content .. "\n"
-			end
+
 
 			if found_metadata then
 				mod_muc.get_room_from_jid(room.jid):broadcast_message(fastening)
