@@ -2,8 +2,8 @@ local mod_muc = module:depends("muc")
 local http = require "net.http"
 local st = require "util.stanza"
 
-local ogp_pattern = [[<meta property=["'](og:.-)["'] content=["'](.-)["'].->]]
-local ogp_pattern2 = [[<meta content=["'](.-)["'] property=["'](og:.-)["'].->]]
+local ogp_pattern = [[<meta property=["']?(og:.-)["']? content=%s*["']?(.-)["']?%s-/?>]]
+local ogp_pattern2 = [[<meta content=%s*["']?(.-)["']? property=["']?(og:.-)["']?%s-/?>]]
 local url_pattern = [[https?://%S+]]
 
 local function ogp_handler(event)
