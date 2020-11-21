@@ -10,7 +10,7 @@ local base64 = encodings.base64;
 
 local tokens = module:depends("tokenauth");
 
-local clients = module:open_store("oauth2_clients");
+local clients = module:open_store("oauth2_clients", "map");
 local codes = module:open_store("oauth2_codes", "map");
 
 local function oauth_error(err_name, err_desc)
@@ -60,15 +60,18 @@ function response_type_handlers.code(params, granted_jid)
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
 
-	local client, err = clients:get(params.client_id);
-	module:log("debug", "clients:get(%q) --> %q, %q", params.client_id, client, err);
+	local client_owner, client_host, client_id = jid.prepped_split(params.client_id);
+	if client_host ~= module.host then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+	local client, err = clients:get(client_owner, client_id);
 	if err then error(err); end
 	if not client then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
 	local code = uuid.generate();
-	assert(codes:set(params.client_id, code, { issued = os.time(), granted_jid = granted_jid, }));
+	assert(codes:set(client_owner, client_id .. "#" .. code, {issued = os.time(); granted_jid = granted_jid}));
 
 	local redirect = url.parse(params.redirect_uri);
 	local query = http.formdecode(redirect.query or "");
@@ -95,18 +98,24 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
 
-	local client, err = clients:get(params.client_id);
-	if err then error(err); end
-	if not client or client.secret ~= params.client_secret then
+	local client_owner, client_host, client_id = jid.prepped_split(params.client_id);
+	if client_host ~= module.host then
+		module:log("debug", "%q ~= %q", client_host, module.host);
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
-	local code, err = codes:get(params.client_id, params.code);
+	local client, err = clients:get(client_owner, client_id);
+	if err then error(err); end
+	if not client or client.client_secret ~= params.client_secret then
+		module:log("debug", "client_secret mismatch");
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+	local code, err = codes:get(client_owner, client_id .. "#" .. params.code);
 	if err then error(err); end
 	if not code or type(code) ~= "table" or os.difftime(os.time(), code.issued) > 900 then
+		module:log("debug", "authorization_code invalid or expired: %q", code);
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
-	assert(codes:set(params.client_id, params.code, nil));
-
+	assert(codes:set(client_owner, client_id .. "#" .. params.code, nil));
 
 	return json.encode(new_access_token(code.granted_jid, nil, nil));
 end
