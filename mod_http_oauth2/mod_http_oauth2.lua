@@ -91,7 +91,6 @@ function grant_type_handlers.authorization_code(params)
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
 	if not params.client_secret then return oauth_error("invalid_request", "missing 'client_secret'"); end
 	if not params.code then return oauth_error("invalid_request", "missing 'code'"); end
-	--if not params.redirect_uri then return oauth_error("invalid_request", "missing 'redirect_uri'"); end
 	if params.scope and params.scope ~= "" then
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
@@ -108,9 +107,6 @@ function grant_type_handlers.authorization_code(params)
 	end
 	assert(codes:set(params.client_id, params.code, nil));
 
-	if client.redirect_uri and client.redirect_uri ~= params.redirect_uri then
-		return oauth_error("invalid_client", "incorrect 'redirect_uri'");
-	end
 
 	return json.encode(new_access_token(code.granted_jid, nil, nil));
 end
