@@ -3,8 +3,15 @@ local jid = require "util.jid";
 local json = require "util.json";
 local usermanager = require "core.usermanager";
 local errors = require "util.error";
+local url = require "socket.url";
+local uuid = require "util.uuid";
+local encodings = require "util.encodings";
+local base64 = encodings.base64;
 
 local tokens = module:depends("tokenauth");
+
+local clients = module:open_store("oauth2_clients");
+local codes = module:open_store("oauth2_codes", "map");
 
 local function oauth_error(err_name, err_desc)
 	return errors.new({
@@ -27,6 +34,7 @@ local function new_access_token(token_jid, scope, ttl)
 end
 
 local grant_type_handlers = {};
+local response_type_handlers = {};
 
 function grant_type_handlers.password(params)
 	local request_jid = assert(params.username, oauth_error("invalid_request", "missing 'username' (JID)"));
@@ -43,6 +51,86 @@ function grant_type_handlers.password(params)
 		return json.encode(new_access_token(granted_jid, request_host, nil, nil));
 	end
 	return oauth_error("invalid_grant", "incorrect credentials");
+end
+
+function response_type_handlers.code(params, granted_jid)
+	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
+	if not params.redirect_uri then return oauth_error("invalid_request", "missing 'redirect_uri'"); end
+	if params.scope and params.scope ~= "" then
+		return oauth_error("invalid_scope", "unknown scope requested");
+	end
+
+	local client, err = clients:get(params.client_id);
+	module:log("debug", "clients:get(%q) --> %q, %q", params.client_id, client, err);
+	if err then error(err); end
+	if not client then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+
+	local code = uuid.generate();
+	assert(codes:set(params.client_id, code, { issued = os.time(), granted_jid = granted_jid, }));
+
+	local redirect = url.parse(params.redirect_uri);
+	local query = http.formdecode(redirect.query or "");
+	if type(query) ~= "table" then query = {}; end
+	table.insert(query, { name = "code", value = code })
+	if params.state then
+		table.insert(query, { name = "state", value = params.state });
+	end
+	redirect.query = http.formencode(query);
+
+	return {
+		status_code = 302;
+		headers = {
+			location = url.build(redirect);
+		};
+	}
+end
+
+function grant_type_handlers.authorization_code(params)
+	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
+	if not params.client_secret then return oauth_error("invalid_request", "missing 'client_secret'"); end
+	if not params.code then return oauth_error("invalid_request", "missing 'code'"); end
+	--if not params.redirect_uri then return oauth_error("invalid_request", "missing 'redirect_uri'"); end
+	if params.scope and params.scope ~= "" then
+		return oauth_error("invalid_scope", "unknown scope requested");
+	end
+
+	local client, err = clients:get(params.client_id);
+	if err then error(err); end
+	if not client or client.secret ~= params.client_secret then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+	local code, err = codes:get(params.client_id, params.code);
+	if err then error(err); end
+	if not code or type(code) ~= "table" or os.difftime(os.time(), code.issued) > 900 then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+	assert(codes:set(params.client_id, params.code, nil));
+
+	if client.redirect_uri and client.redirect_uri ~= params.redirect_uri then
+		return oauth_error("invalid_client", "incorrect 'redirect_uri'");
+	end
+
+	return json.encode(new_access_token(code.granted_jid, nil, nil));
+end
+
+local function check_credentials(request)
+	local auth_type, auth_data = string.match(request.headers.authorization, "^(%S+)%s(.+)$");
+
+	if auth_type == "Basic" then
+		local creds = base64.decode(auth_data);
+		if not creds then return false; end
+		local username, password = string.match(creds, "^([^:]+):(.*)$");
+		if not username then return false; end
+		username, password = encodings.stringprep.nodeprep(username), encodings.stringprep.saslprep(password);
+		if not username then return false; end
+		if not usermanager.test_password(username, module.host, password) then
+			return false;
+		end
+		return username;
+	end
+	return nil;
 end
 
 if module:get_host_type() == "component" then
@@ -64,6 +152,12 @@ if module:get_host_type() == "component" then
 		end
 		return oauth_error("invalid_grant", "incorrect credentials");
 	end
+
+	-- TODO How would this make sense with components?
+	-- Have an admin authenticate maybe?
+	response_type_handlers.code = nil;
+	grant_type_handlers.authorization_code = nil;
+	check_credentials = function () return false end
 end
 
 function handle_token_grant(event)
@@ -80,10 +174,37 @@ function handle_token_grant(event)
 	return grant_handler(params);
 end
 
+local function handle_authorization_request(event)
+	if not event.request.headers.authorization then
+		event.response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
+		return 401;
+	end
+	local user = check_credentials(event.request);
+	if not user then
+		return 401;
+	end
+	if not event.request.url.query then
+		event.response.headers.content_type = "application/json";
+		return oauth_error("invalid_request");
+	end
+	local params = http.formdecode(event.request.url.query);
+	if not params then
+		return oauth_error("invalid_request");
+	end
+	local response_type = params.response_type;
+	local response_handler = response_type_handlers[response_type];
+	if not response_handler then
+		event.response.headers.content_type = "application/json";
+		return oauth_error("unsupported_response_type");
+	end
+	return response_handler(params, jid.join(user, module.host));
+end
+
 module:depends("http");
 module:provides("http", {
 	route = {
 		["POST /token"] = handle_token_grant;
+		["GET /authorize"] = handle_authorization_request;
 	};
 });
 
