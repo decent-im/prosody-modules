@@ -48,7 +48,7 @@ function grant_type_handlers.password(params)
 	end
 	if usermanager.test_password(request_username, request_host, request_password) then
 		local granted_jid = jid.join(request_username, request_host, request_resource);
-		return json.encode(new_access_token(granted_jid, request_host, nil, nil));
+		return json.encode(new_access_token(granted_jid, nil, nil));
 	end
 	return oauth_error("invalid_grant", "incorrect credentials");
 end
@@ -148,7 +148,7 @@ if module:get_host_type() == "component" then
 		end
 		if request_password == component_secret then
 			local granted_jid = jid.join(request_username, request_host, request_resource);
-			return json.encode(new_access_token(granted_jid, request_host, nil, nil));
+			return json.encode(new_access_token(granted_jid, nil, nil));
 		end
 		return oauth_error("invalid_grant", "incorrect credentials");
 	end
