@@ -175,26 +175,27 @@ function handle_token_grant(event)
 end
 
 local function handle_authorization_request(event)
-	if not event.request.headers.authorization then
-		event.response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
+	local request, response = event.request, event.response;
+	if not request.headers.authorization then
+		response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
 		return 401;
 	end
-	local user = check_credentials(event.request);
+	local user = check_credentials(request);
 	if not user then
 		return 401;
 	end
-	if not event.request.url.query then
-		event.response.headers.content_type = "application/json";
+	if not request.url.query then
+		response.headers.content_type = "application/json";
 		return oauth_error("invalid_request");
 	end
-	local params = http.formdecode(event.request.url.query);
+	local params = http.formdecode(request.url.query);
 	if not params then
 		return oauth_error("invalid_request");
 	end
 	local response_type = params.response_type;
 	local response_handler = response_type_handlers[response_type];
 	if not response_handler then
-		event.response.headers.content_type = "application/json";
+		response.headers.content_type = "application/json";
 		return oauth_error("unsupported_response_type");
 	end
 	return response_handler(params, jid.join(user, module.host));
