@@ -46,3 +46,5 @@ end
 local handler = adhoc.new_simple_form(new_client, create_client);
 
 module:provides("adhoc", module:require "adhoc".new(new_client.title, new_client[1].value, handler, "local_user"));
+
+-- TODO list/manage/revoke clients
