@@ -196,6 +196,7 @@ local function handle_authorization_request(event)
 	if not user then
 		return 401;
 	end
+	-- TODO ask user for consent here
 	if not request.url.query then
 		response.headers.content_type = "application/json";
 		return oauth_error("invalid_request");
