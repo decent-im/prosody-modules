@@ -1,3 +1,4 @@
+local hashes = require "util.hashes";
 local http = require "util.http";
 local jid = require "util.jid";
 local json = require "util.json";
@@ -90,6 +91,12 @@ function response_type_handlers.code(params, granted_jid)
 	}
 end
 
+local pepper = module:get_option_string("oauth2_client_pepper", "");
+
+local function verify_secret(stored, salt, i, secret)
+	return base64.decode(stored) == hashes.pbkdf2_hmac_sha256(secret, salt .. pepper, i);
+end
+
 function grant_type_handlers.authorization_code(params)
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
 	if not params.client_secret then return oauth_error("invalid_request", "missing 'client_secret'"); end
@@ -105,7 +112,7 @@ function grant_type_handlers.authorization_code(params)
 	end
 	local client, err = clients:get(client_owner, client_id);
 	if err then error(err); end
-	if not client or client.client_secret ~= params.client_secret then
+	if not client or not verify_secret(client.secret_hash, client.salt, client.iteration_count, params.client_secret) then
 		module:log("debug", "client_secret mismatch");
 		return oauth_error("invalid_client", "incorrect credentials");
 	end

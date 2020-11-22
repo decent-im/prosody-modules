@@ -1,10 +1,15 @@
 local adhoc = require "util.adhoc";
 local dataforms = require "util.dataforms";
 local errors = require "util.error";
+local hashes = require "util.hashes";
 local id = require "util.id";
 local jid = require "util.jid";
+local base64 = require"util.encodings".base64;
 
 local clients = module:open_store("oauth2_clients", "map");
+
+local iteration_count = module:get_option_number("oauth2_client_iteration_count", 10000);
+local pepper = module:get_option_string("oauth2_client_pepper", "");
 
 local new_client = dataforms.new({
 	title = "Create OAuth2 client";
@@ -32,15 +37,19 @@ local function create_client(client, formerr, data)
 
 	local creator = jid.split(data.from);
 	local client_id = id.short();
+	local client_secret = id.long();
+	local salt = id.medium();
+	local i = iteration_count;
 
-	client.client_id = jid.join(creator, module.host, client_id);
-	client.client_secret = id.long();
+	client.secret_hash = base64.encode(hashes.pbkdf2_hmac_sha256(client_secret, salt .. pepper, i));
+	client.iteration_count = i;
+	client.salt = salt;
 
 	local ok, err = errors.coerce(clients:set(creator, client_id, client));
 	module:log("info", "OAuth2 client %q created by %s", client_id, data.from);
 	if not ok then return {status = "error"; error = {message = err}}; end
 
-	return {status = "completed"; result = {layout = client_created; values = client}};
+	return {status = "completed"; result = {layout = client_created; values = {client_id = client.client_id; client_secret = client_secret}}};
 end
 
 local handler = adhoc.new_simple_form(new_client, create_client);
