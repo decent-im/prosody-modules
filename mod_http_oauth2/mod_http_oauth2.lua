@@ -14,6 +14,10 @@ local tokens = module:depends("tokenauth");
 local clients = module:open_store("oauth2_clients", "map");
 local codes = module:open_store("oauth2_codes", "map");
 
+local function code_expired(code)
+	return os.difftime(os.time(), code.issued) > 900;
+end
+
 local function oauth_error(err_name, err_desc)
 	return errors.new({
 		type = "modify";
@@ -118,7 +122,7 @@ function grant_type_handlers.authorization_code(params)
 	end
 	local code, err = codes:get(client_owner, client_id .. "#" .. params.code);
 	if err then error(err); end
-	if not code or type(code) ~= "table" or os.difftime(os.time(), code.issued) > 900 then
+	if not code or type(code) ~= "table" or code_expired(code) then
 		module:log("debug", "authorization_code invalid or expired: %q", code);
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
