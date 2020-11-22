@@ -1,4 +1,5 @@
 local hashes = require "util.hashes";
+local cache = require "util.cache";
 local http = require "util.http";
 local jid = require "util.jid";
 local json = require "util.json";
@@ -12,11 +13,14 @@ local base64 = encodings.base64;
 local tokens = module:depends("tokenauth");
 
 local clients = module:open_store("oauth2_clients", "map");
-local codes = module:open_store("oauth2_codes", "map");
 
 local function code_expired(code)
 	return os.difftime(os.time(), code.issued) > 120;
 end
+
+local codes = cache.new(10000, function (_, code)
+	return code_expired(code)
+end);
 
 local function oauth_error(err_name, err_desc)
 	return errors.new({
@@ -76,7 +80,7 @@ function response_type_handlers.code(params, granted_jid)
 	end
 
 	local code = uuid.generate();
-	assert(codes:set(client_owner, client_id .. "#" .. code, {issued = os.time(); granted_jid = granted_jid}));
+	assert(codes:set(params.client_id .. "#" .. code, {issued = os.time(); granted_jid = granted_jid}));
 
 	local redirect = url.parse(params.redirect_uri);
 	local query = http.formdecode(redirect.query or "");
@@ -120,7 +124,7 @@ function grant_type_handlers.authorization_code(params)
 		module:log("debug", "client_secret mismatch");
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
-	local code, err = codes:get(client_owner, client_id .. "#" .. params.code);
+	local code, err = codes:get(params.client_id .. "#" .. params.code);
 	if err then error(err); end
 	if not code or type(code) ~= "table" or code_expired(code) then
 		module:log("debug", "authorization_code invalid or expired: %q", code);
