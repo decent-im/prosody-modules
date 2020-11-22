@@ -16,8 +16,15 @@ local new_client = dataforms.new({
 	{var = "FORM_TYPE"; type = "hidden"; value = "urn:uuid:ff0d55ed-2187-4ee0-820a-ab633a911c14#create"};
 	{name = "name"; type = "text-single"; label = "Client name"; required = true};
 	{name = "description"; type = "text-multi"; label = "Description"};
-	{name = "info_url"; type = "text-single"; label = "Informative URL"; desc = "Link to information about your client"};
-	{name = "redirect_uri"; type = "text-single"; label = "Redirection URI"; desc = "Where to redirect the user after authorizing."; required = true};
+	{name = "info_url"; type = "text-single"; label = "Informative URL"; desc = "Link to information about your client"; datatype = "xs:anyURI"};
+	{
+		name = "redirect_uri";
+		type = "text-single";
+		label = "Redirection URI";
+		desc = "Where to redirect the user after authorizing.";
+		datatype = "xs:anyURI";
+		required = true;
+	};
 })
 
 local client_created = dataforms.new({
