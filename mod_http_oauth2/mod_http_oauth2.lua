@@ -15,7 +15,7 @@ local clients = module:open_store("oauth2_clients", "map");
 local codes = module:open_store("oauth2_codes", "map");
 
 local function code_expired(code)
-	return os.difftime(os.time(), code.issued) > 900;
+	return os.difftime(os.time(), code.issued) > 120;
 end
 
 local function oauth_error(err_name, err_desc)
