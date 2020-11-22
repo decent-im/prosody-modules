@@ -43,7 +43,8 @@ local function create_client(client, formerr, data)
 	end
 
 	local creator = jid.split(data.from);
-	local client_id = id.short();
+	local client_uid = id.short();
+	local client_id = jid.join(creator, module.host, client_uid);
 	local client_secret = id.long();
 	local salt = id.medium();
 	local i = iteration_count;
@@ -52,11 +53,11 @@ local function create_client(client, formerr, data)
 	client.iteration_count = i;
 	client.salt = salt;
 
-	local ok, err = errors.coerce(clients:set(creator, client_id, client));
+	local ok, err = errors.coerce(clients:set(creator, client_uid, client));
 	module:log("info", "OAuth2 client %q created by %s", client_id, data.from);
 	if not ok then return {status = "canceled"; error = {message = err}}; end
 
-	return {status = "completed"; result = {layout = client_created; values = {client_id = client.client_id; client_secret = client_secret}}};
+	return {status = "completed"; result = {layout = client_created; values = {client_id = client_id; client_secret = client_secret}}};
 end
 
 local handler = adhoc.new_simple_form(new_client, create_client);
