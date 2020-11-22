@@ -47,7 +47,7 @@ local function create_client(client, formerr, data)
 
 	local ok, err = errors.coerce(clients:set(creator, client_id, client));
 	module:log("info", "OAuth2 client %q created by %s", client_id, data.from);
-	if not ok then return {status = "error"; error = {message = err}}; end
+	if not ok then return {status = "canceled"; error = {message = err}}; end
 
 	return {status = "completed"; result = {layout = client_created; values = {client_id = client.client_id; client_secret = client_secret}}};
 end
