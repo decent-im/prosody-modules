@@ -22,6 +22,15 @@ local codes = cache.new(10000, function (_, code)
 	return code_expired(code)
 end);
 
+module:add_timer(900, function()
+	local k, code = codes:tail();
+	while code and code_expired(code) do
+		codes:set(k, nil);
+		k, code = codes:tail();
+	end
+	return 900;
+end)
+
 local function oauth_error(err_name, err_desc)
 	return errors.new({
 		type = "modify";
