@@ -407,8 +407,11 @@ local function process_stanza_queue(queue, session, queue_type)
 end
 
 -- publish on unacked smacks message (use timer to send out push for all stanzas submitted in a row only once)
-local function process_smacks_stanza(stanza, session)
+local function process_smacks_stanza(event)
+	local session = event.origin;
+	local stanza = event.stanza;
 	if session.push_identifier then
+		session.log("debug", "adding new stanza to push_queue");
 		if not session.push_queue then session.push_queue = {}; end
 		local queue = session.push_queue;
 		queue[#queue+1] = st.clone(stanza);
@@ -420,6 +423,8 @@ local function process_smacks_stanza(stanza, session)
 				session.push_queue = {};		-- clean up queue after push
 			end);
 		end
+	else
+		session.log("debug", "NOT invoking cloud handle_notify_request() for newly smacks queued stanza (session.push_identifier is not set: %s)", session.push_identifier);
 	end
 	return stanza;
 end
@@ -431,15 +436,12 @@ local function hibernate_session(event)
 	session.first_hibernated_push = nil;
 	-- process unacked stanzas
 	process_stanza_queue(queue, session, "smacks");
-	-- process future unacked (hibernated) stanzas
-	filters.add_filter(session, "stanzas/out", process_smacks_stanza, -990);
 end
 
 -- smacks hibernation is ended
 local function restore_session(event)
 	local session = event.resumed;
 	if session then		-- older smacks module versions send only the "intermediate" session in event.session and no session.resumed one
-		filters.remove_filter(session, "stanzas/out", process_smacks_stanza);
 		if session.awaiting_push_timer then session.awaiting_push_timer:stop(); end
 		session.first_hibernated_push = nil;
 	end
@@ -492,6 +494,7 @@ end
 module:hook("smacks-hibernation-start", hibernate_session);
 module:hook("smacks-hibernation-end", restore_session);
 module:hook("smacks-ack-delayed", ack_delayed);
+module:hook("smacks-hibernation-stanza-queued", process_smacks_stanza);
 module:hook("archive-message-added", archive_message_added);
 
 local function send_ping(event)
@@ -506,5 +509,15 @@ module:hook("cloud-notify-ping", send_ping);
 
 module:log("info", "Module loaded");
 function module.unload()
+	module:log("info", "Unloading module");
+	-- cleanup some settings, reloading this module can cause process_smacks_stanza() to stop working otherwise
+	for user, _ in pairs(host_sessions) do
+		for sessionid, session in pairs(host_sessions[user].sessions) do
+			if session.awaiting_push_timer then session.awaiting_push_timer:stop(); end
+			session.awaiting_push_timer = nil;
+			session.first_hibernated_push = nil;
+			session.push_queue = nil;
+		end
+	end
 	module:log("info", "Module unloaded");
 end
