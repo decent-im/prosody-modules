@@ -4,7 +4,7 @@ local set = require "util.set";
 local st = require "util.stanza";
 
 local roles_store = module:open_store("roles", "map");
-local config_admins = module:get_option_inherited_set("admins") / jid.prep;
+local config_admins = module:get_option_inherited_set("admins", {}) / jid.prep;
 
 local function append_host(username)
 	return username.."@"..module.host;
