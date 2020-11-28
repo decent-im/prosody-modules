@@ -508,7 +508,11 @@ Executed:
 }
 ```
 
--   **TODO** Describe multi-step commands with dataforms.
+# TODO
+
+-   Describe multi-step commands with dataforms.
+-   Versioned API, i.e. /v1/stanzas
+-   Bind resource to webhook/callback
 
 # Compatibility
 
