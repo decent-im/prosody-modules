@@ -37,7 +37,7 @@ local function oauth_error(err_name, err_desc)
 		condition = "bad-request";
 		code = err_name == "invalid_client" and 401 or 400;
 		text = err_desc and (err_name..": "..err_desc) or err_name;
-		context = { oauth2_response = { error = err_name, error_description = err_desc } };
+		extra = { oauth2_response = { error = err_name, error_description = err_desc } };
 	});
 end
 
@@ -242,7 +242,7 @@ module:provides("http", {
 local http_server = require "net.http.server";
 
 module:hook_object_event(http_server, "http-error", function (event)
-	local oauth2_response = event.error and event.error.context and event.error.context.oauth2_response;
+	local oauth2_response = event.error and event.error.extra and event.error.extra.oauth2_response;
 	if not oauth2_response then
 		return;
 	end
