@@ -118,18 +118,15 @@ function update_entry(item)
 				-- Sigh, no link?
 				id = feed.url .. "#" .. hmac_sha1(feed.url, tostring(entry), true) .. "@" .. dt_datetime(timestamp);
 			end
-			if items[id] then
-				-- Assume that this existing means we've added all new items
-				-- FIXME Entries updated after publishing ...
-				break;
-			end
-			local xitem = st.stanza("item", { id = id, xmlns = "http://jabber.org/protocol/pubsub" }):add_child(entry);
-			-- TODO Put data from /feed into item/source
+			if not items[id] then
+				local xitem = st.stanza("item", { id = id, xmlns = "http://jabber.org/protocol/pubsub" }):add_child(entry);
+				-- TODO Put data from /feed into item/source
 
-			--module:log("debug", "publishing to %s, id %s", node, id);
-			local ok, err = pubsub.service:publish(node, true, id, xitem);
-			if not ok then
-				module:log("error", "Publishing to node %s failed: %s", node, err);
+				--module:log("debug", "publishing to %s, id %s", node, id);
+				local ok, err = pubsub.service:publish(node, true, id, xitem);
+				if not ok then
+					module:log("error", "Publishing to node %s failed: %s", node, err);
+				end
 			end
 		end
 	end
