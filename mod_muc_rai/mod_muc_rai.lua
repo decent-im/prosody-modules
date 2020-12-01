@@ -186,6 +186,22 @@ local function subscribe_all_rooms(user_jid)
 	return rooms_with_activity;
 end
 
+module:hook("muc-occupant-joined", function(event)
+	local room_jid, user_jid = event.room.jid, event.stanza.attr.from;
+	local ok, err = unsubscribe_room(user_jid, room_jid);
+	if ok then
+		module:log("debug", "Unsubscribed " .. user_jid .. " from " .. room_jid .. " Reason: muc-occupant-joined")
+	end
+end);
+
+module:hook("muc-occupant-left", function(event)
+	local room_jid, user_jid = event.room.jid, event.stanza.attr.from;
+	local ok, err = subscribe_room(user_jid, room_jid);
+	if ok then
+		module:log("debug", "Subscribed " .. user_jid .. " to " .. room_jid .. " Reason: muc-occupant-left")
+	end
+end);
+
 module:hook("presence/host", function (event)
 	local origin, stanza = event.origin, event.stanza;
 	local user_jid = stanza.attr.from;
