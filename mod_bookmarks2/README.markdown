@@ -4,6 +4,17 @@ labels:
 summary: Synchronise bookmarks between Private XML and PEP
 ...
 
+::: {.alert .alert-warning}
+**WARNING:** This module is incompatible with clients which only use
+[deprecated PEP bookmarks
+(XEP-0048)](https://xmpp.org/extensions/xep-0048.html), such as
+[Converse.js](https://conversejs.org).
+
+If you need to be compatible with these clients, use
+[mod\_bookmarks](mod_bookmarks.html) instead.
+:::
+
+
 Introduction
 ------------
 
