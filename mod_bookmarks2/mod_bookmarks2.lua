@@ -245,8 +245,8 @@ local function migrate_legacy_bookmarks(event)
 	local data, err = private_storage:get(username, "storage:storage:bookmarks");
 	if not data then
 		module:log("debug", "No existing legacy bookmarks for %s, migration already done: %s", jid, err);
-		local ok, ret = service:get_items("urn:xmpp:bookmarks:0", session.full_jid);
-		if not ok or not ret then
+		local ok, ret2 = service:get_items("urn:xmpp:bookmarks:0", session.full_jid);
+		if not ok or not ret2 then
 			module:log("debug", "Additionally, no bookmarks 2 were existing for %s, assuming empty.", jid);
 			module:fire_event("bookmarks/empty", { session = session });
 		end
