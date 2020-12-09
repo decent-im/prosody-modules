@@ -54,7 +54,7 @@ local function get_error_data(instance_id, context)
 end
 
 local function error_to_sentry_exception(e)
-	return {
+	local exception = {
 		type = e.condition or (e.code and tostring(e.code)) or nil;
 		value = e.text or tostring(e);
 		context = e.source;
@@ -65,6 +65,20 @@ local function error_to_sentry_exception(e)
 			data = get_error_data(e.instance_id, e.context);
 		};
 	};
+	local traceback = e.context.traceback;
+	if traceback and type(traceback) == "table" then
+		local frames = {};
+		for i = #traceback, 1 do
+			local frame = traceback[i];
+			table.insert(frames, {
+				["function"] = frame.info.name;
+				filename = frame.info.short_src;
+				lineno = frame.info.currentline;
+			});
+		end
+		exception.frames = frames;
+	end
+	return exception;
 end
 
 local sentry_event_methods = {};
