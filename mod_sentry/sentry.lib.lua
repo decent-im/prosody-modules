@@ -1,3 +1,4 @@
+local array = require "util.array";
 local hex = require "util.hex";
 local random = require "util.random";
 local url = require "socket.url";
@@ -69,8 +70,8 @@ local function error_to_sentry_exception(e)
 	};
 	local traceback = e.context.traceback;
 	if traceback and type(traceback) == "table" then
-		local frames = {};
 		for i = #traceback, 1 do
+		local frames = array();
 			local frame = traceback[i];
 			table.insert(frames, {
 				["function"] = frame.info.name;
