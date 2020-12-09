@@ -48,7 +48,9 @@ local function get_error_data(instance_id, context)
 		instance_id = instance_id;
 	};
 	for k, v in pairs(context) do
-		data[k] = tostring(v);
+		if k ~= "traceback" then
+			data[k] = tostring(v);
+		end
 	end
 	return data;
 end
