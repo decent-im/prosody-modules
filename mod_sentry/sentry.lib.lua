@@ -76,7 +76,9 @@ local function error_to_sentry_exception(e)
 				lineno = frame.info.currentline;
 			});
 		end
-		exception.frames = frames;
+		exception.stacktrace = {
+			frames = frames;
+		};
 	end
 	return exception;
 end
