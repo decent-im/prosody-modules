@@ -70,8 +70,8 @@ local function error_to_sentry_exception(e)
 	};
 	local traceback = e.context.traceback;
 	if traceback and type(traceback) == "table" then
-		for i = #traceback, 1 do
 		local frames = array();
+		for i = #traceback, 1, -1 do
 			local frame = traceback[i];
 			table.insert(frames, {
 				["function"] = frame.info.name;
