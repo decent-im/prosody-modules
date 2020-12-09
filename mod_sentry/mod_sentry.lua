@@ -9,6 +9,7 @@ if have_pposix and pposix.uname then
 end
 
 local loggingmanager = require "core.loggingmanager";
+local errors = require "util.error";
 local format = require "util.format".format;
 
 local default_config = assert(module:get_option("sentry"), "Please provide a 'sentry' configuration option");
@@ -61,8 +62,17 @@ local function sentry_log_sink_maker(sink_config)
 			level = "warning";
 		end
 
+		local event = sentry:event(level, name):message(format(message, ...));
+
+		local params = { ... };
+		for i = 1, select("#", ...) do
+			if errors.is_error(params[i]) then
+				event:add_exception(params[i]);
+			end
+		end
+
 		submitting = true;
-		sentry:event(level, name):message(format(message, ...)):send():catch(sentry_error_handler);
+		event:send():catch(sentry_error_handler);
 		submitting = false;
 	end;
 end
