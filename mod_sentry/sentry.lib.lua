@@ -112,7 +112,7 @@ function sentry_event_methods:message(text)
 end
 
 function sentry_event_methods:add_exception(e)
-	if errors.is_error(e) then
+	if errors.is_err(e) then
 		e = error_to_sentry_exception(e);
 	elseif type(e) ~= "table" or not (e.type and e.value) then
 		e = error_to_sentry_exception(errors.coerce(nil, e));
