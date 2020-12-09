@@ -133,6 +133,13 @@ end
 function sentry_event_methods:add_exception(e)
 	if errors.is_err(e) then
 		e = error_to_sentry_exception(e);
+		if not self.event.message then
+			if e.text then
+				self:message(e.text);
+			elseif type(e.context.wrapped_error) == "string" then
+				self:message(e.context.wrapped_error);
+			end
+		end
 	elseif type(e) ~= "table" or not (e.type and e.value) then
 		e = error_to_sentry_exception(errors.coerce(nil, e));
 	end
