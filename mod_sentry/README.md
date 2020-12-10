@@ -2,6 +2,10 @@
 labels:
 - 'Stage-Beta'
 summary: 'Send errors to a Sentry server'
+rockspec:
+  build:
+    modules:
+      mod_sentry.sentry: sentry.lib.lua
 ---
 
 # Introduction
