@@ -4,15 +4,10 @@
 --
 -- This file is MIT/X11 licensed.
 
-local t_insert = table.insert;
-local s_match = string.match;
-local s_sub = string.sub;
 local os_time = os.time;
-local next = next;
 local st = require"util.stanza";
 local jid = require"util.jid";
 local dataform = require"util.dataforms".new;
-local filters = require"util.filters";
 local hashes = require"util.hashes";
 local random = require"util.random";
 local cache = require"util.cache";
@@ -37,6 +32,7 @@ local push_store = (function()
 	local store = module:open_store();
 	local push_services = {};
 	local api = {};
+	--luacheck: ignore 212/self
 	function api:get(user)
 		if not push_services[user] then
 			local loaded, err = store:get(user);
@@ -85,7 +81,7 @@ function handle_push_error(event)
 	local from = stanza.attr.from;
 	local user_push_services = push_store:get(node);
 	local changed = false;
-	
+
 	for push_identifier, _ in pairs(user_push_services) do
 		if push_identifier == identifier then
 			if user_push_services[push_identifier] and user_push_services[push_identifier].jid == from and error_type ~= "wait" then
@@ -134,7 +130,7 @@ function handle_push_success(event)
 	if node == nil then return false; end		-- unknown stanza? Ignore for now!
 	local from = stanza.attr.from;
 	local user_push_services = push_store:get(node);
-	
+
 	for push_identifier, _ in pairs(user_push_services) do
 		if push_identifier == identifier then
 			if user_push_services[push_identifier] and user_push_services[push_identifier].jid == from and push_errors[push_identifier] > 0 then
@@ -144,7 +140,9 @@ function handle_push_success(event)
 				module:unhook("iq-result/host/"..stanza.attr.id, handle_push_success);
 				id2node[stanza.attr.id] = nil;
 				id2identifier[stanza.attr.id] = nil;
-				module:log("debug", "Push succeeded, error count for identifier '%s' is now at %s again", push_identifier, tostring(push_errors[push_identifier]));
+				module:log("debug", "Push succeeded, error count for identifier '%s' is now at %s again",
+					push_identifier, tostring(push_errors[push_identifier])
+				);
 			end
 		end
 	end
@@ -249,41 +247,43 @@ module:hook("iq-set/self/"..xmlns_push..":disable", push_disable);
 -- is this push a high priority one (this is needed for ios apps not using voip pushes)
 local function is_important(stanza)
 	local st_name = stanza and stanza.name or nil;
-	if not st_name then return false; end	-- nonzas are never important here
+	if not st_name then return false; end -- nonzas are never important here
 	if st_name == "presence" then
-		return false;						-- same for presences
+		return false; -- same for presences
 	elseif st_name == "message" then
-		-- unpack carbon copies
-		local stanza_direction = "in";
-		local carbon;
-		local st_type;
-		-- support carbon copied message stanzas
-		if not carbon then carbon = stanza:find("{urn:xmpp:carbons:2}/{urn:xmpp:forward:0}/{jabber:client}message"); end
-		stanza_direction = carbon and stanza:child_with_name("sent") and "out" or "in";
+		-- unpack carbon copied message stanzas
+		local carbon = stanza:find("{urn:xmpp:carbons:2}/{urn:xmpp:forward:0}/{jabber:client}message");
+		local stanza_direction = carbon and stanza:child_with_name("sent") and "out" or "in";
 		if carbon then stanza = carbon; end
-		st_type = stanza.attr.type;
-		
+		local st_type = stanza.attr.type;
+
 		-- headline message are always not important
 		if st_type == "headline" then return false; end
-		
+
 		-- carbon copied outgoing messages are not important
 		if carbon and stanza_direction == "out" then return false; end
-		
+
 		-- We can't check for body contents in encrypted messages, so let's treat them as important
 		-- Some clients don't even set a body or an empty body for encrypted messages
-		
+
 		-- check omemo https://xmpp.org/extensions/inbox/omemo.html
 		if stanza:get_child("encrypted", "eu.siacs.conversations.axolotl") or stanza:get_child("encrypted", "urn:xmpp:omemo:0") then return true; end
-		
+
 		-- check xep27 pgp https://xmpp.org/extensions/xep-0027.html
 		if stanza:get_child("x", "jabber:x:encrypted") then return true; end
-		
+
 		-- check xep373 pgp (OX) https://xmpp.org/extensions/xep-0373.html
 		if stanza:get_child("openpgp", "urn:xmpp:openpgp:0") then return true; end
-		
+
 		local body = stanza:get_child_text("body");
-		if st_type == "groupchat" and stanza:get_child_text("subject") then return false; end		-- groupchat subjects are not important here
-		return body ~= nil and body ~= "";			-- empty bodies are not important
+
+		-- groupchat subjects are not important here
+		if st_type == "groupchat" and stanza:get_child_text("subject") then
+			return false;
+		end
+
+		-- empty bodies are not important
+		return body ~= nil and body ~= "";
 	end
 	return false;		-- this stanza wasn't one of the above cases --> it is not important, too
 end
@@ -300,7 +300,7 @@ local push_form = dataform {
 local function handle_notify_request(stanza, node, user_push_services, log_push_decline)
 	local pushes = 0;
 	if not #user_push_services then return pushes end
-	
+
 	for push_identifier, push_info in pairs(user_push_services) do
 		local send_push = true;		-- only send push to this node when not already done for this stanza or if no stanza is given at all
 		if stanza then
@@ -313,7 +313,7 @@ local function handle_notify_request(stanza, node, user_push_services, log_push_
 			end
 			stanza._push_notify[push_identifier] = true;
 		end
-		
+
 		if send_push then
 			-- construct push stanza
 			local stanza_id = hashes.sha256(random.bytes(8), true);
@@ -342,7 +342,10 @@ local function handle_notify_request(stanza, node, user_push_services, log_push_
 				push_publish:tag("publish-options"):add_child(st.deserialize(push_info.options));
 			end
 			-- send out push
-			module:log("debug", "Sending %s push notification for %s@%s to %s (%s)", form_data["last-message-body"] and "important" or "unimportant", node, module.host, push_info.jid, tostring(push_info.node));
+			module:log("debug", "Sending %s push notification for %s@%s to %s (%s)",
+				form_data["last-message-body"] and "important" or "unimportant",
+				node, module.host, push_info.jid, tostring(push_info.node)
+			);
 			-- module:log("debug", "PUSH STANZA: %s", tostring(push_publish));
 			-- handle push errors for this node
 			if push_errors[push_identifier] == nil then
@@ -383,7 +386,7 @@ local function process_stanza_queue(queue, session, queue_type)
 		-- fast ignore of already pushed stanzas
 		if stanza and not (stanza._push_notify and stanza._push_notify[session.push_identifier]) then
 			local node = get_push_settings(stanza, session);
-			stanza_type = "unimportant"
+			local stanza_type = "unimportant";
 			if dummy_body and is_important(stanza) then stanza_type = "important"; end
 			if not notified[stanza_type] then		-- only notify if we didn't try to push for this stanza type already
 				-- session.log("debug", "Invoking cloud handle_notify_request() for smacks queued stanza: %d", i);
@@ -424,7 +427,9 @@ local function process_smacks_stanza(event)
 			end);
 		end
 	else
-		session.log("debug", "NOT invoking cloud handle_notify_request() for newly smacks queued stanza (session.push_identifier is not set: %s)", session.push_identifier);
+		session.log("debug", "NOT invoking cloud handle_notify_request() for newly smacks queued stanza (session.push_identifier is not set: %s)",
+			session.push_identifier
+		);
 	end
 	return stanza;
 end
@@ -468,13 +473,12 @@ local function archive_message_added(event)
 	-- only notify if the stanza destination is the mam user we store it for
 	if event.for_user == to then
 		local user_push_services = push_store:get(to);
-		
+
 		-- only notify nodes with no active sessions (smacks is counted as active and handled separate)
 		local notify_push_services = {};
 		for identifier, push_info in pairs(user_push_services) do
 			local identifier_found = nil;
 			for _, session in pairs(user_session) do
-				-- module:log("debug", "searching for '%s': identifier '%s' for session %s", tostring(identifier), tostring(session.push_identifier), tostring(session.full_jid));
 				if session.push_identifier == identifier then
 					identifier_found = session;
 					break;
@@ -512,7 +516,7 @@ function module.unload()
 	module:log("info", "Unloading module");
 	-- cleanup some settings, reloading this module can cause process_smacks_stanza() to stop working otherwise
 	for user, _ in pairs(host_sessions) do
-		for sessionid, session in pairs(host_sessions[user].sessions) do
+		for _, session in pairs(host_sessions[user].sessions) do
 			if session.awaiting_push_timer then session.awaiting_push_timer:stop(); end
 			session.awaiting_push_timer = nil;
 			session.first_hibernated_push = nil;
