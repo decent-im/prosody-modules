@@ -7,7 +7,7 @@ local max_subscribers = module:get_option_number("muc_rai_max_subscribers", 1024
 local muc_affiliation_store = module:open_store("config", "map");
 local muc_archive = module:open_store("muc_log", "archive");
 
-local xmlns_rai = "xmpp:prosody.im/protocol/rai";
+local xmlns_rai = "urn:xmpp:rai:0";
 
 local muc_markers = module:depends("muc_markers");
 
@@ -188,7 +188,7 @@ end
 
 module:hook("muc-occupant-joined", function(event)
 	local room_jid, user_jid = event.room.jid, event.stanza.attr.from;
-	local ok, err = unsubscribe_room(user_jid, room_jid);
+	local ok, _ = unsubscribe_room(user_jid, room_jid);
 	if ok then
 		module:log("debug", "Unsubscribed %s to %s Reason: muc-occupant-joined", user_jid, room_jid)
 	end
@@ -196,7 +196,7 @@ end);
 
 module:hook("muc-occupant-left", function(event)
 	local room_jid, user_jid = event.room.jid, event.stanza.attr.from;
-	local ok, err = subscribe_room(user_jid, room_jid);
+	local ok, _ = subscribe_room(user_jid, room_jid);
 	if ok then
 		module:log("debug", "Subscribed %s to %s Reason: muc-occupant-left", user_jid, room_jid)
 	end
@@ -245,4 +245,3 @@ module:hook("muc-broadcast-message", function (event)
 		notify_interested_users(room.jid);
 	end
 end, -1);
-
