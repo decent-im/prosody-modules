@@ -21,6 +21,7 @@ for priority, name in ipairs(marker_order) do
 end
 
 local marker_element_name = module:get_option_string("muc_marker_type", "displayed");
+local rewrite_id_attribute = module:get_option_boolean("muc_marker_rewrite_id", false);
 
 assert(marker_order[marker_element_name], "invalid marker name: "..marker_element_name);
 
@@ -50,8 +51,11 @@ module:hook("muc-broadcast-message", function (event)
 	-- We are not interested in stanzas that didn't get archived
 	if not archive_id then return; end
 
-	-- Add stanza id as id attribute
-	stanza.attr.id = archive_id;
+	if rewrite_id_attribute then
+		-- Add stanza id as id attribute
+		stanza.attr.id = archive_id;
+	end
+
 	-- Add markable element to request markers from clients
 	stanza:tag("markable", { xmlns = xmlns_markers }):up();
 end, -1);
