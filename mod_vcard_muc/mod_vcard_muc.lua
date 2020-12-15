@@ -39,11 +39,9 @@ local function get_photo_hash(room)
 
 end
 
-local function broadcast_presence(room_jid, to)
-	local room = get_room_from_jid(room_jid);
-
+local function broadcast_presence(room, to)
 	local photo_hash = get_photo_hash(room);
-	local presence_vcard = st.presence({to = to, from = room_jid})
+	local presence_vcard = st.presence({to = to, from = room.jid})
 		:tag("x", { xmlns = "vcard-temp:x:update" })
 			:tag("photo"):text(photo_hash):up();
 
@@ -81,7 +79,7 @@ local function handle_vcard(event)
 		if from_affiliation == "owner" then
 			if vcards:set(room_node, st.preserialize(stanza.tags[1])) then
 				session.send(st.reply(stanza):tag("vCard", { xmlns = "vcard-temp" }));
-				broadcast_presence(room_jid, nil)
+				broadcast_presence(room, nil)
 
 				room:broadcast_message(st.message({ from = room.jid, type = "groupchat" })
 					:tag("x", { xmlns = "http://jabber.org/protocol/muc#user" })
@@ -112,5 +110,5 @@ module:hook("muc-disco#info", function(event)
 end);
 
 module:hook("muc-occupant-session-new", function(event)
-	broadcast_presence(event.room.jid, event.jid);
+	broadcast_presence(event.room, event.jid);
 end)
