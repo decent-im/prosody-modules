@@ -9,6 +9,7 @@ local authorization_url = module:get_option("muc_http_auth_url", "")
 local enabled_for = module:get_option_set("muc_http_auth_enabled_for",  nil)
 local disabled_for = module:get_option_set("muc_http_auth_disabled_for",  nil)
 local insecure = module:get_option("muc_http_auth_insecure", false) --For development purposes
+local authorize_registration = module:get_option("muc_http_auth_authorize_registration", false)
 
 local function must_be_authorized(room_node)
 	-- If none of these is set, all rooms need authorization
@@ -76,5 +77,8 @@ local function handle_presence(event)
 	return;
 end
 
+if authorize_registration then
+	module:hook("muc-register-iq", handle_presence);
+end
 
 module:hook("muc-occupant-pre-join", handle_presence);
