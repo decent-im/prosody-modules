@@ -406,6 +406,20 @@ field_mappings = {
 
 };
 
+local byxmlname = {};
+for k, spec in pairs(field_mappings) do
+	if type(spec) == "table" then
+		spec.key = k;
+		if spec.xmlns and spec.tagname then
+			byxmlname["{" .. spec.xmlns .. "}" .. spec.tagname] = spec;
+		elseif spec.type == "name" then
+			byxmlname["{" .. spec.xmlns .. "}"] = spec;
+		end
+	elseif type(spec) == "string" then
+		byxmlname["{jabber:client}" .. k] = {key = k; type = spec};
+	end
+end
+
 local implied_kinds = {
 	disco = "iq",
 	items = "iq",
@@ -472,31 +486,25 @@ local function st2json(s)
 		return t;
 	end
 
-	for k, mapping in pairs(field_mappings) do
-		if mapping == "text_tag" then
-			t[k] = s:get_child_text(k);
+	for tag in s:children() do
+		local prefix = "{" .. (tag.attr.xmlns or "jabber:client") .. "}";
+		local mapping = byxmlname[prefix .. tag.name];
+		if not mapping then
+			mapping = byxmlname[prefix];
+		end
+
+		if not mapping then -- luacheck: ignore 542
+			-- pass
 		elseif mapping.type == "text_tag" then
-			t[k] = s:get_child_text(mapping.tagname, mapping.xmlns);
+			t[mapping.key] = tag:get_text();
 		elseif mapping.type == "name" then
-			local child = s:get_child(nil, mapping.xmlns);
-			if child then
-				t[k] = child.name;
-			end
+			t[mapping.key] = tag.name;
 		elseif mapping.type == "attr" then
-			local child = s:get_child(mapping.tagname, mapping.xmlns);
-			if child then
-				t[k] = child.attr[mapping.attr];
-			end
+			t[mapping.key] = tag.attr[mapping.attr];
 		elseif mapping.type == "bool_tag" then
-			if s:get_child(mapping.tagname, mapping.xmlns) then
-				t[k] = true;
-			end
+			t[mapping.key] = true;
 		elseif mapping.type == "func" and mapping.st2json then
-			local child = s:get_child(mapping.tagname, mapping.xmlns or k);
-			-- TODO handle err
-			if child then
-				t[k] = mapping.st2json(child);
-			end
+			t[mapping.key] = mapping.st2json(tag);
 		end
 	end
 
