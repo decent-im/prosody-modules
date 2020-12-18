@@ -12,9 +12,8 @@ local insecure = module:get_option("muc_http_auth_insecure", false) --For develo
 local authorize_registration = module:get_option("muc_http_auth_authorize_registration", false)
 
 local function must_be_authorized(room_node)
-	-- If none or both of these are set, all rooms need authorization
+	-- If none of these is set, all rooms need authorization
 	if not enabled_for and not disabled_for then return true; end
-	if enabled_for and disabled_for then return true; end
 
 	if enabled_for then return enabled_for:contains(room_node); end
 	if disabled_for then return not disabled_for:contains(room_node); end

@@ -52,7 +52,7 @@ This module can be enabled/disabled for specific rooms. Only one of the followin
 -- muc_http_auth_enabled_for = {"teaparty"}
 -- muc_http_auth_disabled_for = {"teaparty"}
 ```
-If none or both are found, all rooms in the MUC component will have this module enabled.
+If none is set, all rooms in the MUC component will have this module enabled.
 
 Note: Use the node part of the MUC jid for these lists. Example:  
 
