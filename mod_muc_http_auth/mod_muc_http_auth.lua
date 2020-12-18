@@ -11,6 +11,8 @@ local disabled_for = module:get_option_set("muc_http_auth_disabled_for",  nil)
 local insecure = module:get_option("muc_http_auth_insecure", false) --For development purposes
 local authorize_registration = module:get_option("muc_http_auth_authorize_registration", false)
 
+local verbs = {presence='join', iq='register'};
+
 local function must_be_authorized(room_node)
 	-- If none of these is set, all rooms need authorization
 	if not enabled_for and not disabled_for then return true; end
@@ -35,9 +37,7 @@ end
 
 local function handle_presence(event)
 	local stanza = event.stanza;
-	if stanza.name ~= "presence" or stanza.attr.type == "unavailable" then
-		return;
-	end
+	if stanza.name ~= "iq" and stanza.name ~= "presence" or stanza.attr.type == "unavailable" then return; end
 
 	local room, origin = event.room, event.origin;
 	if (not room) or (not origin) then return; end
@@ -50,15 +50,16 @@ local function handle_presence(event)
 	local result = wait_for(http.request(url, {method="GET", insecure=insecure}):next(handle_success, handle_error));
 	local response, err = result.response, result.err;
 
+	local verb = verbs[stanza.name];
 	if not (response and response.allowed) then
 		-- User is not authorized to join this room
 		err = (response or {}).err or err
-		module:log("debug", user_bare_jid .. " is not authorized to join " .. room.jid .. " Error: " .. tostring(err));
+		module:log("debug", user_bare_jid .. " is not authorized to " ..verb.. ": " .. room.jid .. " Error: " .. tostring(err));
 		origin.send(st.error_reply(stanza, "error", "not-authorized", nil, module.host));
 		return true;
 	end
 
-	module:log("debug", user_bare_jid .. " is authorized to join " .. room.jid);
+	module:log("debug", user_bare_jid .. " is authorized to " .. verb .. ": " .. room.jid);
 	return;
 end
 
