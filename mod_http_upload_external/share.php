@@ -113,6 +113,11 @@ if(array_key_exists('v', $_GET) === TRUE && $request_method === 'PUT') {
 	/* Close the streams */
 	fclose($incoming_data);
 	fclose($store_file);
+
+	// https://xmpp.org/extensions/xep-0363.html#upload
+	// A HTTP status Code of 201 means that the server is now ready to serve the file via the provided GET URL.
+	header('HTTP/1.0 201 Created');
+	exit;
 } else if($request_method === 'GET' || $request_method === 'HEAD') {
 	// Send file (using X-Sendfile would be nice here...)
 	if(file_exists($store_file_name)) {
