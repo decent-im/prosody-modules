@@ -1,6 +1,7 @@
 local jid = require "util.jid";
 local st = require "util.stanza";
 local datetime = require "util.datetime";
+local jid_resource = require "util.jid".resource;
 
 local notify_unaffiliated_users = module:get_option("muc_rmn_notify_unaffiliated_users", false)
 
@@ -50,7 +51,12 @@ end
 
 local function notify_mentioned_users(room, client_mentions, mention_stanza)
 	module:log("debug", "NOTIFYING FOR %s", room.jid)
-	for user_bare_jid in pairs(client_mentions) do
+	for mentioned_jid in pairs(client_mentions) do
+		local user_bare_jid = mentioned_jid;
+		if (string.match(mentioned_jid, room.jid)) then
+			local nick = jid_resource(mentioned_jid);
+			user_bare_jid = room:get_registered_jid(nick);
+		end
 		if is_eligible(user_bare_jid, room) then
 			send_single_notification(user_bare_jid, room.jid, mention_stanza);
 		end
