@@ -13,18 +13,6 @@ local forwarded_xmlns = "urn:xmpp:forward:0";
 local deplay_xmlns = "urn:xmpp:delay";
 
 
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-module:log("debug", "**************************************")
-
 -- Returns a set of rooms the user is affiliated to
 local function get_user_rooms(user_bare_jid)
 	return muc_affiliation_store:get_all(user_bare_jid);
@@ -92,16 +80,7 @@ local function get_mentions(stanza)
 	return has_mentions, client_mentions
 end
 
-if rawget(_G, "setfenv") == nil then
-	rawset(_G, "setfenv", false)
-end
-if rawget(_G, "getfenv") == nil then
-	rawset(_G, "getfenv", false)
-end
-
 module:hook("muc-broadcast-message", function (event)
-
-	require("mobdebug").start()
 	local room, stanza = event.room, event.stanza;
 	local body = stanza:get_child_text("body")
 	if not body or #body < 1 then return; end
