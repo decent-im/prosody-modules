@@ -7,7 +7,7 @@ local notify_unaffiliated_users = module:get_option("muc_rmn_notify_unaffiliated
 
 local muc_affiliation_store = module:open_store("config", "map");
 
-local rmn_xmlns = "urn:xmpp:rmn:0";
+local mmn_xmlns = "urn:xmpp:mmn:0";
 local reference_xmlns = "urn:xmpp:reference:0";
 local forwarded_xmlns = "urn:xmpp:forward:0";
 local deplay_xmlns = "urn:xmpp:delay";
@@ -40,7 +40,7 @@ end
 -- Send a single notification for a room, updating data structures as needed
 local function send_single_notification(user_bare_jid, room_jid, mention_stanza)
 	local notification = st.message({ to = user_bare_jid, from = module.host })
-		:tag("mentions", { xmlns = rmn_xmlns })
+		:tag("mentions", { xmlns = mmn_xmlns })
 		:tag("forwarded", {xmlns = forwarded_xmlns})
 		:tag("delay", {xmlns = deplay_xmlns, stamp = datetime.datetime()}):up()
 		:add_child(mention_stanza)
