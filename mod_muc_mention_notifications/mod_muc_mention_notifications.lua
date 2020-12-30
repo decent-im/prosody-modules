@@ -39,7 +39,7 @@ end
 
 -- Send a single notification for a room, updating data structures as needed
 local function send_single_notification(user_bare_jid, room_jid, mention_stanza)
-	local notification = st.message({ to = user_bare_jid, from = module.host })
+	local notification = st.message({ to = user_bare_jid, from = room_jid })
 		:tag("mentions", { xmlns = mmn_xmlns })
 		:tag("forwarded", {xmlns = forwarded_xmlns})
 		:tag("delay", {xmlns = deplay_xmlns, stamp = datetime.datetime()}):up()
