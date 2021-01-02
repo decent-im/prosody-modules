@@ -44,6 +44,36 @@ In 0.8 and older this can be changed with `pastebin_ports` (see below),
 or you can forward another external URL from your web server to Prosody,
 use `pastebin_url` to set that URL.
 
+# Discovery
+
+The line and character tresholds are advertised in
+[service discovery][xep-0030] like this:
+
+``` {.xml}
+<iq id="791d37e8-86d8-45df-adc2-9bcb17c45cb7" type="result" xml:lang="en" from="prosody@conference.prosody.im">
+  <query xmlns="http://jabber.org/protocol/disco#info">
+    <identity type="text" name="Prosŏdy IM Chatroom" category="conference"/>
+    <feature var="http://jabber.org/protocol/muc"/>
+    <feature var="https://modules.prosody.im/mod_pastebin"/>
+    <x xmlns="jabber:x:data" type="result">
+      <field type="hidden" var="FORM_TYPE">
+        <value>http://jabber.org/protocol/muc#roominfo</value>
+      </field>
+      <field label="Title" type="text-single" var="muc#roomconfig_roomname">
+        <value>Prosŏdy IM Chatroom</value>
+      </field>
+      <!-- etc... -->
+      <field type="text-single" var="{https://modules.prosody.im/mod_pastebin}max_lines">
+        <value>12</value>
+      </field>
+      <field type="text-single" var="{https://modules.prosody.im/mod_pastebin}max_characters">
+        <value>1584</value>
+      </field>
+    </x>
+  </query>
+</iq>
+```
+
 # Configuration
 
   Option                    Description
