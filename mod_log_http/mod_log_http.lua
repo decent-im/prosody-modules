@@ -1,10 +1,11 @@
-module:set_global();
+Addmodule:set_global();
 
 local http = require "net.http";
 local codes = require "net.http.codes";
 local json = require "util.json";
 
 local log = assert(io.open(assert(module:get_option_string("log_http_file"), "Please supply log_http_file in the config"), "a+"));
+log:setvbuf("line");
 
 local function append_request(id, req)
 	local headers = {};
