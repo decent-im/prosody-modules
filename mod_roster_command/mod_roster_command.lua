@@ -40,8 +40,10 @@ function subscribe(user_jid, contact_jid)
 		storagemanager.initialize_host(user_host);
 		usermanager.initialize_host(user_host);
 	end
-	-- Update user's roster to say subscription request is pending...
-	rostermanager.set_contact_pending_out(user_username, user_host, contact_jid);
+	-- Update user's roster to say subscription request is pending. Bare hosts (e.g. components) don't have rosters.
+	if user_username ~= nil then
+		rostermanager.set_contact_pending_out(user_username, user_host, contact_jid);
+	end
 	if hosts[contact_host] then
 		if contact_host ~= user_host and hosts[contact_host].users.name == "null" then
 			storagemanager.initialize_host(contact_host);
@@ -51,8 +53,10 @@ function subscribe(user_jid, contact_jid)
 		rostermanager.set_contact_pending_in(contact_username, contact_host, user_jid);
 		-- Update contact's roster to say subscription request approved...
 		rostermanager.subscribed(contact_username, contact_host, user_jid);
-		-- Update user's roster to say subscription request approved...
-		rostermanager.process_inbound_subscription_approval(user_username, user_host, contact_jid);
+		-- Update user's roster to say subscription request approved. Bare hosts (e.g. components) don't have rosters.
+		if user_username ~= nil then
+			rostermanager.process_inbound_subscription_approval(user_username, user_host, contact_jid);
+		end
 	end
 end
 
