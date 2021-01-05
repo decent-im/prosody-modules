@@ -21,7 +21,7 @@ The IQ requests are JAT-ed (JAT: Jabber Address Translation) so that when the
 implementing client answers the IQ request, it is sent back to the component,
 which reverts the translation and routes the reply back to the user.
 
-Let us assume that user@some-domain.exmaple sends a request. The
+Let us assume that user@some-domain.example sends a request. The
 proxy.domain.example component has the client_proxy module loaded and proxies to
 some-user@some-domain.example. some-user@some-domain.example has two resources,
 /a and /b.
