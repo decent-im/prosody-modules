@@ -10,6 +10,12 @@ local enabled_for = module:get_option_set("muc_http_auth_enabled_for",  nil)
 local disabled_for = module:get_option_set("muc_http_auth_disabled_for",  nil)
 local insecure = module:get_option("muc_http_auth_insecure", false) --For development purposes
 local authorize_registration = module:get_option("muc_http_auth_authorize_registration", false)
+local authorization_header = module:get_option("muc_http_auth_authorization_header", nil)
+
+local options = {method="GET", insecure=insecure}
+if authorization_header then
+	options.headers = {["Authorization"] = authorization_header};
+end
 
 local verbs = {presence='join', iq='register'};
 
@@ -47,7 +53,7 @@ local function handle_presence(event)
 	local user_bare_jid = jid_bare(stanza.attr.from);
 	local url = authorization_url .. "?userJID=" .. user_bare_jid .."&mucJID=" .. room.jid;
 
-	local result = wait_for(http.request(url, {method="GET", insecure=insecure}):next(handle_success, handle_error));
+	local result = wait_for(http.request(url, options):next(handle_success, handle_error));
 	local response, err = result.response, result.err;
 
 	local verb = verbs[stanza.name];

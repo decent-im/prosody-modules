@@ -45,6 +45,7 @@ modules_enabled = {
 |muc_http_auth_enabled_for| List of MUC names (node part) to enable this module for | nil |
 |muc_http_auth_disabled_for| List of MUC names (node part) to disable this module for | nil |
 |muc_http_auth_insecure| Disable certificate verification for request. Only intended for development of the external service. | false |
+|muc_http_auth_authorization_header| Value of the Authorization header if requested by the external HTTP service. Example: `Basic dXNlcm5hbWU6cGFzc3dvcmQ=`| nil |
 
 
 This module can be enabled/disabled for specific rooms. Only one of the following settings must be set.
