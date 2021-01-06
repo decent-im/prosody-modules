@@ -55,7 +55,7 @@ local function handle_presence(event)
 		-- User is not authorized to join this room
 		err = (response or {}).err or err
 		module:log("debug", user_bare_jid .. " is not authorized to " ..verb.. ": " .. room.jid .. " Error: " .. tostring(err));
-		origin.send(st.error_reply(stanza, "error", "not-authorized", nil, module.host));
+		origin.send(st.error_reply(stanza, "auth", "not-authorized", nil, module.host));
 		return true;
 	end
 
