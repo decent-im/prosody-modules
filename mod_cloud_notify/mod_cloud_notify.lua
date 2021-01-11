@@ -410,9 +410,7 @@ local function process_stanza_queue(queue, session, queue_type)
 end
 
 -- publish on unacked smacks message (use timer to send out push for all stanzas submitted in a row only once)
-local function process_smacks_stanza(event)
-	local session = event.origin;
-	local stanza = event.stanza;
+local function process_stanza(session, stanza)
 	if session.push_identifier then
 		session.log("debug", "adding new stanza to push_queue");
 		if not session.push_queue then session.push_queue = {}; end
@@ -420,18 +418,27 @@ local function process_smacks_stanza(event)
 		queue[#queue+1] = st.clone(stanza);
 		if #queue == 1 then		-- first stanza --> start timer
 			session.log("debug", "Invoking cloud handle_notify_request() for newly smacks queued stanza (in a moment)");
-			session.awaiting_push_timer = module:add_timer(1e-06, function ()
+			session.awaiting_push_timer = module:add_timer(1.0, function ()
 				session.log("debug", "Invoking cloud handle_notify_request() for newly smacks queued stanzas (now in timer)");
 				process_stanza_queue(session.push_queue, session, "push");
 				session.push_queue = {};		-- clean up queue after push
+				session.awaiting_push_timer = nil;
 			end);
 		end
-	else
+	end
+	return stanza;
+end
+
+local function process_smacks_stanza(event)
+	local session = event.origin;
+	local stanza = event.stanza;
+	if not session.push_identifier then
 		session.log("debug", "NOT invoking cloud handle_notify_request() for newly smacks queued stanza (session.push_identifier is not set: %s)",
 			session.push_identifier
 		);
+	else
+		process_stanza(session, stanza)
 	end
-	return stanza;
 end
 
 -- smacks hibernation is started
@@ -456,8 +463,12 @@ end
 local function ack_delayed(event)
 	local session = event.origin;
 	local queue = event.queue;
-	-- process unacked stanzas (handle_notify_request() will only send push requests for new stanzas)
-	process_stanza_queue(queue, session, "smacks");
+	if not session.push_identifier then return; end
+	for i=1, #queue do
+		local stanza = queue[i];
+		-- process unacked stanzas (handle_notify_request() will only send push requests for new stanzas)
+		process_stanza(session, stanza);
+	end
 end
 
 -- archive message added
