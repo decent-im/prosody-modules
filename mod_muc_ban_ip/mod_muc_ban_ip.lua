@@ -48,7 +48,7 @@ local function check_for_ban(event)
 	local to = jid_bare(stanza.attr.to);
 	if ip_bans[ip] and ip_bans[ip][to] then
 		(origin.log or module._log)("debug", "IP banned: %s is banned from %s", ip, to)
-		if stanza.attr.type != "error" then
+		if stanza.attr.type ~= "error" then
 			origin.send(st.error_reply(stanza, "auth", "forbidden")
 				:tag("x", { xmlns = xmlns_muc_user })
 					:tag("status", { code = '301' }));
