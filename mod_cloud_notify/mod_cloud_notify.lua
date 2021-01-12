@@ -189,6 +189,12 @@ local function push_enable(event)
 		options = publish_options and st.preserialize(publish_options);
 		timestamp = os_time();
 	};
+	local allow_registration = module:fire_event("cloud_notify/registration", {
+		origin = origin, stanza = stanza, push_info = push_service;
+	});
+	if allow_registration == false then
+		return true; -- Assume error reply already sent
+	end
 	push_store:set_identifier(origin.username, push_identifier, push_service);
 	local ok = push_store:flush_to_disk(origin.username);
 	if not ok then
@@ -347,16 +353,28 @@ local function handle_notify_request(stanza, node, user_push_services, log_push_
 				node, module.host, push_info.jid, tostring(push_info.node)
 			);
 			-- module:log("debug", "PUSH STANZA: %s", tostring(push_publish));
-			-- handle push errors for this node
-			if push_errors[push_identifier] == nil then
-				push_errors[push_identifier] = 0;
+			local push_event = {
+				notification_stanza = push_publish;
+				original_stanza = stanza;
+				node = node;
+				push_info = push_info;
+				push_summary = form_data;
+			};
+
+			if module:fire_event("cloud_notify/push", push_event) then
+				module:log("debug", "Push was blocked by event handler: %s", push_event.reason or "Unknown reason");
+			else
+				-- handle push errors for this node
+				if push_errors[push_identifier] == nil then
+					push_errors[push_identifier] = 0;
+				end
+				module:hook("iq-error/host/"..stanza_id, handle_push_error);
+				module:hook("iq-result/host/"..stanza_id, handle_push_success);
+				id2node[stanza_id] = node;
+				id2identifier[stanza_id] = push_identifier;
+				module:send(push_publish);
+				pushes = pushes + 1;
 			end
-			module:hook("iq-error/host/"..stanza_id, handle_push_error);
-			module:hook("iq-result/host/"..stanza_id, handle_push_success);
-			id2node[stanza_id] = node;
-			id2identifier[stanza_id] = push_identifier;
-			module:send(push_publish);
-			pushes = pushes + 1;
 		end
 	end
 	return pushes;
