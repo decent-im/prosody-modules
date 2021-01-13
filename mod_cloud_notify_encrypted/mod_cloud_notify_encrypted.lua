@@ -18,7 +18,7 @@ end
 module:hook("account-disco-info", account_disco_info);
 
 function handle_register(event)
-	local encrypt = event.stanza:get_child("encrypt", xmlns_push_encrypt);
+	local encrypt = event.stanza:get_child("enable", xmlns_push):get_child("encrypt", xmlns_push_encrypt);
 	if not encrypt then return; end
 
 	local algorithm = encrypt.attr.alg;
