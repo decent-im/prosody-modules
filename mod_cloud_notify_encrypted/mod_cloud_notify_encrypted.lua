@@ -94,15 +94,10 @@ function handle_push(event)
 	local encrypted_payload = base64.encode(ciphers.new("AES-128-GCM"):encrypt(key_binary, iv):final(push_json)..string.rep("\0", 16));
 	local encrypted_element = st.stanza("encrypted", { xmlns = xmlns_push_encrypt, iv = base64.encode(iv) })
 		:text(encrypted_payload);
-	-- Replace the unencrypted notification with the encrypted one
-	event.notification_stanza
-		:get_child("pubsub", "http://jabber.org/protocol/pubsub")
-		:get_child("publish")
-		:get_child("item")
-		:remove_children("notification", xmlns_push)
-		:tag("notification", { xmlns = xmlns_push })
-			:add_child(encrypted_element)
-			:up();
+	-- Replace the unencrypted notification data with the encrypted one
+	event.notification_payload
+		:remove_children("x", "jabber:x:data")
+		:add_child(encrypted_element);
 end
 
 module:hook("cloud_notify/registration", handle_register);
