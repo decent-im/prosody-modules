@@ -58,8 +58,9 @@ function handle_push(event)
 	local original_stanza = event.original_stanza;
 
 	local push_payload = {
-		unread = push_summary["message-count"];
-		sender = push_summary["last-message-sender"];
+		unread = tonumber(push_summary["message-count"]) or 1;
+		sender = jid.bare(original_stanza.attr.from);
+		message = body;
 	};
 
 	if original_stanza.name == "message" then
@@ -84,7 +85,9 @@ function handle_push(event)
 	local key_binary = base64.decode(encryption.key_base64);
 	local push_json = json.encode(push_payload);
 
-	local encrypted_payload = ciphers.new("AES-128-GCM"):encrypt(key_binary, iv):final(push_json);
+	-- FIXME: luaossl does not expose the EVP_CTRL_GCM_GET_TAG API, so we append 16 NUL bytes
+	-- Siskin does not validate the tag anyway.
+	local encrypted_payload = base64.encode(ciphers.new("AES-128-GCM"):encrypt(key_binary, iv):final(push_json)..string.rep("\0", 16));
 	local encrypted_element = st.stanza("encrypted", { xmlns = xmlns_push_encrypt, iv = base64.encode(iv) })
 		:text(encrypted_payload);
 	-- Replace the unencrypted notification with the encrypted one
@@ -93,7 +96,9 @@ function handle_push(event)
 		:get_child("publish")
 		:get_child("item")
 		:remove_children("notification", xmlns_push)
-		:add_child(encrypted_element);
+		:tag("notification", { xmlns = xmlns_push })
+			:add_child(encrypted_element)
+			:up();
 end
 
 module:hook("cloud_notify/registration", handle_register);
