@@ -359,6 +359,7 @@ local function handle_notify_request(stanza, node, user_push_services, log_push_
 				node = node;
 				push_info = push_info;
 				push_summary = form_data;
+				important = not not form_data["last-message-body"];
 			};
 
 			if module:fire_event("cloud_notify/push", push_event) then
