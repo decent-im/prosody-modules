@@ -323,11 +323,7 @@ local function handle_notify_request(stanza, node, user_push_services, log_push_
 		if send_push then
 			-- construct push stanza
 			local stanza_id = hashes.sha256(random.bytes(8), true);
-			local push_publish = st.iq({ to = push_info.jid, from = module.host, type = "set", id = stanza_id })
-				:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
-					:tag("publish", { node = push_info.node })
-						:tag("item")
-							:tag("notification", { xmlns = xmlns_push });
+			local push_notification_payload = st.stanza("notification", { xmlns = xmlns_push });
 			local form_data = {
 				-- hardcode to 1 because other numbers are just meaningless (the XEP does not specify *what exactly* to count)
 				["message-count"] = "1";
@@ -340,10 +336,16 @@ local function handle_notify_request(stanza, node, user_push_services, log_push_
 			elseif stanza and dummy_body and is_important(stanza) then
 				form_data["last-message-body"] = tostring(dummy_body);
 			end
-			push_publish:add_child(push_form:form(form_data));
-			push_publish:up(); -- / notification
-			push_publish:up(); -- / publish
-			push_publish:up(); -- / pubsub
+
+			local push_publish = st.iq({ to = push_info.jid, from = module.host, type = "set", id = stanza_id })
+				:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
+					:tag("publish", { node = push_info.node })
+						:tag("item")
+							:add_child(push_notification_payload)
+							:add_child(push_form:form(form_data))
+						:up()
+					:up();
+
 			if push_info.options then
 				push_publish:tag("publish-options"):add_child(st.deserialize(push_info.options));
 			end
@@ -355,6 +357,7 @@ local function handle_notify_request(stanza, node, user_push_services, log_push_
 			-- module:log("debug", "PUSH STANZA: %s", tostring(push_publish));
 			local push_event = {
 				notification_stanza = push_publish;
+				notification_payload = push_notification_payload;
 				original_stanza = stanza;
 				node = node;
 				push_info = push_info;
