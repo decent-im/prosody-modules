@@ -56,6 +56,10 @@ function handle_push(event)
 	local push_summary = event.push_summary;
 
 	local original_stanza = event.original_stanza;
+	local body = original_stanza:get_child_text("body");
+	if #body > 255 then
+		body = body:sub(1, 255);
+	end
 
 	local push_payload = {
 		unread = tonumber(push_summary["message-count"]) or 1;
