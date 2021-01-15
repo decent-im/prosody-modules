@@ -21,6 +21,7 @@ for priority, name in ipairs(marker_order) do
 end
 
 local marker_element_name = module:get_option_string("muc_marker_type", "displayed");
+local marker_summary_on_join = module:get_option_string("muc_marker_summary_on_join", true);
 local rewrite_id_attribute = module:get_option_boolean("muc_marker_rewrite_id", false);
 
 assert(marker_order[marker_element_name], "invalid marker name: "..marker_element_name);
@@ -96,6 +97,9 @@ end
 -- Synthesize markers
 if muc_marker_map_store.get_all then
 module:hook("muc-occupant-session-new", function (event)
+	if  not marker_summary_on_join then
+		return;
+	end
 	local room, to = event.room, event.stanza.attr.from;
 	local markers = muc_marker_map_store:get_all(room.jid);
 	if not markers then return end

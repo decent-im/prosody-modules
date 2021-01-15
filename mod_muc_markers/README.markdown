@@ -26,9 +26,11 @@ modules_enabled = {
 
 ## Settings
 
-| Name            | Description                                                  | Default    |
-|-----------------|--------------------------------------------------------------|------------|
-| muc_marker_type | The type of marker to track (displayed/received/acknowledged)| "displayed"|
+| Name                       | Description                                                                          | Default     |
+|----------------------------|--------------------------------------------------------------------------------------|-------------|
+| muc_marker_summary_on_join | Whether a summary of all the latest markers should be sent to someone entering a MUC | "displayed" |
+| muc_marker_type            | The type of marker to track (displayed/received/acknowledged)                        | "displayed" |
+
 
 # Developers
 
