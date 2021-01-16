@@ -14,6 +14,15 @@ local tokens = module:depends("tokenauth");
 
 local clients = module:open_store("oauth2_clients", "map");
 
+local function filter_scopes(request_jid, requested_scope_string) --luacheck: ignore 212/requested_scope_string
+	-- We currently don't really support scopes, so override
+	-- to whatever real permissions the user has
+	if usermanager.is_admin(request_jid, module.host) then
+		return "prosody:scope:admin";
+	end
+	return "prosody:scope:default";
+end
+
 local function code_expired(code)
 	return os.difftime(os.time(), code.issued) > 120;
 end
@@ -47,6 +56,7 @@ local function new_access_token(token_jid, scope, ttl)
 		token_type = "bearer";
 		access_token = token;
 		expires_in = ttl;
+		scope = scope;
 		-- TODO: include refresh_token when implemented
 	};
 end
@@ -58,25 +68,22 @@ function grant_type_handlers.password(params)
 	local request_jid = assert(params.username, oauth_error("invalid_request", "missing 'username' (JID)"));
 	local request_password = assert(params.password, oauth_error("invalid_request", "missing 'password'"));
 	local request_username, request_host, request_resource = jid.prepped_split(request_jid);
-	if params.scope and params.scope ~= "" then
-		return oauth_error("invalid_scope", "unknown scope requested");
-	end
+
 	if not (request_username and request_host) or request_host ~= module.host then
 		return oauth_error("invalid_request", "invalid JID");
 	end
-	if usermanager.test_password(request_username, request_host, request_password) then
-		local granted_jid = jid.join(request_username, request_host, request_resource);
-		return json.encode(new_access_token(granted_jid, nil, nil));
+	if not usermanager.test_password(request_username, request_host, request_password) then
+		return oauth_error("invalid_grant", "incorrect credentials");
 	end
-	return oauth_error("invalid_grant", "incorrect credentials");
+
+	local granted_jid = jid.join(request_username, request_host, request_resource);
+	local granted_scopes = filter_scopes(granted_jid, params.scope);
+	return json.encode(new_access_token(granted_jid, granted_scopes, nil));
 end
 
 function response_type_handlers.code(params, granted_jid)
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
 	if not params.redirect_uri then return oauth_error("invalid_request", "missing 'redirect_uri'"); end
-	if params.scope and params.scope ~= "" then
-		return oauth_error("invalid_scope", "unknown scope requested");
-	end
 
 	local client_owner, client_host, client_id = jid.prepped_split(params.client_id);
 	if client_host ~= module.host then
@@ -88,8 +95,14 @@ function response_type_handlers.code(params, granted_jid)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
+	local granted_scopes = filter_scopes(granted_jid, params.scope);
+
 	local code = uuid.generate();
-	assert(codes:set(params.client_id .. "#" .. code, {issued = os.time(); granted_jid = granted_jid}));
+	assert(codes:set(params.client_id .. "#" .. code, {
+		issued = os.time();
+		granted_jid = granted_jid;
+		granted_scopes = granted_scopes;
+	}));
 
 	local redirect = url.parse(params.redirect_uri);
 	local query = http.formdecode(redirect.query or "");
@@ -141,7 +154,7 @@ function grant_type_handlers.authorization_code(params)
 	end
 	assert(codes:set(client_owner, client_id .. "#" .. params.code, nil));
 
-	return json.encode(new_access_token(code.granted_jid, nil, nil));
+	return json.encode(new_access_token(code.granted_jid, code.granted_scopes, nil));
 end
 
 local function check_credentials(request)
