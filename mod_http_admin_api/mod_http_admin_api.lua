@@ -1,9 +1,12 @@
+local usermanager = require "core.usermanager";
+
 local json = require "util.json";
 
 module:depends("http");
 
 local invites = module:depends("invites");
 local tokens = module:depends("tokenauth");
+local mod_pep = module:depends("pep");
 
 local json_content_type = "application/json";
 
@@ -102,11 +105,61 @@ function delete_invite(event, invite_id) --luacheck: ignore 212/event
 	return 200;
 end
 
+local function get_user_info(username)
+	if not usermanager.user_exists(username, module.host) then
+		return nil;
+	end
+	local display_name;
+	do
+		local pep_service = mod_pep.get_pep_service(username);
+		local ok, _, nick_item = pep_service:get_last_item("http://jabber.org/protocol/nick", true);
+		if ok and nick_item then
+			display_name = nick_item:get_child_text("nick", "http://jabber.org/protocol/nick");
+		end
+	end
+
+	return {
+		username = username;
+		display_name = display_name;
+	};
+end
+
+function list_users(event)
+	local user_list = {};
+	for username in usermanager.users(module.host) do
+		table.insert(user_list, get_user_info(username));
+	end
+
+	event.response.headers["Content-Type"] = json_content_type;
+	return json.encode(user_list);
+end
+
+function get_user_by_name(event, username)
+	local user_info = get_user_info(username);
+	if not user_info then
+		return 404;
+	end
+
+	event.response.headers["Content-Type"] = json_content_type;
+	return json.encode(user_info);
+end
+
+function delete_user(event, username) --luacheck: ignore 212/event
+	if not usermanager.delete_user(username, module.host) then
+		return 404;
+	end
+	return 200;
+end
+
 module:provides("http", {
 	route = check_auth {
 		["GET /invites"] = list_invites;
 		["GET /invites/*"] = get_invite_by_id;
 		["PUT /invites"] = create_invite;
 		["DELETE /invites/*"] = delete_invite;
+
+		["GET /users"] = list_users;
+		["GET /users/*"] = get_user_by_name;
+		["DELETE /users/*"] = delete_user;
 	};
 });
