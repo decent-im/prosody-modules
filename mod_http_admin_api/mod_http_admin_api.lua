@@ -95,7 +95,32 @@ function get_invite_by_id(event, invite_id)
 end
 
 function create_invite(event)
-	local invite = invites.create_account(nil, { source = "admin_api/"..event.session.username });
+	local invite_options;
+
+	local request = event.request;
+	if request.body and #request.body > 0 then
+		if request.headers.content_type ~= json_content_type then
+			module:log("warn", "Invalid content type");
+			return 400;
+		end
+		invite_options = json.decode(event.request.body);
+		if not invite_options then
+			module:log("warn", "Invalid JSON");
+			return 400;
+		end
+	end
+
+	local invite;
+	if invite_options and invite_options.reusable then
+		invite = invites.create_group(invite_options.group, invite_options.ttl, {
+			source = "admin_api/"..event.session.username;
+		});
+	else
+		invite = invites.create_account(nil, {
+			source = "admin_api/"..event.session.username;
+			groups = { invite_options.group };
+		});
+	end
 	if not invite then
 		return 500;
 	end
