@@ -66,6 +66,7 @@ local function token_info_to_invite_info(token_info)
 		reusable = token_info.reusable;
 		inviter = token_info.inviter;
 		jid = token_info.jid;
+		uri = token_info.uri;
 		landing_page = token_info.landing_page;
 		created_at = token_info.created_at;
 		expires = token_info.expires;
