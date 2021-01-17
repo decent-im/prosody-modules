@@ -81,7 +81,7 @@ function list_invites(event)
 	end);
 
 	event.response.headers["Content-Type"] = json_content_type;
-	return json.encode(invites_list);
+	return json.encode_array(invites_list);
 end
 
 function get_invite_by_id(event, invite_id)
@@ -137,7 +137,7 @@ function list_users(event)
 	end
 
 	event.response.headers["Content-Type"] = json_content_type;
-	return json.encode(user_list);
+	return json.encode_array(user_list);
 end
 
 function get_user_by_name(event, username)
