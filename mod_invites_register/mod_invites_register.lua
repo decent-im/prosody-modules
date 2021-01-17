@@ -143,6 +143,14 @@ module:hook("user-registered", function (event)
 		if roles then
 			module:open_store("roles"):set(contact_username, roles);
 		end
+
+		local groups = validated_invite.additional_data.groups;
+		if groups then
+			module:log("Adding to groups...");
+			for _, group in ipairs(groups) do
+				module:open_store("groups", "map"):set(group, contact_username, true);
+			end
+		end
 	end
 end);
 
