@@ -4,7 +4,7 @@ local url = require "socket.url";
 local jid_node = require "util.jid".node;
 local jid_split = require "util.jid".split;
 
-local invite_ttl = module:get_option_number("invite_expiry", 86400 * 7);
+local default_ttl = module:get_option_number("invite_expiry", 86400 * 7);
 
 local token_storage;
 if prosody.process_type == "prosody" or prosody.shutdown then
@@ -19,11 +19,11 @@ local function get_uri(action, jid, token, params) --> string
 		});
 end
 
-local function create_invite(invite_action, invite_jid, allow_registration, additional_data)
+local function create_invite(invite_action, invite_jid, allow_registration, additional_data, ttl, reusable)
 	local token = id.medium();
 
 	local created_at = os.time();
-	local expires = created_at + invite_ttl;
+	local expires = created_at + (ttl or default_ttl);
 
 	local invite_params = (invite_action == "roster" and allow_registration) and "ibr=y" or nil;
 
@@ -39,6 +39,8 @@ local function create_invite(invite_action, invite_jid, allow_registration, addi
 
 		created_at = created_at;
 		expires = expires;
+
+		reusable = reusable;
 	};
 
 	module:fire_event("invite-created", invite);
@@ -117,6 +119,10 @@ local valid_invite_methods = {};
 local valid_invite_mt = { __index = valid_invite_methods };
 
 function valid_invite_methods:use()
+	if self.reusable then
+		return true;
+	end
+
 	if self.username then
 		-- Also remove the contact invite if present, on the
 		-- assumption that they now have a mutual subscription
@@ -170,6 +176,7 @@ function get(token, username)
 		type = token_info and token_info.type or "roster";
 		uri = token_info and token_info.uri or get_uri("roster", username.."@"..module.host, token);
 		additional_data = token_info and token_info.additional_data or nil;
+		reusable = token_info.reusable;
 	}, valid_invite_mt);
 end
 
