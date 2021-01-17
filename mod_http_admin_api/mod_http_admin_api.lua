@@ -8,6 +8,7 @@ local invites = module:depends("invites");
 local tokens = module:depends("tokenauth");
 local mod_pep = module:depends("pep");
 
+local group_store = module:open_store("groups");
 local group_memberships = module:open_store("groups", "map");
 
 local json_content_type = "application/json";
@@ -196,6 +197,74 @@ function delete_user(event, username) --luacheck: ignore 212/event
 	return 200;
 end
 
+function list_groups(event)
+	local group_list = {};
+	for group_id in group_store:users() do
+		table.insert(group_list, {
+			id = group_id;
+			name = group_id;
+		});
+	end
+
+	event.response.headers["Content-Type"] = json_content_type;
+	return json.encode_array(group_list);
+end
+
+function get_group_by_id(event, group_id)
+	local property;
+	do
+		local id, sub_path = group_id:match("^[^/]+/(%w+)$");
+		if id then
+			group_id = id;
+			property = sub_path;
+		end
+	end
+
+	local group = group_store:get(group_id);
+	if not group then
+		return 404;
+	end
+
+	event.response.headers["Content-Type"] = json_content_type;
+
+	if property == "members" then
+		return json.encode(group);
+	end
+
+	return json.encode({
+		id = group_id;
+		name = group_id;
+	});
+end
+
+function create_group(event)
+	local request = event.request;
+	if request.headers.content_type ~= json_content_type
+	or (not request.body or #request.body == 0) then
+		return 400;
+	end
+	local group = json.decode(event.request.body);
+	if not group then
+		return 400;
+	end
+
+	local ok = group_store:set(group.id, {});
+	if not ok then
+		return 500;
+	end
+	return 200;
+end
+
+function delete_group(event, group_id) --luacheck: ignore 212/event
+	if not group_id then
+		return 400;
+	end
+	if not group_store:set(group_id, nil) then
+		return 500;
+	end
+	return 200;
+end
+
 module:provides("http", {
 	route = check_auth {
 		["GET /invites"] = list_invites;
@@ -206,5 +275,10 @@ module:provides("http", {
 		["GET /users"] = list_users;
 		["GET /users/*"] = get_user_by_name;
 		["DELETE /users/*"] = delete_user;
+
+		["GET /groups"] = list_groups;
+		["GET /groups/*"] = get_group_by_id;
+		["PUT /groups"] = create_group;
+		["DELETE /groups/*"] = delete_group;
 	};
 });
