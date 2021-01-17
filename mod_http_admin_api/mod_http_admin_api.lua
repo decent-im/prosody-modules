@@ -54,14 +54,20 @@ function check_auth(routes)
 end
 
 local function token_info_to_invite_info(token_info)
+	local additional_data = token_info.additional_data;
+	local groups = additional_data and additional_data.groups or nil;
+	local source = additional_data and additional_data.source or nil;
 	return {
 		id = token_info.token;
 		type = token_info.type;
+		reusable = token_info.reusable;
 		inviter = token_info.inviter;
 		jid = token_info.jid;
 		landing_page = token_info.landing_page;
 		created_at = token_info.created_at;
 		expires = token_info.expires;
+		groups = groups;
+		source = source;
 	};
 end
 
