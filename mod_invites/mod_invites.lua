@@ -1,4 +1,5 @@
 local id = require "util.id";
+local it = require "util.iterators";
 local url = require "socket.url";
 local jid_node = require "util.jid".node;
 local jid_split = require "util.jid".split;
@@ -78,6 +79,39 @@ function create_contact(username, allow_registration, additional_data) --luachec
 	return create_invite("roster", username.."@"..module.host, allow_registration, additional_data);
 end
 
+-- Iterates pending (non-expired, unused) invites that allow registration
+function pending_account_invites() --luacheck: ignore 131/pending_account_invites
+	local store = module:open_store("invite_token");
+	local now = os.time();
+	local function is_valid_invite(_, invite)
+		return invite.expires > now;
+	end
+	return it.filter(is_valid_invite, pairs(store:get(nil) or {}));
+end
+
+function get_account_invite_info(token)
+	if not token then
+		return nil, "no-token";
+	end
+
+	-- Fetch from host store (account invite)
+	local token_info = token_storage:get(nil, token);
+	if not token_info then
+		return nil, "token-invalid";
+	elseif os.time() > token_info.expires then
+		return nil, "token-expired";
+	end
+
+	return token_info;
+end
+
+function delete_account_invite(token)
+	if not token then
+		return nil, "no-token";
+	end
+
+	return token_storage:set(nil, token, nil);
+end
 
 local valid_invite_methods = {};
 local valid_invite_mt = { __index = valid_invite_methods };
