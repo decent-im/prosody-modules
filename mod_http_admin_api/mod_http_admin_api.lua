@@ -8,6 +8,8 @@ local invites = module:depends("invites");
 local tokens = module:depends("tokenauth");
 local mod_pep = module:depends("pep");
 
+local group_memberships = module:open_store("groups", "map");
+
 local json_content_type = "application/json";
 
 local www_authenticate_header = ("Bearer realm=%q"):format(module.host.."/"..module.name);
@@ -149,9 +151,21 @@ local function get_user_info(username)
 		end
 	end
 
+	local groups;
+	do
+		local group_set = group_memberships:get_all(username);
+		if group_set and next(group_set) then
+			groups = {};
+			for group_id in pairs(group_set) do
+				table.insert(groups, group_id);
+			end
+		end
+	end
+
 	return {
 		username = username;
 		display_name = display_name;
+		groups = groups;
 	};
 end
 
