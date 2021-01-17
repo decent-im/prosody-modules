@@ -89,7 +89,7 @@ function pending_account_invites() --luacheck: ignore 131/pending_account_invite
 	return it.filter(is_valid_invite, pairs(store:get(nil) or {}));
 end
 
-function get_account_invite_info(token)
+function get_account_invite_info(token) --luacheck: ignore 131/get_account_invite_info
 	if not token then
 		return nil, "no-token";
 	end
@@ -105,7 +105,7 @@ function get_account_invite_info(token)
 	return token_info;
 end
 
-function delete_account_invite(token)
+function delete_account_invite(token) --luacheck: ignore 131/delete_account_invite
 	if not token then
 		return nil, "no-token";
 	end
