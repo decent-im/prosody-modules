@@ -81,6 +81,21 @@ function create_contact(username, allow_registration, additional_data) --luachec
 	return create_invite("roster", username.."@"..module.host, allow_registration, additional_data);
 end
 
+-- Create invitation to register an account and join a user group
+-- If explicit ttl is passed, invite is valid for multiple signups
+-- during that time period
+function create_group(group_id, ttl, additional_data) --luacheck: ignore 131/create_group
+	local merged_additional_data = {
+		groups = { group_id };
+	};
+	if merged_additional_data then
+		for k, v in pairs(additional_data) do
+			merged_additional_data[k] = v;
+		end
+	end
+	return create_invite("register", module.host, true, merged_additional_data, ttl, not not ttl);
+end
+
 -- Iterates pending (non-expired, unused) invites that allow registration
 function pending_account_invites() --luacheck: ignore 131/pending_account_invites
 	local store = module:open_store("invite_token");
