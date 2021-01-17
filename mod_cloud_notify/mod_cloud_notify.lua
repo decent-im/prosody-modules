@@ -438,7 +438,7 @@ local function process_stanza(session, stanza)
 		if not session.push_queue then session.push_queue = {}; end
 		local queue = session.push_queue;
 		queue[#queue+1] = st.clone(stanza);
-		if #queue == 1 then		-- first stanza --> start timer
+		if not session.awaiting_push_timer then		-- timer not already running --> start new timer
 			session.log("debug", "Invoking cloud handle_notify_request() for newly smacks queued stanza (in a moment)");
 			session.awaiting_push_timer = module:add_timer(1.0, function ()
 				session.log("debug", "Invoking cloud handle_notify_request() for newly smacks queued stanzas (now in timer)");
