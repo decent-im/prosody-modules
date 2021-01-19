@@ -272,7 +272,7 @@ module:provides("http", {
 	route = check_auth {
 		["GET /invites"] = list_invites;
 		["GET /invites/*"] = get_invite_by_id;
-		["PUT /invites"] = create_invite;
+		["POST /invites"] = create_invite;
 		["DELETE /invites/*"] = delete_invite;
 
 		["GET /users"] = list_users;
@@ -281,7 +281,7 @@ module:provides("http", {
 
 		["GET /groups"] = list_groups;
 		["GET /groups/*"] = get_group_by_id;
-		["PUT /groups"] = create_group;
+		["POST /groups"] = create_group;
 		["DELETE /groups/*"] = delete_group;
 	};
 });
