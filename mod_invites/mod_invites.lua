@@ -84,9 +84,9 @@ end
 -- Create invitation to register an account and join a user group
 -- If explicit ttl is passed, invite is valid for multiple signups
 -- during that time period
-function create_group(group_id, ttl, additional_data) --luacheck: ignore 131/create_group
+function create_group(group_ids, ttl, additional_data) --luacheck: ignore 131/create_group
 	local merged_additional_data = {
-		groups = { group_id };
+		groups = group_ids;
 	};
 	if merged_additional_data then
 		for k, v in pairs(additional_data) do

@@ -116,13 +116,13 @@ function create_invite(event)
 
 	local invite;
 	if invite_options and invite_options.reusable then
-		invite = invites.create_group(invite_options.group, invite_options.ttl, {
+		invite = invites.create_group(invite_options.groups, invite_options.ttl, {
 			source = "admin_api/"..event.session.username;
 		});
 	else
 		invite = invites.create_account(nil, {
 			source = "admin_api/"..event.session.username;
-			groups = { invite_options.group };
+			groups = invite_options.groups;
 		});
 	end
 	if not invite then
