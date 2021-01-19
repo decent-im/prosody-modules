@@ -63,7 +63,7 @@ local function token_info_to_invite_info(token_info)
 	return {
 		id = token_info.token;
 		type = token_info.type;
-		reusable = token_info.reusable;
+		reusable = not not token_info.reusable;
 		inviter = token_info.inviter;
 		jid = token_info.jid;
 		uri = token_info.uri;
