@@ -112,10 +112,12 @@ function create_invite(event)
 			module:log("warn", "Invalid JSON");
 			return 400;
 		end
+	else
+		invite_options = {};
 	end
 
 	local invite;
-	if invite_options and invite_options.reusable then
+	if invite_options.reusable then
 		invite = invites.create_group(invite_options.groups, invite_options.ttl, {
 			source = "admin_api/"..event.session.username;
 		});
