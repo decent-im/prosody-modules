@@ -255,7 +255,12 @@ function create_group(event)
 	if not ok then
 		return 500;
 	end
-	return 200;
+
+	event.response.headers["Content-Type"] = json_content_type;
+	return json.encode({
+		id = group.id or group.name;
+		name = group.name;
+	});
 end
 
 function delete_group(event, group_id) --luacheck: ignore 212/event
