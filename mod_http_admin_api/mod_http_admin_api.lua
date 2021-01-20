@@ -155,6 +155,13 @@ local function get_user_info(username)
 		end
 	end
 
+	return {
+		username = username;
+		display_name = display_name;
+	};
+end
+
+local function get_user_groups(username)
 	local groups;
 	do
 		local group_set = group_memberships:get_all(username);
@@ -165,12 +172,7 @@ local function get_user_info(username)
 			end
 		end
 	end
-
-	return {
-		username = username;
-		display_name = display_name;
-		groups = groups;
-	};
+	return groups;
 end
 
 function list_users(event)
@@ -184,6 +186,19 @@ function list_users(event)
 end
 
 function get_user_by_name(event, username)
+	local property
+	do
+		local name, sub_path = username:match("^([^/]+)/(%w+)$");
+		if name then
+			username = name;
+			property = sub_path;
+		end
+	end
+
+	if property == "groups" then
+		return json.encode(get_user_groups(username));
+	end
+
 	local user_info = get_user_info(username);
 	if not user_info then
 		return 404;
@@ -206,6 +221,7 @@ function list_groups(event)
 		table.insert(group_list, {
 			id = group_id;
 			name = group_id;
+			members = group_store:get(group_id);
 		});
 	end
 
@@ -214,15 +230,6 @@ function list_groups(event)
 end
 
 function get_group_by_id(event, group_id)
-	local property;
-	do
-		local id, sub_path = group_id:match("^[^/]+/(%w+)$");
-		if id then
-			group_id = id;
-			property = sub_path;
-		end
-	end
-
 	local group = group_store:get(group_id);
 	if not group then
 		return 404;
@@ -230,13 +237,10 @@ function get_group_by_id(event, group_id)
 
 	event.response.headers["Content-Type"] = json_content_type;
 
-	if property == "members" then
-		return json.encode(group);
-	end
-
 	return json.encode({
 		id = group_id;
 		name = group_id;
+		members = group;
 	});
 end
 
