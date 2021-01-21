@@ -22,7 +22,7 @@ local max_push_devices = module:get_option_number("push_max_devices", 5);
 local dummy_body = module:get_option_string("push_notification_important_body", "New Message!");
 
 local host_sessions = prosody.hosts[module.host].sessions;
-local push_errors = {};
+local push_errors = module:shared("push_errors");
 local id2node = {};
 local id2identifier = {};
 
