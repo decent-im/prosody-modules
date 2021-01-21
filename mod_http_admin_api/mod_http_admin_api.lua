@@ -202,6 +202,7 @@ end
 
 local function get_user_omemo_info(username)
 	local everything_valid = true;
+	local any_device = false;
 	local omemo_status = {};
 	local omemo_devices;
 	local pep_service = mod_pep.get_pep_service(username);
@@ -213,6 +214,7 @@ local function get_user_omemo_info(username)
 		if device_list then
 			omemo_devices = {};
 			for device_entry in device_list:childtags("device") do
+				any_device = true;
 				local device_info = {};
 				local device_id = tonumber(device_entry.attr.id or "");
 				if device_id then
@@ -256,7 +258,7 @@ local function get_user_omemo_info(username)
 			end
 		end
 	end
-	omemo_status.valid = everything_valid;
+	omemo_status.valid = everything_valid and any_device;
 	return {
 		status = omemo_status;
 		devices = omemo_devices;
