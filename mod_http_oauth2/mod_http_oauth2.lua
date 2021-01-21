@@ -157,7 +157,7 @@ function grant_type_handlers.authorization_code(params)
 	return json.encode(new_access_token(code.granted_jid, code.granted_scopes, nil));
 end
 
-local function check_credentials(request)
+local function check_credentials(request, allow_token)
 	local auth_type, auth_data = string.match(request.headers.authorization, "^(%S+)%s(.+)$");
 
 	if auth_type == "Basic" then
@@ -171,6 +171,12 @@ local function check_credentials(request)
 			return false;
 		end
 		return username;
+	elseif auth_type == "Bearer" and allow_token then
+		local token_info = tokens.get_token_info(auth_data);
+		if not token_info or not token_info.session or token_info.session.host ~= module.host then
+			return false;
+		end
+		return token_info.session.username;
 	end
 	return nil;
 end
@@ -244,11 +250,38 @@ local function handle_authorization_request(event)
 	return response_handler(params, jid.join(user, module.host));
 end
 
+local function handle_revocation_request(event)
+	local request, response = event.request, event.response;
+	if not request.headers.authorization then
+		response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
+		return 401;
+	elseif request.headers.content_type ~= "application/x-www-form-urlencoded"
+	or not request.body or request.body == "" then
+		return 400;
+	end
+	local user = check_credentials(request, true);
+	if not user then
+		return 401;
+	end
+
+	local form_data = http.formdecode(event.request.body);
+	if not form_data or not form_data.token then
+		return 400;
+	end
+	local ok, err = tokens.revoke_token(form_data.token);
+	if not ok then
+		module:log("warn", "Unable to revoke token: %s", tostring(err));
+		return 500;
+	end
+	return 200;
+end
+
 module:depends("http");
 module:provides("http", {
 	route = {
 		["POST /token"] = handle_token_grant;
 		["GET /authorize"] = handle_authorization_request;
+		["POST /revoke"] = handle_revocation_request;
 	};
 });
 
