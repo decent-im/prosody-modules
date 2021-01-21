@@ -270,6 +270,9 @@ local function get_user_debug_info(username)
 	-- Online sessions
 	do
 		local user_sessions = hosts[module.host].sessions[username];
+		if user_sessions then
+			user_sessions = user_sessions.sessions
+		end
 		local sessions = {};
 		if user_sessions then
 			for _, session in pairs(user_sessions) do
