@@ -10,6 +10,7 @@ local mod_pep = module:depends("pep");
 
 local group_store = module:open_store("groups");
 local group_memberships = module:open_store("groups", "map");
+local push_errors = module:shared("cloud_notify/push_errors");
 
 local json_content_type = "application/json";
 
@@ -161,6 +162,145 @@ local function get_user_info(username)
 	};
 end
 
+local function get_session_debug_info(session)
+	local info = {
+		full_jid = session.full_jid;
+		ip = session.ip;
+		since = math.floor(session.conntime);
+		status = {
+			connected = not not session.conn;
+			hibernating = not not session.hibernating;
+		};
+		features = {
+			carbons = not not session.want_carbons;
+			encrypted = not not session.secure;
+			acks = not not session.smacks;
+			resumption = not not session.resumption_token;
+			mobile_optimization = not not session.csi_counter;
+			push_notifications = not not session.push_identifier;
+			history = not not session.mam_requested;
+		};
+		queues = {};
+	};
+	-- CSI
+	if session.state then
+		info.status.active = session.state == "active";
+		info.queues.held_stanzas = session.csi_counter or 0;
+	end
+	-- Smacks queue
+	if session.last_requested_h and session.last_acknowledged_stanza then
+		info.queues.awaiting_acks = session.last_requested_h - session.last_acknowledged_stanza;
+	end
+	if session.push_identifier then
+		info.push_info = {
+			id = session.push_identifier;
+			wakeup_push_sent = session.first_hibernated_push;
+		};
+	end
+	return info;
+end
+
+local function get_user_omemo_info(username)
+	local everything_valid = true;
+	local omemo_status = {};
+	local omemo_devices;
+	local pep_service = mod_pep.get_pep_service(username);
+	if pep_service and pep_service.nodes then
+		local ok, _, device_list = pep_service:get_last_item("eu.siacs.conversations.axolotl.devicelist", true);
+		if ok and device_list then
+			device_list = device_list:get_child("list", "eu.siacs.conversations.axolotl");
+		end
+		if device_list then
+			omemo_devices = {};
+			for device_entry in device_list:childtags("device") do
+				local device_info = {};
+				local device_id = tonumber(device_entry.attr.id or "");
+				if device_id then
+					device_info.id = device_id;
+					local bundle_id = ("eu.siacs.conversations.axolotl.bundles:%d"):format(device_id);
+					local have_bundle, _, bundle = pep_service:get_last_item(bundle_id, true);
+					if have_bundle and bundle and bundle:get_child("bundle", "eu.siacs.conversations.axolotl") then
+						device_info.have_bundle = true;
+						local config_ok, bundle_config = pep_service:get_node_config(bundle_id, true);
+						if config_ok and bundle_config then
+							device_info.bundle_config = bundle_config;
+							if bundle_config.max_items == 1
+							and bundle_config.access_model == "open"
+							and bundle_config.persist_items == true
+							and bundle_config.publish_model == "publishers" then
+								device_info.valid = true;
+							end
+						end
+					end
+				end
+				if device_info.valid == nil then
+					device_info.valid = false;
+					everything_valid = false;
+				end
+				table.insert(omemo_devices, device_info);
+			end
+
+			local config_ok, list_config = pep_service:get_node_config("eu.siacs.conversations.axolotl.devicelist", true);
+			if config_ok and list_config then
+				omemo_status.config = list_config;
+				if list_config.max_items == 1
+				and list_config.access_model == "open"
+				and list_config.persist_items == true
+				and list_config.publish_model == "publishers" then
+					omemo_status.config_valid = true;
+				end
+			end
+			if omemo_status.config_valid == nil then
+				omemo_status.config_valid = false;
+				everything_valid = false;
+			end
+		end
+	end
+	omemo_status.valid = everything_valid;
+	return {
+		status = omemo_status;
+		devices = omemo_devices;
+	};
+end
+
+local function get_user_debug_info(username)
+	local debug_info = {
+		time = os.time();
+	};
+	-- Online sessions
+	do
+		local user_sessions = hosts[module.host].sessions[username];
+		local sessions = {};
+		if user_sessions then
+			for _, session in pairs(user_sessions) do
+				table.insert(sessions, get_session_debug_info(session));
+			end
+		end
+		debug_info.sessions = sessions;
+	end
+	-- Push registrations
+	do
+		local store = module:open_store("cloud_notify");
+		local services = store:get(username);
+		local push_registrations = {};
+		if services then
+			for identifier, push_info in pairs(services) do
+				push_registrations[identifier] = {
+					since = push_info.timestamp;
+					service = push_info.jid;
+					node = push_info.node;
+					error_count = push_errors[identifier] or 0;
+				};
+			end
+		end
+		debug_info.push_registrations = push_registrations;
+	end
+	-- OMEMO
+	debug_info.omemo = get_user_omemo_info(username);
+
+	return debug_info;
+end
+
 local function get_user_groups(username)
 	local groups;
 	do
@@ -197,6 +337,8 @@ function get_user_by_name(event, username)
 
 	if property == "groups" then
 		return json.encode(get_user_groups(username));
+	elseif property == "debug" then
+		return json.encode(get_user_debug_info(username));
 	end
 
 	local user_info = get_user_info(username);
