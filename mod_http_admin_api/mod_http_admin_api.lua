@@ -437,7 +437,32 @@ function update_group(event, group) --luacheck: ignore 212/event
 		elseif not group_memberships:set(group_id, member_name, true) then
 			return 500;
 		end
-		return 200;
+		return 204;
+	end
+
+	local group_id = group:match("^([^/]+)$")
+	if group_id then
+		local request = event.request;
+		if request.headers.content_type ~= json_content_type
+		or (not request.body or #request.body == 0) then
+			return 400;
+		end
+
+		local update = json.decode(event.request.body);
+		if not update then
+			return 400;
+		end
+
+		local group_info = group_info_store:get(group_id);
+		if not group_info then
+			return 404;
+		end
+
+		if update.name then
+			group_info["name"] = update.name
+		end
+		group_info_store:set(group_id, group_info);
+		return 204;
 	end
 	return 400;
 end
