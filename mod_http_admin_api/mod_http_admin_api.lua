@@ -336,8 +336,10 @@ function get_user_by_name(event, username)
 	end
 
 	if property == "groups" then
+		event.response.headers["Content-Type"] = json_content_type;
 		return json.encode(get_user_groups(username));
 	elseif property == "debug" then
+		event.response.headers["Content-Type"] = json_content_type;
 		return json.encode(get_user_debug_info(username));
 	end
 
