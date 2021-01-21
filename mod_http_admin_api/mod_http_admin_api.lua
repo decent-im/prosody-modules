@@ -14,6 +14,8 @@ local group_members_store = module:open_store("groups");
 local group_memberships = module:open_store("groups", "map");
 local push_errors = module:shared("cloud_notify/push_errors");
 
+local site_name = module:get_option_string("site_name", module.host);
+
 local json_content_type = "application/json";
 
 local www_authenticate_header = ("Bearer realm=%q"):format(module.host.."/"..module.name);
@@ -501,6 +503,14 @@ function delete_group(event, subpath) --luacheck: ignore 212/event
 	return 200;
 end
 
+local function get_server_info(event)
+	event.response.headers["Content-Type"] = json_content_type;
+	return json.encode({
+		site_name = site_name;
+		version = prosody.version;
+	});
+end
+
 module:provides("http", {
 	route = check_auth {
 		["GET /invites"] = list_invites;
@@ -517,5 +527,7 @@ module:provides("http", {
 		["POST /groups"] = create_group;
 		["PUT /groups/*"] = update_group;
 		["DELETE /groups/*"] = delete_group;
+
+		["GET /server/info"] = get_server_info;
 	};
 });
