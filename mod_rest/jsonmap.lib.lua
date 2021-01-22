@@ -486,7 +486,7 @@ local function st2json(s)
 		return t;
 	end
 
-	for tag in s:children() do
+	for _, tag in ipairs(s.tags) do
 		local prefix = "{" .. (tag.attr.xmlns or "jabber:client") .. "}";
 		local mapping = byxmlname[prefix .. tag.name];
 		if not mapping then
