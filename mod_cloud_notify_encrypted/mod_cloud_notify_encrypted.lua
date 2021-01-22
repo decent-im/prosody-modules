@@ -57,7 +57,7 @@ function handle_push(event)
 
 	local original_stanza = event.original_stanza;
 	local body = original_stanza:get_child_text("body");
-	if #body > 255 then
+	if body and #body > 255 then
 		body = body:sub(1, 255);
 	end
 
