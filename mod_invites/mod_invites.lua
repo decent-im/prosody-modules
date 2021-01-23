@@ -88,7 +88,7 @@ function create_group(group_ids, ttl, additional_data) --luacheck: ignore 131/cr
 	local merged_additional_data = {
 		groups = group_ids;
 	};
-	if merged_additional_data then
+	if additional_data then
 		for k, v in pairs(additional_data) do
 			merged_additional_data[k] = v;
 		end
