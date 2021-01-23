@@ -66,25 +66,25 @@ local function create_invite(invite_action, invite_jid, allow_registration, addi
 end
 
 -- Create invitation to register an account (optionally restricted to the specified username)
-function create_account(account_username, additional_data) --luacheck: ignore 131/create_account
+function create_account(account_username, additional_data, ttl) --luacheck: ignore 131/create_account
 	local jid = account_username and (account_username.."@"..module.host) or module.host;
-	return create_invite("register", jid, true, additional_data);
+	return create_invite("register", jid, true, additional_data, ttl);
 end
 
 -- Create invitation to reset the password for an account
-function create_account_reset(account_username) --luacheck: ignore 131/create_account_reset
-	return create_account(account_username, { allow_reset = account_username });
+function create_account_reset(account_username, ttl) --luacheck: ignore 131/create_account_reset
+	return create_account(account_username, { allow_reset = account_username }, ttl or 86400);
 end
 
 -- Create invitation to become a contact of a local user
-function create_contact(username, allow_registration, additional_data) --luacheck: ignore 131/create_contact
-	return create_invite("roster", username.."@"..module.host, allow_registration, additional_data);
+function create_contact(username, allow_registration, additional_data, ttl) --luacheck: ignore 131/create_contact
+	return create_invite("roster", username.."@"..module.host, allow_registration, additional_data, ttl);
 end
 
 -- Create invitation to register an account and join a user group
 -- If explicit ttl is passed, invite is valid for multiple signups
 -- during that time period
-function create_group(group_ids, ttl, additional_data) --luacheck: ignore 131/create_group
+function create_group(group_ids, additional_data, ttl) --luacheck: ignore 131/create_group
 	local merged_additional_data = {
 		groups = group_ids;
 	};
