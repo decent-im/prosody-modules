@@ -170,7 +170,9 @@ function create_invite_type(event, invite_type)
 		end
 		invite = invites.create_group(options.groups, nil, options.ttl);
 	elseif invite_type == "account" then
-		invite = invites.create_account(options.username, nil, options.ttl);
+		invite = invites.create_account(options.username, {
+			groups = options.groups;
+		}, options.ttl);
 	else
 		return 400;
 	end
