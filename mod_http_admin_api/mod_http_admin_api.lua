@@ -65,6 +65,7 @@ local function token_info_to_invite_info(token_info)
 	local additional_data = token_info.additional_data;
 	local groups = additional_data and additional_data.groups or nil;
 	local source = additional_data and additional_data.source or nil;
+	local reset = not not (additional_data and additional_data.allow_reset or nil);
 	return {
 		id = token_info.token;
 		type = token_info.type;
@@ -77,6 +78,7 @@ local function token_info_to_invite_info(token_info)
 		expires = token_info.expires;
 		groups = groups;
 		source = source;
+		reset = reset;
 	};
 end
 
