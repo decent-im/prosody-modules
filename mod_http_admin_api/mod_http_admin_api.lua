@@ -140,6 +140,47 @@ function create_invite(event)
 	return json.encode(token_info_to_invite_info(invite));
 end
 
+function create_invite_type(event, invite_type)
+	local options;
+
+	local request = event.request;
+	if request.body and #request.body > 0 then
+		if request.headers.content_type ~= json_content_type then
+			module:log("warn", "Invalid content type");
+			return 400;
+		end
+		options = json.decode(event.request.body);
+		if not options then
+			module:log("warn", "Invalid JSON");
+			return 400;
+		end
+	else
+		options = {};
+	end
+
+	local invite;
+	if invite_type == "reset" then
+		if not options.username then
+			return 400;
+		end
+		invite = invites.create_account_reset(options.username, options.ttl);
+	elseif invite_type == "group" then
+		if not options.groups then
+			return 400;
+		end
+		invite = invites.create_group(options.groups, nil, options.ttl);
+	elseif invite_type == "account" then
+		invite = invites.create_account(options.username, nil, options.ttl);
+	else
+		return 400;
+	end
+	if not invite then
+		return 500;
+	end
+	event.response.headers["Content-Type"] = json_content_type;
+	return json.encode(token_info_to_invite_info(invite));
+end
+
 function delete_invite(event, invite_id) --luacheck: ignore 212/event
 	if not invites.delete_account_invite(invite_id) then
 		return 404;
@@ -515,7 +556,8 @@ module:provides("http", {
 	route = check_auth {
 		["GET /invites"] = list_invites;
 		["GET /invites/*"] = get_invite_by_id;
-		["POST /invites"] = create_invite;
+		["POST /invites"] = create_invite; -- Deprecated
+		["POST /invites/*"] = create_invite_type;
 		["DELETE /invites/*"] = delete_invite;
 
 		["GET /users"] = list_users;
