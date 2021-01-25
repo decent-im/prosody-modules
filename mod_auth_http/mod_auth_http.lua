@@ -48,7 +48,7 @@ local function make_request(method_name, params)
 	}
 	if method_type == "POST" then
 		url = api_base.."/"..method_name;
-		ex.headers["Content-Type"] = "application/x/www-form-urlencoded";
+		ex.headers["Content-Type"] = "application/x-www-form-urlencoded";
 		ex.body = encoded_params;
 	else
 		url = api_base.."/"..method_name.."?"..encoded_params;
