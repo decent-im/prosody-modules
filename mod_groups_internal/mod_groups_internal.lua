@@ -84,11 +84,17 @@ local function get_group_muc(group_id)
 end
 
 --luacheck: ignore 131
-function create(group_info, create_muc)
+function create(group_info, create_muc, group_id)
 	if not group_info.name then
 		return nil, "group-name-required";
 	end
-	local group_id = id.short();
+	if group_id then
+		if exists(group_id) then
+			return nil, "conflict"
+		end
+	else
+		group_id = id.short();
+	end
 
 	if create_muc then
 		return nil, "not-implemented";
