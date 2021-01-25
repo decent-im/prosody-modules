@@ -1,6 +1,5 @@
 local usermanager = require "core.usermanager";
 
-local id = require "util.id";
 local json = require "util.json";
 
 module:depends("http");
@@ -8,10 +7,8 @@ module:depends("http");
 local invites = module:depends("invites");
 local tokens = module:depends("tokenauth");
 local mod_pep = module:depends("pep");
+local mod_groups = module:depends("groups_internal");
 
-local group_info_store = module:open_store("group_info");
-local group_members_store = module:open_store("groups");
-local group_memberships = module:open_store("groups", "map");
 local push_errors = module:shared("cloud_notify/push_errors");
 
 local site_name = module:get_option_string("site_name", module.host);
@@ -355,20 +352,6 @@ local function get_user_debug_info(username)
 	return debug_info;
 end
 
-local function get_user_groups(username)
-	local groups;
-	do
-		local group_set = group_memberships:get_all(username);
-		if group_set and next(group_set) then
-			groups = {};
-			for group_id in pairs(group_set) do
-				table.insert(groups, group_id);
-			end
-		end
-	end
-	return groups;
-end
-
 function list_users(event)
 	local user_list = {};
 	for username in usermanager.users(module.host) do
@@ -391,7 +374,7 @@ function get_user_by_name(event, username)
 
 	if property == "groups" then
 		event.response.headers["Content-Type"] = json_content_type;
-		return json.encode(get_user_groups(username));
+		return json.encode(mod_groups.get_user_groups(username));
 	elseif property == "debug" then
 		event.response.headers["Content-Type"] = json_content_type;
 		return json.encode(get_user_debug_info(username));
@@ -415,12 +398,12 @@ end
 
 function list_groups(event)
 	local group_list = {};
-	for group_id in group_info_store:users() do
-		local group_info = group_info_store:get(group_id);
+	for group_id in mod_groups.groups() do
+		local group_info = mod_groups.get_info(group_id);
 		table.insert(group_list, {
 			id = group_id;
 			name = group_info.name;
-			members = group_members_store:get(group_id);
+			members = mod_groups.get_members(group_id);
 		});
 	end
 
@@ -429,7 +412,7 @@ function list_groups(event)
 end
 
 function get_group_by_id(event, group_id)
-	local group = group_info_store:get(group_id);
+	local group = mod_groups.get_info(group_id);
 	if not group then
 		return 404;
 	end
@@ -439,7 +422,7 @@ function get_group_by_id(event, group_id)
 	return json.encode({
 		id = group_id;
 		name = group.name;
-		members = group_members_store:get(group_id);
+		members = mod_groups.get_members(group_id);
 	});
 end
 
@@ -459,12 +442,10 @@ function create_group(event)
 		return 400;
 	end
 
-	local group_id = id.short();
-
-	local ok = group_info_store:set(group_id, {
+	local group_id = mod_groups.create({
 		name = group.name;
 	});
-	if not ok then
+	if not group_id then
 		return 500;
 	end
 
@@ -477,11 +458,10 @@ function create_group(event)
 end
 
 function update_group(event, group) --luacheck: ignore 212/event
+	-- Add member
 	local group_id, member_name = group:match("^([^/]+)/members/([^/]+)$");
 	if group_id and member_name then
-		if not group_info_store:get(group_id) then
-			return 404;
-		elseif not group_memberships:set(group_id, member_name, true) then
+		if not mod_groups.add_member(group_id, member_name) then
 			return 500;
 		end
 		return 204;
@@ -490,8 +470,7 @@ function update_group(event, group) --luacheck: ignore 212/event
 	local group_id = group:match("^([^/]+)$")
 	if group_id then
 		local request = event.request;
-		if request.headers.content_type ~= json_content_type
-		or (not request.body or #request.body == 0) then
+		if request.headers.content_type ~= json_content_type or (not request.body or #request.body == 0) then
 			return 400;
 		end
 
@@ -500,33 +479,34 @@ function update_group(event, group) --luacheck: ignore 212/event
 			return 400;
 		end
 
-		local group_info = group_info_store:get(group_id);
+		local group_info = mod_groups.get_info(group_id);
 		if not group_info then
 			return 404;
 		end
 
 		if update.name then
-			group_info["name"] = update.name
+			group_info["name"] = update.name;
 		end
-		group_info_store:set(group_id, group_info);
-		return 204;
+		if mod_groups.set_info(group_id, group_info) then
+			return 204;
+		else
+			return 500;
+		end
 	end
-	return 400;
+	return 404;
 end
 
 function delete_group(event, subpath) --luacheck: ignore 212/event
 	-- Check if this is a membership deletion and handle it
 	local group_id, member_name = subpath:match("^([^/]+)/members/([^/]+)$");
 	if group_id and member_name then
-		if not group_info_store:get(group_id) then
-			return 404;
-		end
-		if group_memberships:set(group_id, member_name, nil) then
-			return 200;
+		if mod_groups.remove_member(group_id, member_name) then
+			return 204;
 		else
 			return 500;
 		end
 	else
+		-- Action refers to the group
 		group_id = subpath;
 	end
 
@@ -534,18 +514,14 @@ function delete_group(event, subpath) --luacheck: ignore 212/event
 		return 400;
 	end
 
-	if not group_info_store:get(group_id) then
+	if not mod_groups.exists(group_id) then
 		return 404;
 	end
 
-	if not group_members_store:set(group_id, nil) then
+	if not mod_groups.delete(group_id) then
 		return 500;
-	else
-		if not group_info_store:set(group_id, nil) then
-			return 500;
-		end
 	end
-	return 200;
+	return 204;
 end
 
 local function get_server_info(event)
