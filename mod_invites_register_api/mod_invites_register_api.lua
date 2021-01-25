@@ -32,11 +32,7 @@ function get_invite_info(event, invite_token)
 	});
 end
 
-function register_with_invite(event, invite_token)
-	if not invite_token or #invite_token == 0 then
-		return 404;
-	end
-
+function register_with_invite(event)
 	local request, response = event.request, event.response;
 
 	if not request.body or #request.body == 0
@@ -106,13 +102,15 @@ function register_with_invite(event, invite_token)
 		ip = request.ip;
 	});
 
-	return 200;
+	return json.encode({
+		jid = prepped_username .. "@" .. module.host;
+	});
 end
 
 module:provides("http", {
 	default_path = "register_api";
 	route = {
 		["GET /invite/*"] = get_invite_info;
-		["POST /register/*"] = register_with_invite;
+		["POST /register"] = register_with_invite;
 	};
 });
