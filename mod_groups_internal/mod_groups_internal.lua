@@ -1,4 +1,5 @@
 local rostermanager = require"core.rostermanager";
+local modulemanager = require"core.modulemanager";
 local id = require "util.id";
 local jid = require "util.jid";
 local jid_join = jid.join;
@@ -7,6 +8,9 @@ local host = module.host;
 local group_info_store = module:open_store("group_info");
 local group_members_store = module:open_store("groups");
 local group_memberships = module:open_store("groups", "map");
+
+local muc_host_name = module:get_option("groups_muc_host", "chats."..host);
+local muc_host = nil;
 
 local is_contact_subscribed = rostermanager.is_contact_subscribed;
 
@@ -96,16 +100,43 @@ function create(group_info, create_muc, group_id)
 		group_id = id.short();
 	end
 
+	local muc_jid = nil
+	local room = nil
 	if create_muc then
-		return nil, "not-implemented";
+		if not muc_host_name then
+			module:log("error", "cannot create group with MUC: no MUC host configured")
+			return nil, "service-unavailable"
+		end
+		if not muc_host then
+			module:log("error", "cannot create group with MUC: MUC host %s not configured properly", muc_host_name)
+			return nil, "internal-server-error"
+		end
+
+		muc_jid = id.short() .. "@" .. muc_host_name
+		room = muc_host.create_room(muc_jid)
+		if not room then
+			delete_group(group_id)
+			return nil, "internal-server-error"
+		end
+		room:set_public(false)
+		room:set_persistent(true)
+		room:set_members_only(true)
+		room:set_allow_member_invites(false)
+		room:set_moderated(false)
+		room:set_whois("anyone")
 	end
 
 	local ok = group_info_store:set(group_id, {
 		name = group_info.name;
+		muc_jid = muc_jid;
 	});
 	if not ok then
+		if room then
+			muc_host:delete_room(room)
+		end
 		return nil, "internal-server-error";
 	end
+
 	return group_id;
 end
 
@@ -190,3 +221,15 @@ end
 function groups()
 	return group_info_store:users();
 end
+
+local function handle_server_started()
+	local target_module = modulemanager.get_module(muc_host_name, "muc")
+	if not target_module then
+		module:log("error", "host %s is not a MUC host -- group management will not work correctly", muc_host_name)
+	else
+		module:log("debug", "found MUC host")
+		muc_host = target_module;
+	end
+end
+
+module:hook_global("server-started", handle_server_started)
