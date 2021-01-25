@@ -183,6 +183,10 @@ end
 
 function delete(group_id)
 	if group_members_store:set(group_id, nil) then
+		info = get_info(group_id)
+		if info and info.muc_jid then
+			muc_host.delete_room(muc_host.get_room_from_jid(info.muc_jid))
+		end
 		return group_info_store:set(group_id, nil);
 	end
 	return nil, "internal-server-error";
@@ -195,6 +199,15 @@ function add_member(group_id, username, delay_update)
 	end
 	if not group_memberships:set(group_id, username, {}) then
 		return nil, "internal-server-error";
+	end
+	if group_info.muc_jid then
+		local room = muc_host.get_room_from_jid(group_info.muc_jid);
+		if room then
+			local user_jid = username .. "@" .. host;
+			room:set_affiliation(true, user_jid, "member")
+		else
+			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid)
+		end
 	end
 	if not delay_update then
 		do_all_group_subscriptions_by_group(group_id);
@@ -209,6 +222,15 @@ function remove_member(group_id, username)
 	end
 	if not group_memberships:set(group_id, username, nil) then
 		return nil, "internal-server-error";
+	end
+	if group_info.muc_jid then
+		local room = muc_host.get_room_from_jid(group_info.muc_jid);
+		if room then
+			local user_jid = username .. "@" .. host;
+			room:set_affiliation(true, user_jid, nil)
+		else
+			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid)
+		end
 	end
 	return true;
 end
