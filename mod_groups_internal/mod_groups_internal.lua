@@ -157,7 +157,7 @@ function delete(group_id)
 	return nil, "internal-server-error";
 end
 
-function add_member(group_id, username)
+function add_member(group_id, username, delay_update)
 	local group_info = group_info_store:get(group_id);
 	if not group_info then
 		return nil, "group-not-found";
@@ -165,7 +165,9 @@ function add_member(group_id, username)
 	if not group_memberships:set(group_id, username, {}) then
 		return nil, "internal-server-error";
 	end
-	do_all_group_subscriptions_by_group(group_id);
+	if not delay_update then
+		do_all_group_subscriptions_by_group(group_id);
+	end
 	return true;
 end
 
@@ -178,6 +180,10 @@ function remove_member(group_id, username)
 		return nil, "internal-server-error";
 	end
 	return true;
+end
+
+function sync(group_id)
+	do_all_group_subscriptions_by_group(group_id)
 end
 
 -- Returns iterator over group ids
