@@ -63,8 +63,10 @@ module:provides("adhoc", new_adhoc("Create new contact invite", "urn:xmpp:invite
 -- This is an admin-only command that creates a new invitation suitable for registering
 -- a new account. It does not add the new user to the admin's roster.
 module:provides("adhoc", new_adhoc("Create new account invite", "urn:xmpp:invite#create-account",
-		function ()
-			local invite = invites.create_account();
+		function (_, data)
+			local invite = invites.create_account(nil, {
+				source = data.from
+			});
 			--TODO: check errors
 			return {
 				status = "completed";
