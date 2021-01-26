@@ -120,6 +120,8 @@ function create_invite_type(event, invite_type)
 		options = {};
 	end
 
+	local source = event.session.username .. "@" .. module.host .. "/admin_api";
+
 	local invite;
 	if invite_type == "reset" then
 		if not options.username then
@@ -130,9 +132,12 @@ function create_invite_type(event, invite_type)
 		if not options.groups then
 			return 400;
 		end
-		invite = invites.create_group(options.groups, nil, options.ttl);
+		invite = invites.create_group(options.groups, {
+			source = source;
+		}, options.ttl);
 	elseif invite_type == "account" then
 		invite = invites.create_account(options.username, {
+			source = source;
 			groups = options.groups;
 		}, options.ttl);
 	else
