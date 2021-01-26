@@ -102,43 +102,6 @@ function get_invite_by_id(event, invite_id)
 	return json.encode(token_info_to_invite_info(invite));
 end
 
-function create_invite(event)
-	local invite_options;
-
-	local request = event.request;
-	if request.body and #request.body > 0 then
-		if request.headers.content_type ~= json_content_type then
-			module:log("warn", "Invalid content type");
-			return 400;
-		end
-		invite_options = json.decode(event.request.body);
-		if not invite_options then
-			module:log("warn", "Invalid JSON");
-			return 400;
-		end
-	else
-		invite_options = {};
-	end
-
-	local invite;
-	if invite_options.reusable then
-		invite = invites.create_group(invite_options.groups, invite_options.ttl, {
-			source = "admin_api/"..event.session.username;
-		});
-	else
-		invite = invites.create_account(nil, {
-			source = "admin_api/"..event.session.username;
-			groups = invite_options.groups;
-		});
-	end
-	if not invite then
-		return 500;
-	end
-
-	event.response.headers["Content-Type"] = json_content_type;
-	return json.encode(token_info_to_invite_info(invite));
-end
-
 function create_invite_type(event, invite_type)
 	local options;
 
@@ -546,7 +509,6 @@ module:provides("http", {
 	route = check_auth {
 		["GET /invites"] = list_invites;
 		["GET /invites/*"] = get_invite_by_id;
-		["POST /invites"] = create_invite; -- Deprecated
 		["POST /invites/*"] = create_invite_type;
 		["DELETE /invites/*"] = delete_invite;
 
