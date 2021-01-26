@@ -28,6 +28,7 @@ local function migrate_store(host, source_store, store_type, migrate_to, migrate
 
 	local function migrate_user(username)
 		module:log("info", "Migrating %s data for %s", source_store, username);
+		if username == "" then username = nil; end
 		local data, err = storage:get(username);
 		if not data and err then
 			module:log("error", "Could not read data: %s", err);
@@ -42,6 +43,7 @@ local function migrate_store(host, source_store, store_type, migrate_to, migrate
 	if store_type == "archive" then
 		function migrate_user(username)
 			module:log("info", "Migrating %s archive items for %s", source_store, username);
+			if username == "" then username = nil; end
 			local count, errs = 0, 0;
 			for id, item, when, with in storage:find(username) do
 				local ok, err = target:append(username, id, item, when, with);
