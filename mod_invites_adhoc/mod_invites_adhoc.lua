@@ -45,7 +45,9 @@ module:depends("adhoc");
 module:provides("adhoc", new_adhoc("Create new contact invite", "urn:xmpp:invite#invite",
 		function (_, data)
 			local username = split_jid(data.from);
-			local invite = invites.create_contact(username, allow_user_invites);
+			local invite = invites.create_contact(username, allow_user_invites, {
+				source = data.from
+			});
 			--TODO: check errors
 			return {
 				status = "completed";
