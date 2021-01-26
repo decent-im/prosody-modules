@@ -573,6 +573,9 @@ components:
         name:
           type: string
           description: "Display name of the group"
+        create_muc:
+          type: boolean
+          description: Create a MUC associated with the group
     Group:
       type: object
       properties:
@@ -582,6 +585,10 @@ components:
         name:
           type: string
           description: Display name of the group
+        muc_jid:
+          type: string
+          nullable: true
+          description: JID of the associated MUC, if any.
     GroupList:
       type: array
       items:

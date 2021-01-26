@@ -403,6 +403,7 @@ function list_groups(event)
 		table.insert(group_list, {
 			id = group_id;
 			name = group_info.name;
+			muc_jid = group_info.muc_jid;
 			members = mod_groups.get_members(group_id);
 		});
 	end
@@ -422,6 +423,7 @@ function get_group_by_id(event, group_id)
 	return json.encode({
 		id = group_id;
 		name = group.name;
+		muc_jid = group.muc_jid;
 		members = mod_groups.get_members(group_id);
 	});
 end
@@ -442,17 +444,25 @@ function create_group(event)
 		return 400;
 	end
 
-	local group_id = mod_groups.create({
-		name = group.name;
-	});
+	local create_muc = group.create_muc and true or false;
+
+	local group_id = mod_groups.create(
+		{
+			name = group.name;
+		},
+		create_muc
+	);
 	if not group_id then
 		return 500;
 	end
 
 	event.response.headers["Content-Type"] = json_content_type;
+
+	local info = mod_groups.get_info(group_id);
 	return json.encode({
 		id = group_id;
-		name = group.name;
+		name = info.name;
+		muc_jid = info.muc_jid or nil;
 		members = {};
 	});
 end
