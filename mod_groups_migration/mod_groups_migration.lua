@@ -12,7 +12,7 @@ local function trigger_migration()
 	module:log("info", "migrating to mod_groups!")
 
 	local group_id = default_group_id;
-	local ok, err = mod_groups.create({name="default"}, false, group_id);
+	local ok, err = mod_groups.create({name="default"}, true, group_id);
 	if not ok then
 		module:log("error", "failed to create group: %s", err)
 		return
