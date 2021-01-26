@@ -9,7 +9,7 @@ local group_info_store = module:open_store("group_info");
 local group_members_store = module:open_store("groups");
 local group_memberships = module:open_store("groups", "map");
 
-local muc_host_name = module:get_option("groups_muc_host", "chats."..host);
+local muc_host_name = module:get_option("groups_muc_host", "groups."..host);
 local muc_host = nil;
 
 local is_contact_subscribed = rostermanager.is_contact_subscribed;
@@ -245,11 +245,16 @@ function groups()
 end
 
 local function handle_server_started()
+	if not muc_host_name then
+		module:log("info", "MUC management disabled (groups_muc_host set to nil)")
+		return
+	end
+
 	local target_module = modulemanager.get_module(muc_host_name, "muc")
 	if not target_module then
-		module:log("error", "host %s is not a MUC host -- group management will not work correctly", muc_host_name)
+		module:log("error", "host %s is not a MUC host -- group management will not work correctly; check your groups_muc_host setting!", muc_host_name)
 	else
-		module:log("debug", "found MUC host")
+		module:log("debug", "found MUC host at %s", muc_host_name)
 		muc_host = target_module;
 	end
 end
