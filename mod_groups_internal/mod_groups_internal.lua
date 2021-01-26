@@ -2,6 +2,7 @@ local rostermanager = require"core.rostermanager";
 local modulemanager = require"core.modulemanager";
 local id = require "util.id";
 local jid = require "util.jid";
+local st = require "util.stanza";
 local jid_join = jid.join;
 local host = module.host;
 
@@ -205,6 +206,13 @@ function add_member(group_id, username, delay_update)
 		if room then
 			local user_jid = username .. "@" .. host;
 			room:set_affiliation(true, user_jid, "member")
+			module:send(st.message(
+				{ from = group_info.muc_jid, to = user_jid }
+			):tag("x", {
+				xmlns = "jabber:x:conference",
+				jid = group_info.muc_jid
+			}):up());
+			module:log("debug", "set user %s to be member in %s and sent invite", username, group_info.muc_jid)
 		else
 			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid)
 		end
