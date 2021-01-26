@@ -3,8 +3,6 @@ local jid_split = require "util.jid".split;
 local jid_bare = require "util.jid".bare;
 local rostermanager = require "core.rostermanager";
 
-local mod_groups = module:depends("groups_internal");
-
 local require_encryption = module:get_option_boolean("c2s_require_encryption",
 	module:get_option_boolean("require_encryption", false));
 local invite_only = module:get_option_boolean("registration_invite_only", true);
@@ -144,14 +142,6 @@ module:hook("user-registered", function (event)
 		local roles = validated_invite.additional_data.roles;
 		if roles then
 			module:open_store("roles"):set(contact_username, roles);
-		end
-
-		local groups = validated_invite.additional_data.groups;
-		if groups then
-			module:log("Adding to groups...");
-			for _, group in ipairs(groups) do
-				mod_groups.add_member(group, contact_username);
-			end
 		end
 	end
 end);
