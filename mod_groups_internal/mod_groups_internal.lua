@@ -168,9 +168,9 @@ end
 
 function delete(group_id)
 	if group_members_store:set(group_id, nil) then
-		info = get_info(group_id)
-		if info and info.muc_jid then
-			muc_host.delete_room(muc_host.get_room_from_jid(info.muc_jid))
+		local group_info = get_info(group_id)
+		if group_info and group_info.muc_jid then
+			muc_host.delete_room(muc_host.get_room_from_jid(group_info.muc_jid))
 		end
 		return group_info_store:set(group_id, nil);
 	end
