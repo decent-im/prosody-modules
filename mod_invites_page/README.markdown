@@ -45,11 +45,12 @@ documentation).
 Configuration
 =============
 
-| Name                      | Description                                                                    | Default                                                    |
-|---------------------------|--------------------------------------------------------------------------------|------------------------------------------------------------|
-| invites_page              | The format of an invite page URL (must begin with `https://`)                  | `"https://{host}:5281/invites_page?{invite.token}"`        |
-| invites_registration_page | The format of an invite registration page URL (may be relative to invites_page)| `"register?t={invite.token}&c={app.id}"`                   |
-| site_name                 | The friendly name of the server                                                | `"example.com"`                                            |
+| Name                      | Description                                                                    | Default                                             |
+|---------------------------|--------------------------------------------------------------------------------|-----------------------------------------------------|
+| invites_page              | The format of an invite page URL (must begin with `https://`)                  | `"https://{host}:5281/invites_page?{invite.token}"` |
+| invites_registration_page | The format of an invite registration page URL (may be relative to invites_page)| `"register?t={invite.token}&c={app.id}"`            |
+| site_name                 | The friendly name of the server                                                | `"example.com"`                                     |
+| invites_page_external     | Set this to true if your invitation pages will be rendered by something else   | `false`                                             |
 
 The `invites_page` and `invites_registration_page` options are templates
 that support a number of variables. The most useful being `{host}` and
@@ -60,3 +61,8 @@ can be used to configure this module. In particular, if you run Prosody
 behind a reverse proxy such as nginx or Apache, you will probably want
 to set `http_external_url` so that Prosody knows what URLs should look
 like for users.
+
+If you want to disable this module's built-in pages and use an external
+invitation page generator (such as [ge0rg/easy-xmpp-invitation](https://github.com/ge0rg/easy-xmpp-invitation)
+then set `invites_page_external = true` and set `invites_page` to the
+appropriate URL for your installation.

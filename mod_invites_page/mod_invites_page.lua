@@ -27,6 +27,9 @@ module:depends("register_apps");
 local site_name = module:get_option_string("site_name", module.host);
 local site_apps = module:shared("register_apps/apps");
 
+-- Enable/disable built-in invite pages
+local external_only = module:get_option_boolean("invites_page_external", false);
+
 local http_files;
 
 if prosody.shutdown then
@@ -51,6 +54,10 @@ local function add_landing_url(invite)
 end
 
 module:hook("invite-created", add_landing_url);
+
+if external_only then
+	return;
+end
 
 local function render_app_urls(apps, invite_vars)
 	local rendered_apps = {};
