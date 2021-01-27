@@ -72,22 +72,6 @@ module:hook("resource-bind", function(event)
 	do_all_group_subscriptions_by_user(event.session.username);
 end);
 
-local function get_group_muc(group_id)
-	-- Group MUC
-	local group_info = group_info_store:get(group_id);
-	if group_info and group_info.muc_jid then
-		local muc_jid = group_info.muc_jid;
-		local mod_muc = hosts[jid.host(muc_jid)].modules.muc;
-		if mod_muc then
-			local room = mod_muc.get_room_from_jid(muc_jid);
-			if not room then
-				room = mod_muc.create_room(muc_jid);
-			end
-			return room;
-		end
-	end
-end
-
 --luacheck: ignore 131
 function create(group_info, create_muc, group_id)
 	if not group_info.name then
