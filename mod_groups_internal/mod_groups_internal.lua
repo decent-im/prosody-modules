@@ -168,9 +168,9 @@ end
 
 function delete(group_id)
 	if group_members_store:set(group_id, nil) then
-		local group_info = get_info(group_id)
+		local group_info = get_info(group_id);
 		if group_info and group_info.muc_jid then
-			muc_host.delete_room(muc_host.get_room_from_jid(group_info.muc_jid))
+			muc_host.delete_room(muc_host.get_room_from_jid(group_info.muc_jid));
 		end
 		return group_info_store:set(group_id, nil);
 	end
@@ -189,16 +189,16 @@ function add_member(group_id, username, delay_update)
 		local room = muc_host.get_room_from_jid(group_info.muc_jid);
 		if room then
 			local user_jid = username .. "@" .. host;
-			room:set_affiliation(true, user_jid, "member")
+			room:set_affiliation(true, user_jid, "member");
 			module:send(st.message(
 				{ from = group_info.muc_jid, to = user_jid }
 			):tag("x", {
 				xmlns = "jabber:x:conference",
 				jid = group_info.muc_jid
 			}):up());
-			module:log("debug", "set user %s to be member in %s and sent invite", username, group_info.muc_jid)
+			module:log("debug", "set user %s to be member in %s and sent invite", username, group_info.muc_jid);
 		else
-			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid)
+			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
 		end
 	end
 	if not delay_update then
@@ -219,16 +219,16 @@ function remove_member(group_id, username)
 		local room = muc_host.get_room_from_jid(group_info.muc_jid);
 		if room then
 			local user_jid = username .. "@" .. host;
-			room:set_affiliation(true, user_jid, nil)
+			room:set_affiliation(true, user_jid, nil);
 		else
-			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid)
+			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
 		end
 	end
 	return true;
 end
 
 function sync(group_id)
-	do_all_group_subscriptions_by_group(group_id)
+	do_all_group_subscriptions_by_group(group_id);
 end
 
 -- Returns iterator over group ids
@@ -238,17 +238,17 @@ end
 
 local function handle_server_started()
 	if not muc_host_name then
-		module:log("info", "MUC management disabled (groups_muc_host set to nil)")
-		return
+		module:log("info", "MUC management disabled (groups_muc_host set to nil)");
+		return;
 	end
 
-	local target_module = modulemanager.get_module(muc_host_name, "muc")
+	local target_module = modulemanager.get_module(muc_host_name, "muc");
 	if not target_module then
-		module:log("error", "host %s is not a MUC host -- group management will not work correctly; check your groups_muc_host setting!", muc_host_name)
+		module:log("error", "host %s is not a MUC host -- group management will not work correctly; check your groups_muc_host setting!", muc_host_name);
 	else
-		module:log("debug", "found MUC host at %s", muc_host_name)
+		module:log("debug", "found MUC host at %s", muc_host_name);
 		muc_host = target_module;
 	end
 end
 
-module:hook_global("server-started", handle_server_started)
+module:hook_global("server-started", handle_server_started);
