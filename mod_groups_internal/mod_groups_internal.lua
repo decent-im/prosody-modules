@@ -113,7 +113,7 @@ function create(group_info, create_muc, group_id)
 			return nil, "internal-server-error"
 		end
 
-		muc_jid = id.short() .. "@" .. muc_host_name
+		muc_jid = jid.prep(id.short() .. "@" .. muc_host_name);
 		room = muc_host.create_room(muc_jid)
 		if not room then
 			delete_group(group_id)
