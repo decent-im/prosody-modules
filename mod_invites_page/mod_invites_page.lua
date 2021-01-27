@@ -1,8 +1,7 @@
 local st = require "util.stanza";
 local url_escape = require "util.http".urlencode;
 
-module:depends("http");
-local base_url = module.http_url and module:http_url();
+local base_url = "https://"..module.host.."/";
 
 local render_html_template = require"util.interpolation".new("%b{}", st.xml_escape, {
 	urlescape = url_escape;
@@ -22,20 +21,28 @@ local render_url = require "util.interpolation".new("%b{}", url_escape, {
 	end;
 });
 
-module:depends("register_apps");
-
 local site_name = module:get_option_string("site_name", module.host);
-local site_apps = module:shared("register_apps/apps");
+local site_apps;
 
 -- Enable/disable built-in invite pages
 local external_only = module:get_option_boolean("invites_page_external", false);
 
 local http_files;
 
-if prosody.shutdown then
-	module:depends("http");
-	http_files = module:depends("http_files");
+if not external_only then
+	-- Load HTTP-serving dependencies
+	if prosody.shutdown then -- not if running under prosodyctl
+		module:depends("http");
+		http_files = module:depends("http_files");
+	end
+	-- Calculate automatic base_url default
+	base_url = module.http_url and module:http_url();
+
+	-- Load site apps info
+	module:depends("register_apps");
+	site_apps = module:shared("register_apps/apps");
 end
+
 local invites = module:depends("invites");
 
 -- Point at eg https://github.com/ge0rg/easy-xmpp-invitation
