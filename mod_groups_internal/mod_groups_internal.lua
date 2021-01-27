@@ -100,7 +100,7 @@ function create(group_info, create_muc, group_id)
 		muc_jid = jid.prep(id.short() .. "@" .. muc_host_name);
 		room = muc_host.create_room(muc_jid)
 		if not room then
-			delete_group(group_id)
+			delete(group_id)
 			return nil, "internal-server-error"
 		end
 		room:set_public(false)
