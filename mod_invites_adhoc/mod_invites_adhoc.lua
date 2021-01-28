@@ -44,7 +44,15 @@ module:depends("adhoc");
 -- subscription.
 module:provides("adhoc", new_adhoc("Create new contact invite", "urn:xmpp:invite#invite",
 		function (_, data)
-			local username = split_jid(data.from);
+			local username, host = split_jid(data.from);
+			if host ~= module.host then
+				return {
+					status = "completed";
+					error = {
+						message = "This command is only available to users of "..module.host;
+					};
+				};
+			end
 			local invite = invites.create_contact(username, allow_user_invites, {
 				source = data.from
 			});
