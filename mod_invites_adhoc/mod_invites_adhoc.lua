@@ -2,6 +2,7 @@
 local dataforms = require "util.dataforms";
 local datetime = require "util.datetime";
 local split_jid = require "util.jid".split;
+local usermanager = require "core.usermanager";
 
 local new_adhoc = module:require("adhoc").new;
 
@@ -11,6 +12,8 @@ local allow_user_invites = module:get_option_boolean("allow_user_invites", false
 -- keep this available to all local users. To allow/disallow invite-registration
 -- on the server, use the option above instead.
 local allow_contact_invites = module:get_option_boolean("allow_contact_invites", true);
+
+local allow_user_invite_roles = module:get_option_set("allow_user_invites_by_roles");
 
 local invites;
 if prosody.shutdown then -- COMPAT hack to detect prosodyctl
@@ -36,6 +39,31 @@ local invite_result_form = dataforms.new({
 		},
 	});
 
+-- This is for checking if username (on the current host)
+-- may create invites that allow people to register accounts
+-- on this host.
+local function may_invite_new_users(jid)
+	if allow_user_invites then
+		return true;
+	end
+	if usermanager.get_roles then
+		local user_roles = usermanager.get_roles(jid, module.host);
+		if not user_roles then return; end
+		if user_roles["prosody:admin"] then
+			return true;
+		elseif allow_user_invite_roles then
+			for allowed_role in allow_user_invite_roles do
+				if user_roles[allowed_role] then
+					return true;
+				end
+			end
+		end
+	elseif usermanager.is_admin(jid, module.host) then
+		return true;
+	end
+	return false;
+end
+
 module:depends("adhoc");
 
 -- This command is available to all local users, even if allow_user_invites = false
@@ -53,7 +81,7 @@ module:provides("adhoc", new_adhoc("Create new contact invite", "urn:xmpp:invite
 					};
 				};
 			end
-			local invite = invites.create_contact(username, allow_user_invites, {
+			local invite = invites.create_contact(username, may_invite_new_users(data.from), {
 				source = data.from
 			});
 			--TODO: check errors
