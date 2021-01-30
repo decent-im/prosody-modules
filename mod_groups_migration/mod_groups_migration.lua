@@ -3,6 +3,7 @@ local usermanager = require"core.usermanager";
 
 local mod_groups = module:depends("groups_internal");
 local default_group_id = module:get_option("group_default_id", "default");
+local default_group_name = module:get_option("group_default_name", "default");
 
 local function trigger_migration()
 	if mod_groups.exists(default_group_id) then
@@ -12,7 +13,7 @@ local function trigger_migration()
 	module:log("info", "migrating to mod_groups!")
 
 	local group_id = default_group_id;
-	local ok, err = mod_groups.create({name="default"}, true, group_id);
+	local ok, err = mod_groups.create({name=default_group_name}, true, group_id);
 	if not ok then
 		module:log("error", "failed to create group: %s", err)
 		return
