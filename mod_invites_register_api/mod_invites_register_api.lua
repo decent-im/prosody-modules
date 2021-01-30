@@ -29,6 +29,7 @@ function get_invite_info(event, invite_token)
 		type = invite.type;
 		jid = invite.jid;
 		inviter = invite.inviter;
+		reset = invite.additional_data and invite.additional_data.allow_reset or nil;
 	});
 end
 
@@ -68,7 +69,13 @@ function register_with_invite(event)
 		return 400;
 	end
 
-	if usermanager.user_exists(prepped_username, module.host) then
+	local reset_for = invite.additional_data and invite.additional_data.allow_reset or nil;
+	if reset_for ~= nil then
+		module:log("debug", "handling password reset invite for %s", reset_for)
+		if reset_for ~= prepped_username then
+			return 403; -- Attempt to use reset invite for incorrect user
+		end
+	elseif usermanager.user_exists(prepped_username, module.host) then
 		return 409; -- Conflict
 	end
 
