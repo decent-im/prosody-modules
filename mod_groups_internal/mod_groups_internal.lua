@@ -109,6 +109,7 @@ function create(group_info, create_muc, group_id)
 		room:set_allow_member_invites(false)
 		room:set_moderated(false)
 		room:set_whois("anyone")
+		room:set_name(group_info.name)
 	end
 
 	local ok = group_info_store:set(group_id, {
@@ -136,6 +137,13 @@ function set_info(group_id, info)
 
 	if not info.name or #info.name == 0 then
 		return nil, "bad-request"
+	end
+
+	-- TODO: we should probably prohibit changing/removing the MUC JID of
+	-- an existing group.
+	if info.muc_jid then
+		room = muc_host.get_room_from_jid(info.muc_jid);
+		room:set_name(info.name);
 	end
 
 	local ok = group_info_store:set(group_id, info);
