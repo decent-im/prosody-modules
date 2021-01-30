@@ -476,7 +476,10 @@ end
 local function restore_session(event)
 	local session = event.resumed;
 	if session then		-- older smacks module versions send only the "intermediate" session in event.session and no session.resumed one
-		if session.awaiting_push_timer then session.awaiting_push_timer:stop(); end
+		if session.awaiting_push_timer then
+			session.awaiting_push_timer:stop();
+			session.awaiting_push_timer = nil;
+		end
 		session.first_hibernated_push = nil;
 	end
 end
@@ -485,7 +488,9 @@ end
 local function ack_delayed(event)
 	local session = event.origin;
 	local queue = event.queue;
+	local stanza = event.stanza;
 	if not session.push_identifier then return; end
+	if stanza then process_stanza(session, stanza); return; end		-- don't iterate through smacks queue if we know which stanza triggered this
 	for i=1, #queue do
 		local stanza = queue[i];
 		-- process unacked stanzas (handle_notify_request() will only send push requests for new stanzas)
