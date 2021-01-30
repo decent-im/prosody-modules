@@ -116,13 +116,13 @@ local function stoppable_timer(delay, callback)
 	};
 end
 
-local function delayed_ack_function(session)
+local function delayed_ack_function(session, stanza)
 	-- fire event only if configured to do so and our session is not already hibernated or destroyed
 	if delayed_ack_timeout > 0 and session.awaiting_ack
 	and not session.hibernating and not session.destroyed then
 		session.log("debug", "Firing event 'smacks-ack-delayed', queue = %d",
 			session.outgoing_stanza_queue and #session.outgoing_stanza_queue or 0);
-		module:fire_event("smacks-ack-delayed", {origin = session, queue = session.outgoing_stanza_queue});
+		module:fire_event("smacks-ack-delayed", {origin = session, queue = session.outgoing_stanza_queue, stanza = stanza});
 	end
 	session.delayed_ack_timer = nil;
 end
@@ -158,7 +158,7 @@ module:hook("s2s-stream-features",
 			end
 		end);
 
-local function request_ack_if_needed(session, force, reason)
+local function request_ack_if_needed(session, force, reason, stanza)
 	local queue = session.outgoing_stanza_queue;
 	local expected_h = session.last_acknowledged_stanza + #queue;
 	-- session.log("debug", "*** SMACKS(1) ***: awaiting_ack=%s, hibernating=%s", tostring(session.awaiting_ack), tostring(session.hibernating));
@@ -182,7 +182,7 @@ local function request_ack_if_needed(session, force, reason)
 					session.log("debug", "Sending <r> (inside timer, after send) from %s - #queue=%d", reason, #queue);
 					if not session.delayed_ack_timer then
 						session.delayed_ack_timer = stoppable_timer(delayed_ack_timeout, function()
-							delayed_ack_function(session);
+							delayed_ack_function(session, nil);		-- we don't know if this is the only new stanza in the queue
 						end);
 					end
 				end
@@ -196,7 +196,7 @@ local function request_ack_if_needed(session, force, reason)
 	-- would not trigger this event (again).
 	if #queue > max_unacked_stanzas and session.awaiting_ack and session.delayed_ack_timer == nil then
 		session.log("debug", "Calling delayed_ack_function directly (still waiting for ack)");
-		delayed_ack_function(session);
+		delayed_ack_function(session, stanza);		-- this is the only new stanza in the queue --> provide it to other modules
 	end
 end
 
@@ -228,7 +228,7 @@ local function outgoing_stanza_filter(stanza, session)
 			module:fire_event("smacks-hibernation-stanza-queued", {origin = session, queue = queue, stanza = cached_stanza});
 			return nil;
 		end
-		request_ack_if_needed(session, false, "outgoing_stanza_filter");
+		request_ack_if_needed(session, false, "outgoing_stanza_filter", stanza);
 	end
 	return stanza;
 end
@@ -348,7 +348,7 @@ function handle_r(origin, stanza, xmlns_sm)
 	-- piggyback our own ack request if needed (see request_ack_if_needed() for explanation of last_requested_h)
 	local expected_h = origin.last_acknowledged_stanza + #origin.outgoing_stanza_queue;
 	if #origin.outgoing_stanza_queue > 0 and expected_h ~= origin.last_requested_h then
-		request_ack_if_needed(origin, true, "piggybacked by handle_r");
+		request_ack_if_needed(origin, true, "piggybacked by handle_r", nil);
 	end
 	return true;
 end
@@ -390,7 +390,7 @@ function handle_a(origin, stanza)
 
 	origin.log("debug", "#queue = %d", #queue);
 	origin.last_acknowledged_stanza = origin.last_acknowledged_stanza + handled_stanza_count;
-	request_ack_if_needed(origin, false, "handle_a")
+	request_ack_if_needed(origin, false, "handle_a", nil)
 	return true;
 end
 module:hook_stanza(xmlns_sm2, "a", handle_a);
@@ -623,7 +623,7 @@ function handle_resume(session, stanza, xmlns_sm)
 			return false;
 		end
 		module:fire_event("smacks-hibernation-end", {origin = session, resumed = original_session, queue = queue});
-		request_ack_if_needed(original_session, true, "handle_resume");
+		request_ack_if_needed(original_session, true, "handle_resume", nil);
 	else
 		module:log("warn", "Client %s@%s[%s] tried to resume stream for %s@%s[%s]",
 			session.username or "?", session.host or "?", session.type,
@@ -654,7 +654,7 @@ local function handle_read_timeout(event)
 		session.awaiting_ack = true;
 		if not session.delayed_ack_timer then
 			session.delayed_ack_timer = stoppable_timer(delayed_ack_timeout, function()
-				delayed_ack_function(session);
+				delayed_ack_function(session, nil);
 			end);
 		end
 		return true;
