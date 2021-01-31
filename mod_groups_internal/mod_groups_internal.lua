@@ -206,7 +206,7 @@ function add_member(group_id, username, delay_update)
 			}):up());
 			module:log("debug", "set user %s to be member in %s and sent invite", username, group_info.muc_jid);
 		else
-			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
+			module:log("warn", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
 		end
 	end
 	if not delay_update then
@@ -229,7 +229,7 @@ function remove_member(group_id, username)
 			local user_jid = username .. "@" .. host;
 			room:set_affiliation(true, user_jid, nil);
 		else
-			module:log("warning", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
+			module:log("warn", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
 		end
 	end
 	return true;
