@@ -244,7 +244,7 @@ function groups()
 	return group_info_store:users();
 end
 
-local function handle_server_started()
+local function setup()
 	if not muc_host_name then
 		module:log("info", "MUC management disabled (groups_muc_host set to nil)");
 		return;
@@ -259,4 +259,8 @@ local function handle_server_started()
 	end
 end
 
-module:hook_global("server-started", handle_server_started);
+if prosody.start_time then  -- server already started
+	setup();
+else
+	module:hook_global("server-started", setup);
+end
