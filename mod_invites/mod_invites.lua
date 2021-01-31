@@ -234,7 +234,7 @@ end
 function module.command(arg)
 	if #arg < 2 or arg[1] ~= "generate" then
 		print("usage: prosodyctl mod_"..module.name.." generate example.com");
-		return;
+		return 2;
 	end
 	table.remove(arg, 1); -- pop command
 
@@ -255,23 +255,60 @@ function module.command(arg)
 		module:depends(invites_page_module);
 	end
 
+	local allow_reset;
+	local roles;
+	local groups = {};
 
-	local invite, roles;
-	if arg[1] == "--reset" then
-		local nodeprep = require "util.encodings".stringprep.nodeprep;
-		local username = nodeprep(arg[2]);
-		if not username then
-			print("Please supply a valid username to generate a reset link for");
-			return;
-		end
-		invite = assert(invites.create_account_reset(username));
-	else
-		if arg[1] == "--admin" then
+	while #arg > 0 do
+		local value = arg[1];
+		table.remove(arg, 1);
+		if value == "--reset" then
+			local nodeprep = require "util.encodings".stringprep.nodeprep;
+			local username = nodeprep(arg[1])
+			table.remove(arg, 1);
+			if not username then
+				print("Please supply a valid username to generate a reset link for");
+				return 2;
+			end
+			allow_reset = username;
+		elseif value == "--admin" then
 			roles = { ["prosody:admin"] = true };
-		elseif arg[1] == "--role" then
-			roles = { [arg[2]] = true };
+		elseif value == "--role" then
+			local rolename = arg[1];
+			if not rolename then
+				print("Please supply a role name");
+				return 2;
+			end
+			roles = { [rolename] = true };
+			table.remove(arg, 1);
+		elseif value == "--group" or value == "-g" then
+			local groupid = arg[1];
+			if not groupid then
+				print("Please supply a group ID")
+				return 2;
+			end
+			table.insert(groups, groupid);
+			table.remove(arg, 1);
+		else
+			print("unexpected argument: "..value)
 		end
-		invite = assert(invites.create_account(nil, { roles = roles }));
+	end
+
+	local invite;
+	if allow_reset then
+		if roles then
+			print("--role/--admin and --reset are mutually exclusive")
+			return 2;
+		end
+		if #groups > 0 then
+			print("--group and --reset are mutually exclusive")
+		end
+		invite = assert(invites.create_account_reset(allow_reset));
+	else
+		invite = assert(invites.create_account(nil, {
+			roles = roles,
+			groups = groups
+		}));
 	end
 
 	print(invite.landing_page or invite.uri);
