@@ -85,5 +85,7 @@ for i, room_data in pairs(params) do
 		module:log("debug", "Configuring already existing room %s", room_jid);
 	end
 	configure_room(room, room_data.config);
-	set_affiliations(room, room_data.affiliations);
+	if room_data.affiliations then
+		set_affiliations(room, room_data.affiliations);
+	end
 end
