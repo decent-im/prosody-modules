@@ -62,7 +62,11 @@ local function do_all_group_subscriptions_by_user(username)
 end
 
 local function do_all_group_subscriptions_by_group(group_id)
-	for membername in pairs(get_members(group_id)) do
+	local members = get_members(group_id)
+	if not members then
+		return
+	end
+	for membername in pairs(members) do
 		do_single_group_subscriptions(membername, group_id);
 	end
 end
