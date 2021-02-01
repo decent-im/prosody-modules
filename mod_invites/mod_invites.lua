@@ -262,7 +262,31 @@ function module.command(arg)
 	while #arg > 0 do
 		local value = arg[1];
 		table.remove(arg, 1);
-		if value == "--reset" then
+		if value == "--help" then
+			print("usage: prosodyctl mod_"..module.name.." generate DOMAIN --reset USERNAME")
+			print("usage: prosodyctl mod_"..module.name.." generate DOMAIN [--admin] [--role ROLE] [--group GROUPID]...")
+			print()
+			print("This command has two modes: password reset and new account.")
+			print("If --reset is given, the command operates in password reset mode and in new account mode otherwise.")
+			print()
+			print("required arguments in password reset mode:")
+			print()
+			print("    --reset USERNAME  Generate a password reset link for the given USERNAME.")
+			print()
+			print("optional arguments in new account mode:")
+			print()
+			print("    --admin           Make the new user privileged")
+			print("                      Equivalent to --role prosody:admin")
+			print("    --role ROLE       Grant the given ROLE to the new user")
+			print("    --group GROUPID   Add the user to the group with the given ID")
+			print("                      Can be specified multiple times")
+			print()
+			print("--role and --admin override each other; the last one wins")
+			print("--group can be specified multiple times; the user will be added to all groups.")
+			print()
+			print("--reset and the other options cannot be mixed.")
+			return 2
+		elseif value == "--reset" then
 			local nodeprep = require "util.encodings".stringprep.nodeprep;
 			local username = nodeprep(arg[1])
 			table.remove(arg, 1);
