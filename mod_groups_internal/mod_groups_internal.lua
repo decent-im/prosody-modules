@@ -122,7 +122,7 @@ function create(group_info, create_muc, group_id)
 	});
 	if not ok then
 		if room then
-			muc_host:delete_room(room)
+			room:destroy()
 		end
 		return nil, "internal-server-error";
 	end
@@ -182,7 +182,10 @@ function delete(group_id)
 	if group_members_store:set(group_id, nil) then
 		local group_info = get_info(group_id);
 		if group_info and group_info.muc_jid then
-			muc_host.delete_room(muc_host.get_room_from_jid(group_info.muc_jid));
+			local room = muc_host.get_room_from_jid(group_info.muc_jid)
+			if room then
+				room:destroy()
+			end
 		end
 		return group_info_store:set(group_id, nil);
 	end
