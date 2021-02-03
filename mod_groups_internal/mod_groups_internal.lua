@@ -216,6 +216,15 @@ function add_member(group_id, username, delay_update)
 			module:log("warn", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
 		end
 	end
+	module:fire_event(
+		"group-user-added",
+		{
+			id = group_id,
+			user = username,
+			host = host,
+			group_info = group_info,
+		}
+	)
 	if not delay_update then
 		do_all_group_subscriptions_by_group(group_id);
 	end
@@ -239,6 +248,15 @@ function remove_member(group_id, username)
 			module:log("warn", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
 		end
 	end
+	module:fire_event(
+		"group-user-removed",
+		{
+			id = group_id,
+			user = username,
+			host = host,
+			group_info = group_info,
+		}
+	)
 	return true;
 end
 
