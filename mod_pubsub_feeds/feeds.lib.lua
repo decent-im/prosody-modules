@@ -72,6 +72,10 @@ local function translate_rss(rss_feed)
 				translator(feed, tag);
 			end
 		end
+		-- Preserve Atom-namespaced items
+		for atomtag in item:childtags(nil, "http://www.w3.org/2005/Atom") do
+			feed:add_child(st.clone(atomtag));
+		end
 		feed:reset();
 	end
 	return feed;
