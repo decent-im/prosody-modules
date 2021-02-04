@@ -12,6 +12,10 @@ function rss2atom.link(atom_entry, tag)
 	atom_entry:tag("link", { href = tag:get_text() }):up();
 end
 
+function rss2atom.enclosure(atom_entry, tag)
+	atom_entry:tag("link", { rel = "enclosure", href = tag.attr.url, type = tag.attr.type, length = tag.attr.length }):up();
+end
+
 function rss2atom.author(atom_entry, tag)
 	atom_entry:tag("author")
 		:tag("email"):text(tag:get_text()):up()
