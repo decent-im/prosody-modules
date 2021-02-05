@@ -264,6 +264,27 @@ function sync(group_id)
 	do_all_group_subscriptions_by_group(group_id);
 end
 
+function emit_member_events(group_id)
+	local group_info, err = get_info(group_id)
+	if group_info == nil then
+		return false, err
+	end
+
+	for username in pairs(get_members(group_id)) do
+		module:fire_event(
+			"group-user-added",
+			{
+				id = group_id,
+				user = username,
+				host = host,
+				group_info = group_info,
+			}
+		)
+	end
+
+	return true
+end
+
 -- Returns iterator over group ids
 function groups()
 	return group_info_store:users();
