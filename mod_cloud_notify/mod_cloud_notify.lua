@@ -337,12 +337,13 @@ local function handle_notify_request(stanza, node, user_push_services, log_push_
 				form_data["last-message-body"] = tostring(dummy_body);
 			end
 
+			push_notification_payload:add_child(push_form:form(form_data));
+
 			local push_publish = st.iq({ to = push_info.jid, from = module.host, type = "set", id = stanza_id })
 				:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
 					:tag("publish", { node = push_info.node })
 						:tag("item")
 							:add_child(push_notification_payload)
-							:add_child(push_form:form(form_data))
 						:up()
 					:up();
 
