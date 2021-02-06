@@ -23,6 +23,10 @@ Configuration
         cafile = "/path/to/your/ca.pem";
         capath = false; -- Disable capath inherited from built-in default
         verify = {"peer"; "client_once"}; -- Ask for client certificate
+        verifyext = {
+            -- Don't validate client certs as if they were server certs
+            lsec_ignore_purpose = false
+        }
     }
 
 
