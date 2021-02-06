@@ -22,6 +22,7 @@ Configuration
     c2s_ssl = {
         cafile = "/path/to/your/ca.pem";
         capath = false; -- Disable capath inherited from built-in default
+        verify = {"peer"; "client_once"}; -- Ask for client certificate
     }
 
 
