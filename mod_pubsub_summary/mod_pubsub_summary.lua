@@ -30,15 +30,17 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 				nbsp = utf8 and utf8.char(0xa0) or " ";
 			});
 	end
-	local link = payload:get_child("link");
 	local summary;
 	if title and content then
 		summary = title .. "\n\n" .. content;
 	elseif title or content then
 		summary = content or title;
 	end
-	if link and link.attr.href and link.attr.href ~= content then
-		summary = (summary and summary .. "\n" or "") .. link.attr.href;
+	for link in payload:childtags("link") do
+		if link and link.attr.href and link.attr.href ~= content then
+			summary = (summary and summary .. "\n" or "") .. link.attr.href;
+			if link.attr.rel then summary = summary .. " [" .. link.attr.rel .. "]" end
+		end
 	end
 	return summary;
 end, 1);
