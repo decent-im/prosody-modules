@@ -31,7 +31,7 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 			});
 	end
 	local summary;
-	if title and content then
+	if title and content and content:sub(1, #title) ~= title then
 		summary = title .. "\n\n" .. content;
 	elseif title or content then
 		summary = content or title;
