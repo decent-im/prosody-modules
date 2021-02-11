@@ -144,7 +144,7 @@ function module.command(arg)
 		local cert_pem = cert:read("*a");
 		local cert_der, typ = pem2der(cert_pem);
 		if typ == "CERTIFICATE" then
-			table.insert(jwkset.fingerprints, { ["sha-256"] = base64.encode(hashes.sha256(cert_der)); });
+			jwkset.fingerprints[i] = { ["sha-256"] = base64.encode(hashes.sha256(cert_der)); };
 		elseif typ then
 			io.stderr:write(cert_file, " contained a ", typ:lower(), ", was expecting a certificate\n");
 			return 1;
