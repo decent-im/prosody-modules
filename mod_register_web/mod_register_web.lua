@@ -42,40 +42,76 @@ local success_tpl = get_template "success";
 -- COMPAT `or request.conn:ip()`
 
 if next(captcha_options) ~= nil then
-	local recaptcha_tpl = get_template "recaptcha";
+	local provider = captcha_options.provider;
+	if provider == nil or provider == "recaptcha" then
+		local recaptcha_tpl = get_template "recaptcha";
 
-	function generate_captcha(display_options)
-		return recaptcha_tpl.apply(setmetatable({
-			recaptcha_display_error = display_options and display_options.recaptcha_error
-			and ("&error="..display_options.recaptcha_error) or "";
-		}, {
-			__index = function (_, k)
-				if captcha_options[k] then return captcha_options[k]; end
-				module:log("error", "Missing parameter from captcha_options: %s", k);
-			end
-		}));
-	end
-	function verify_captcha(request, form, callback)
-		http.request("https://www.google.com/recaptcha/api/siteverify", {
-			body = http.formencode {
-				secret = captcha_options.recaptcha_private_key;
-				remoteip = request.ip or request.conn:ip();
-				response = form["g-recaptcha-response"];
-			};
-		}, function (verify_result, code)
-			local result = json(verify_result);
-			if not result then
-				module:log("warn", "Unable to decode response from recaptcha: [%d] %s", code, verify_result);
-				callback(false, "Captcha API error");
-			elseif result.success == true then
-				callback(true);
-			else
-				callback(false, t_concat(result["error-codes"]));
-			end
-		end);
+		function generate_captcha(display_options)
+			return recaptcha_tpl.apply(setmetatable({
+				recaptcha_display_error = display_options and display_options.recaptcha_error
+				and ("&error="..display_options.recaptcha_error) or "";
+			}, {
+				__index = function (_, k)
+					if captcha_options[k] then return captcha_options[k]; end
+					module:log("error", "Missing parameter from captcha_options: %s", k);
+				end
+			}));
+		end
+		function verify_captcha(request, form, callback)
+			http.request("https://www.google.com/recaptcha/api/siteverify", {
+				body = http.formencode {
+					secret = captcha_options.recaptcha_private_key;
+					remoteip = request.ip or request.conn:ip();
+					response = form["g-recaptcha-response"];
+				};
+			}, function (verify_result, code)
+				local result = json(verify_result);
+				if not result then
+					module:log("warn", "Unable to decode response from recaptcha: [%d] %s", code, verify_result);
+					callback(false, "Captcha API error");
+				elseif result.success == true then
+					callback(true);
+				else
+					callback(false, t_concat(result["error-codes"]));
+				end
+			end);
+		end
+	elseif provider == "hcaptcha" then
+		local captcha_tpl = get_template "hcaptcha";
+
+		function generate_captcha(display_options)
+			return captcha_tpl.apply(setmetatable({
+				captcha_display_error = display_options and display_options.captcha_error
+				and ("&error="..display_options.captcha_error) or "";
+			}, {
+				__index = function (_, k)
+					if captcha_options[k] then return captcha_options[k]; end
+					module:log("error", "Missing parameter from captcha_options: %s", k);
+				end
+			}));
+		end
+		function verify_captcha(request, form, callback)
+			http.request("https://hcaptcha.com/siteverify", {
+				body = http.formencode {
+					secret = captcha_options.captcha_private_key;
+					remoteip = request.ip or request.conn:ip();
+					response = form["h-captcha-response"];
+				};
+			}, function (verify_result, code)
+				local result = json(verify_result);
+				if not result then
+					module:log("warn", "Unable to decode response from hcaptcha: [%d] %s", code, verify_result);
+					callback(false, "Captcha API error");
+				elseif result.success == true then
+					callback(true);
+				else
+					callback(false, t_concat(result["error-codes"]));
+				end
+			end);
+		end
 	end
 else
-	module:log("debug", "No Recaptcha options set, using fallback captcha")
+	module:log("debug", "No captcha options set, using fallback captcha")
 	local random = math.random;
 	local hmac_sha1 = require "util.hashes".hmac_sha1;
 	local secret = require "util.uuid".generate()
