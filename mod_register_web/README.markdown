@@ -15,7 +15,7 @@ Details
 -------
 
 mod\_register\_web has Prosody serve a web page where users can sign up
-for an account. It implements reCaptcha to prevent automated sign-ups
+for an account. It implements reCAPTCHA to prevent automated sign-ups
 (from bots, etc.).
 
 Configuration
@@ -32,8 +32,8 @@ To configure the CAPTCHA you need to supply a 'captcha\_options' option:
           recaptcha_public_key = "78901";
         }
 
-The keys for reCaptcha are available in your reCaptcha account, visit
-[recaptcha.net](http://recaptcha.net/) for more info.
+The keys for reCAPTCHA are available in your reCAPTCHA account, visit
+[reCAPTCHA](https://developers.google.com/recaptcha/) for more info.
 
 If no reCaptcha options are set, a simple built in captcha is used.
 
