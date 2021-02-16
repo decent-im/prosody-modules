@@ -645,6 +645,10 @@ module:hook("csi-client-active", function (event)
 	request_ack_if_needed(event.origin, true, "csi-active", nil);
 end);
 
+module:hook("csi-flushing", function (event)
+	request_ack_if_needed(event.session, true, "csi-active", nil);
+end);
+
 local function handle_read_timeout(event)
 	local session = event.session;
 	if session.smacks then
