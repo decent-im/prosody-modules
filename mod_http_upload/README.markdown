@@ -37,6 +37,15 @@ disco_items = {
 }
 ```
 
+## Access
+
+You may want to give upload access to additional entities such as components
+by using the `http_upload_access` config option.
+
+``` {.lua}
+http_upload_access = {"gateway.example.com"};
+```
+
 Limits
 ------
 

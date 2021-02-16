@@ -20,6 +20,7 @@ local s_upper = string.upper;
 local httpserver = require "net.http.server";
 local have_id, id = pcall(require, "util.id"); -- Only available in 0.10+
 local uuid = require"util.uuid".generate;
+local jid = require "util.jid";
 if have_id then
 	uuid = id.medium;
 end
@@ -32,6 +33,7 @@ end
 local file_size_limit = module:get_option_number(module.name .. "_file_size_limit", 1024 * 1024); -- 1 MB
 local quota = module:get_option_number(module.name .. "_quota");
 local max_age = module:get_option_number(module.name .. "_expire_after");
+local access = module:get_option_set(module.name .. "_access", {});
 
 --- sanity
 local parser_body_limit = module:context("*"):get_option_number("http_max_content_size", 10*1024*1024);
@@ -169,8 +171,12 @@ end
 
 local function handle_request(origin, stanza, xmlns, filename, filesize)
 	local username, host = origin.username, origin.host;
-	-- local clients only
-	if origin.type ~= "c2s" then
+
+	local user_bare = jid.bare(stanza.attr.from);
+	local user_host = jid.host(user_bare);
+
+	-- local clients or whitelisted jids/hosts only
+	if not (origin.type == "c2s" or access:contains(user_bare) or access:contains(user_host)) then
 		module:log("debug", "Request for upload slot from a %s", origin.type);
 		return nil, st.error_reply(stanza, "cancel", "not-authorized");
 	end
