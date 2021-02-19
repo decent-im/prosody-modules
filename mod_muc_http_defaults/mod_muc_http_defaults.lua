@@ -116,7 +116,7 @@ module:hook("muc-room-pre-create", function(event)
 	local wait, done = async.waiter();
 
 	local ret, err;
-	http.request(url, ex, function (code, body)
+	http.request(url, ex, function (body, code)
 		if math.floor(code / 100) == 2 then
 			local parsed, parse_err = json.decode(body);
 			if not parsed then
