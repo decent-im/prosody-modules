@@ -9,7 +9,7 @@ are created.
 
 # Requirements
 
-Prosody **trunk** required.
+Should work with Prosody 0.11.
 
 # Configuration
 

@@ -5,9 +5,7 @@
 --
 
 local http = require "net.http";
-local httperr = require "net.http.errors";
 local async = require "util.async";
-local errors = require "util.error";
 local uh = require "util.http";
 local jid = require "util.jid";
 local json = require "util.json";
@@ -27,21 +25,10 @@ local ex = {
 	}
 };
 
-local function check_status(response)
-	if math.floor(response.code/100) > 2 then
-		error(httperr.new(response.code, response.body));
-	end
-	return response;
-end
-
-local problems = errors.init(module.name, {
-		format = { type = "cancel", condition = "internal-server-error", text = "API server returned invalid data, see logs" },
-		config = { type = "cancel", condition = "internal-server-error", text = "A problem occured while creating the room, see logs" },
-});
-
-local function get_json(response)
-	return assert(json.decode(response.body), problems.new("format"));
-end
+local problems = {
+		format = "API server returned invalid data, see logs",
+		config = "A problem occured while creating the room, see logs",
+};
 
 local function apply_config(room, settings)
 	local affiliations = settings.affiliations;
@@ -61,15 +48,15 @@ local function apply_config(room, settings)
 						local ok, err = room:set_affiliation(true, prepped_jid, aff.affiliation, aff.nick and { nick = aff.nick });
 						if not ok then
 							module:log("error", "Could not set affiliation in %s: %s", room.jid, err);
-							return nil, problems.new("config");
+							return nil, "config";
 						end
 					else
 						module:log("error", "Invalid JID returned from API for %s: %q", room.jid, aff.jid);
-						return nil, problems.new("format");
+						return nil, "format";
 					end
 				else
 					module:log("error", "Invalid affiliation item returned from API for %s: %q", room.jid, aff);
-					return nil, problems.new("format");
+					return nil, "format";
 				end
 			end
 		else -- map of jid : affiliation
@@ -80,18 +67,18 @@ local function apply_config(room, settings)
 						local ok, err = room:set_affiliation(true, prepped_jid, aff);
 						if not ok then
 							module:log("error", "Could not set affiliation in %s: %s", room.jid, err);
-							return nil, problems.new("config");
+							return nil, "config";
 						end
 					else
 						module:log("error", "Invalid JID returned from API: %q", aff.jid);
-						return nil, problems.new("format");
+						return nil, "format";
 					end
 				end
 			end
 		end
 	elseif affiliations ~= nil then
 		module:log("error", "Invalid affiliations returned from API for %s: %q", room.jid, affiliations);
-		return nil, problems.new("format", { field = "affiliations" });
+		return nil, "format", { field = "affiliations" };
 	end
 
 	local config = settings.config;
@@ -118,7 +105,7 @@ local function apply_config(room, settings)
 		if type(config.archiving) == "boolean" then room._config.archiving = config.archiving; end
 	elseif config ~= nil then
 		module:log("error", "Invalid config returned from API for %s: %q", room.jid, config);
-		return nil, problems.new("format", { field = "config" });
+		return nil, "format", { field = "config" };
 	end
 	return true;
 end
@@ -126,17 +113,37 @@ end
 module:hook("muc-room-pre-create", function(event)
 	local url = render(url_template, event);
 	module:log("debug", "Calling API at %q for room %s", url, event.room.jid);
-	local ret, err = errors.coerce(async.wait_for(http.request(url, ex):next(check_status):next(get_json)));
+	local wait, done = async.waiter();
+
+	local ret, err;
+	http.request(url, ex, function (code, body)
+		if math.floor(code / 100) == 2 then
+			local parsed, parse_err = json.decode(body);
+			if not parsed then
+				module:log("debug", "Got invalid JSON from %s: %s", url, parse_err);
+				err = problems.format;
+			else
+				ret = parsed;
+			end
+		else
+			module:log("debug", "Rejected by API: ", body);
+			err = "Rejected by API";
+		end
+
+		done()
+	end);
+
+	wait();
 	if not ret then
 		event.room:destroy();
-		event.origin.send(st.error_reply(event.stanza, err));
+		event.origin.send(st.error_reply(event.stanza, "cancel", "internal-server-error", err, module.host));
 		return true;
 	end
 
 	local configured, err = apply_config(event.room, ret);
 	if not configured then
 		event.room:destroy();
-		event.origin.send(st.error_reply(event.stanza, err));
+		event.origin.send(st.error_reply(event.stanza, "cancel", "internal-server-error", err, event.room.jid or module.host));
 		return true;
 	end
 end, -2);
