@@ -36,7 +36,7 @@ local function apply_config(room, settings)
 
 		-- COMPAT the room creator is unconditionally made 'owner'
 		-- clear existing affiliation
-		for existing_affiliation in pairs(room._affiliation) do
+		for existing_affiliation in pairs(room._affiliations) do
 			room:set_affiliation(true, existing_affiliation, "none");
 		end
 
