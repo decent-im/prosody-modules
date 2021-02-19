@@ -1,3 +1,8 @@
+---
+labels:
+- 'Statistics'
+...
+
 This module provides **public** access to Prosodys
 [internal statistics][doc:statistics] trough the
 [XEP-0039: Statistics Gathering] protocol. This is a simple protocol

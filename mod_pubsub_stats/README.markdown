@@ -1,3 +1,8 @@
+---
+labels:
+- 'Statistics'
+...
+
 This module publishes data from [Prosody's `internal` statistics][doc:statistics]
  into a PubSub node in [XEP-0039] format.
 

@@ -1,6 +1,7 @@
 ---
 labels:
 - 'Stage-Beta'
+- 'Statistics'
 summary: Implementation of the Munin node protocol
 ...
 
