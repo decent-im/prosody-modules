@@ -36,6 +36,37 @@ A RESTful JSON API is used. Any error causes the room to be destroyed.
 The returned JSON consists of two main parts, the room configuration and
 the affiliations (member list).
 
+## Room Configuration
+
+The top level `config` field contains a map of properties corresponding
+to the fields in the room configuration dialog, named similarly to the
+[room configuration default][doc:modules:mod_muc#room-configuration-defaults] in
+Prosodys config file.
+
+| Property               | Type    | Description                                                               |
+|------------------------|---------|---------------------------------------------------------------------------|
+| `name`                 | string  | Name of the chat                                                          |
+| `description`          | string  | Longer description of the chat                                            |
+| `language`             | string  | Language code                                                             |
+| `persistent`           | boolean | Whether the room should keep existing if it becomes empty                 |
+| `public`               | boolean | `true` to include in public listing                                       |
+| `members_only`         | boolean | Membership or open                                                        |
+| `allow_member_invites` | boolean | If members can invite others into members-only rooms                      |
+| `public_jids`          | boolean | If everyone or only moderators should see real identities                 |
+| `subject`              | string  | In-room subject or topic message                                          |
+| `changesubject`        | boolean | If `true` then everyone can change the subject, otherwise only moderators |
+| `historylength`        | integer | Number of messages to keep in memory (legacy method)                      |
+| `moderated`            | boolean | New participants start without voice privileges if set to `true`          |
+| `archiving`            | boolean | Whether [archiving][doc:modules:mod_muc_mam] is enabled                   |
+
+## Affiliations
+
+The list of members go in `affiliations` which is either an object
+mapping addresses to affiliations (e.g. `{"user@host":"admin"}`{.json}),
+or it can be an array of address, affiliation and optionally a reserved
+nickname (e.g.
+`[{"jid":"user@host","affiliation":"member","nick":"joe"}]`{.json}).
+
 ## Schema
 
 Here's a JSON Schema in YAML format describing the expected JSON
