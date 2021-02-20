@@ -62,7 +62,7 @@ properties:
       moderated: boolean
       archiving: boolean
   affiliations:
-    anyOf:
+    oneOf:
     - type: array
       items:
         type: object
