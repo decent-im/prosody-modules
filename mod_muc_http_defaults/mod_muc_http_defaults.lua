@@ -11,7 +11,8 @@ local jid = require "util.jid";
 local json = require "util.json";
 local st = require "util.stanza";
 
-local render = require "util.interpolation".new("%b{}", uh.urlencode);
+local funcs = {jid_bare = jid.bare; jid_host = jid.host; jid_node = jid.node};
+local render = require"util.interpolation".new("%b{}", uh.urlencode, funcs);
 
 module:depends"muc";
 

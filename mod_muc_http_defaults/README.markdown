@@ -21,6 +21,11 @@ Should work with Prosody 0.11.
 :   The value of the Authorization header to authenticate against the
     API. E.g. `"Bearer /rXU4tkQTYQMgdHfMLH6"`{.lua}
 
+In the URL template variable, the room JID is available as `{room.jid}`,
+which would be turned into `room@muc.host`. To only get the room
+localpart, `{room.jid|jid_node}` can be used, and `{room.jid|jid_host}`
+splits out the `muc.host` part.
+
 ## Example
 
 ``` {.lua}
