@@ -105,7 +105,7 @@ function handle_push(event)
 	local encrypted_element = st.stanza("encrypted", { xmlns = xmlns_push_encrypt, iv = base64.encode(iv) })
 		:text(encrypted_payload);
 	if push_payload.type == "call" then
-		encrypted_payload.attr.type = "voip";
+		encrypted_element.attr.type = "voip";
 		event.important = true;
 	end
 	-- Replace the unencrypted notification data with the encrypted one
