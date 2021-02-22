@@ -70,3 +70,22 @@ Example (with whitespace and indentation for readability):
 `args`
 :   Array of extra arguments, corresponding to `printf`-style `%s`
     formatting in the `message`.
+
+Formatted message
+-----------------
+
+If desired, at the obvious expense of performance, the formatted version of
+the string can be included in the JSON object by specifying the `formatted_as`
+key in the logger config:
+
+``` {.lua}
+log = {
+  -- ... other sinks ...
+  { to = "json", formatted_as = "msg_formatted", filename = "/var/log/prosody/prosody.json" };
+}
+
+```
+
+This will expose the formatted message in the JSON as separate `msg_formatted`
+key. It is possible to override existing keys using this (for example, the
+`message` key), but not advisible.

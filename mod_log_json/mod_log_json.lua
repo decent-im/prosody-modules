@@ -21,6 +21,8 @@ local function sink_maker(config)
 			conn:send(payload);
 		end
 	end
+	local format = require "util.format".format;
+	local do_format = config.formatted_as or false;
 	return function (source, level, message, ...)
 		local args = pack(...);
 		for i = 1, args.n do
@@ -38,6 +40,9 @@ local function sink_maker(config)
 			message = message,
 			args = array(args);
 		};
+		if do_format then
+			payload[do_format] = format(message, ...)
+		end
 		send(json.encode(payload));
 	end
 end
