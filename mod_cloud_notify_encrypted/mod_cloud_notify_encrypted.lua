@@ -1,8 +1,10 @@
+local array = require "util.array";
 local base64 = require "util.encodings".base64;
 local ciphers = require "openssl.cipher";
 local jid = require "util.jid";
 local json = require "util.json";
 local random = require "util.random";
+local set = require "util.set";
 local st = require "util.stanza";
 
 local xmlns_jmi = "urn:xmpp:jingle-message:0";
@@ -76,6 +78,14 @@ function handle_push(event)
 			if jmi_propose then
 				push_payload.type = "call";
 				push_payload.sid = jmi_propose.attr.id;
+				local media_types = set.new();
+				for description in jmi_propose:childtags("description") do
+					local media_type = description.attr.media;
+					if media_type then
+						media_types:add(media_type);
+					end
+				end
+				push_payload.media = array.collect(media_types:items());
 			else
 				push_payload.type = "chat";
 			end
@@ -94,6 +104,10 @@ function handle_push(event)
 	local encrypted_payload = base64.encode(ciphers.new("AES-128-GCM"):encrypt(key_binary, iv):final(push_json)..string.rep("\0", 16));
 	local encrypted_element = st.stanza("encrypted", { xmlns = xmlns_push_encrypt, iv = base64.encode(iv) })
 		:text(encrypted_payload);
+	if push_payload.type == "call" then
+		encrypted_payload.attr.type = "voip";
+		event.important = true;
+	end
 	-- Replace the unencrypted notification data with the encrypted one
 	event.notification_payload
 		:remove_children("x", "jabber:x:data")
@@ -101,4 +115,4 @@ function handle_push(event)
 end
 
 module:hook("cloud_notify/registration", handle_register);
-module:hook("cloud_notify/push", handle_push);
+module:hook("cloud_notify/push", handle_push, 1);
