@@ -642,11 +642,15 @@ module:hook_stanza(xmlns_sm2, "resume", function (session, stanza) return handle
 module:hook_stanza(xmlns_sm3, "resume", function (session, stanza) return handle_resume(session, stanza, xmlns_sm3); end);
 
 module:hook("csi-client-active", function (event)
-	request_ack_if_needed(event.origin, true, "csi-active", nil);
+	if event.origin.smacks then
+		request_ack_if_needed(event.origin, true, "csi-active", nil);
+	end
 end);
 
 module:hook("csi-flushing", function (event)
-	request_ack_if_needed(event.session, true, "csi-active", nil);
+	if event.origin.smacks then
+		request_ack_if_needed(event.session, true, "csi-active", nil);
+	end
 end);
 
 local function handle_read_timeout(event)
