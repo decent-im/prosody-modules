@@ -648,7 +648,7 @@ module:hook("csi-client-active", function (event)
 end);
 
 module:hook("csi-flushing", function (event)
-	if event.origin.smacks then
+	if event.session.smacks then
 		request_ack_if_needed(event.session, true, "csi-active", nil);
 	end
 end);
