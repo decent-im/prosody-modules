@@ -12,11 +12,13 @@ local xmlns_jingle_apps_rtp = "urn:xmpp:jingle:apps:rtp:1";
 local xmlns_push = "urn:xmpp:push:0";
 local xmlns_push_encrypt = "tigase:push:encrypt:0";
 local xmlns_push_encrypt_aes_128_gcm = "tigase:push:encrypt:aes-128-gcm";
+local xmlns_push_jingle = "tigase:push:jingle:0";
 
 -- https://xeps.tigase.net//docs/push-notifications/encrypt/#41-discovering-support
 local function account_disco_info(event)
 	event.reply:tag("feature", {var=xmlns_push_encrypt}):up();
 	event.reply:tag("feature", {var=xmlns_push_encrypt_aes_128_gcm}):up();
+	event.reply:tag("feature", {var=xmlns_push_jingle}):up();
 end
 module:hook("account-disco-info", account_disco_info);
 
