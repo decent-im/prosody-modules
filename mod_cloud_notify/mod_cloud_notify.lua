@@ -281,6 +281,9 @@ local function is_important(stanza)
 		-- check xep373 pgp (OX) https://xmpp.org/extensions/xep-0373.html
 		if stanza:get_child("openpgp", "urn:xmpp:openpgp:0") then return true; end
 
+		-- XEP-0353: Jingle Message Initiation (incoming call request)
+		if stanza:get_child("propose", "urn:xmpp:jingle-message:0") then return true; end
+
 		local body = stanza:get_child_text("body");
 
 		-- groupchat subjects are not important here
