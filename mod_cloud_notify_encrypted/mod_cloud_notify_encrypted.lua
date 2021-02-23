@@ -87,6 +87,7 @@ function handle_push(event)
 					end
 				end
 				push_payload.media = array.collect(media_types:items());
+				push_payload.sender = original_stanza.attr.from;
 			else
 				push_payload.type = "chat";
 			end
