@@ -8,6 +8,7 @@ local set = require "util.set";
 local st = require "util.stanza";
 
 local xmlns_jmi = "urn:xmpp:jingle-message:0";
+local xmlns_jingle_apps_rtp = "urn:xmpp:jingle:apps:rtp:1";
 local xmlns_push = "urn:xmpp:push:0";
 local xmlns_push_encrypt = "tigase:push:encrypt:0";
 local xmlns_push_encrypt_aes_128_gcm = "tigase:push:encrypt:aes-128-gcm";
@@ -79,7 +80,7 @@ function handle_push(event)
 				push_payload.type = "call";
 				push_payload.sid = jmi_propose.attr.id;
 				local media_types = set.new();
-				for description in jmi_propose:childtags("description") do
+				for description in jmi_propose:childtags("description", xmlns_jingle_apps_rtp) do
 					local media_type = description.attr.media;
 					if media_type then
 						media_types:add(media_type);
