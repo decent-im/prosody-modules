@@ -54,5 +54,6 @@ function module.command(arg)
 	for user, uploads in pairs(legacy_uploads) do
 		assert(dm.list_store(user, user_host, "http_upload", uploads));
 	end
+	os.remove(legacy_storage_path);
 	return 0;
 end
