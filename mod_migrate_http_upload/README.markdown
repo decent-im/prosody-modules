@@ -6,8 +6,8 @@ labels:
 
 
 This is a migration script for converting records of [mod_http_upload]
-into the format used by the new [mod_http_file_share] which will be
-available with Prosody 0.12 (currently in trunk).
+into the format used by the new [mod_http_file_share][doc:modules:mod_http_file_share]
+which will be available with Prosody 0.12 (currently in trunk).
 
 # Usage
 
