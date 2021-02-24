@@ -34,7 +34,7 @@ function module.command(arg)
 		if not oldest_uploads then break end
 		local item = table.remove(oldest_uploads, 1);
 		local source_directory = paths.join(legacy_storage_path, item.dir);
-		local source_filename = paths.join(source_directory, item.dir, item.filename);
+		local source_filename = paths.join(source_directory, item.filename);
 		local target_filename = dm.getpath(item.dir, component, "http_file_share", "bin", true);
 		if not lfs.attributes(source_filename, "mode") then
 			print("Not migrating missing file " .. source_filename);
