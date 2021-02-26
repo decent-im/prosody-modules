@@ -76,6 +76,9 @@ field_mappings = {
 	disco = {
 		type = "func", xmlns = "http://jabber.org/protocol/disco#info", tagname = "query",
 		st2json = function (s) --> array of features
+			if s.tags[1] == nil then
+				return s.attr.node or true;
+			end
 			local identities, features, extensions = array(), array(), {};
 			for tag in s:childtags() do
 				if tag.name == "identity" and tag.attr.category and tag.attr.type then
@@ -115,6 +118,8 @@ field_mappings = {
 					end
 				end
 				return disco;
+			elseif type(s) == "string" then
+				return st.stanza("query", { xmlns = "http://jabber.org/protocol/disco#info", node = s });
 			else
 				return st.stanza("query", { xmlns = "http://jabber.org/protocol/disco#info", });
 			end
@@ -124,8 +129,8 @@ field_mappings = {
 	items = {
 		type = "func", xmlns = "http://jabber.org/protocol/disco#items", tagname = "query",
 		st2json = function (s) --> array of features | map with node
-			if s.attr.node and s.tags[1] == nil then
-				return { node = s.attr.node };
+			if s.tags[1] == nil then
+				return s.attr.node or true;
 			end
 
 			local items = array();
@@ -145,6 +150,8 @@ field_mappings = {
 					end
 				end
 				return disco;
+			elseif type(s) == "string" then
+				return st.stanza("query", { xmlns = "http://jabber.org/protocol/disco#items", node = s });
 			else
 				return st.stanza("query", { xmlns = "http://jabber.org/protocol/disco#items", });
 			end
