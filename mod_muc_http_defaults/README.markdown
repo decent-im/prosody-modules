@@ -110,11 +110,11 @@ properties:
             type: string
             pattern: ^[^@/]+@[^/]+$
           affiliation:
-            ref: '#/definitions/affiliation'
+            $ref: '#/definitions/affiliation'
           nick: string
     - type: object
-      patternProperties:
-        ^[^@/]+@[^/]+$: '#/definitions/affiliation'
+      additionalProperties:
+        $ref: '#/definitions/affiliation'
 definitions:
   affiliation:
     type: string
