@@ -1,0 +1,369 @@
+---
+openapi: 3.0.1
+info:
+  title: mod_rest API
+  description: |
+    API for sending and receiving stanzas, in a REST-ish fashion or by
+    responding to webhooks. Multiple formats supported, including native XML
+    and a simplified JSON mapping.
+  version: 0.1.0
+  license:
+    name: MIT
+paths:
+  /rest:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              description: A subset of the JSON schema, only top level string fields.
+          application/xmpp+xml:
+            schema:
+              description: Single XMPP stanza in XML format.
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stanza'
+      security:
+        - basic: []
+        - token: []
+      summary: Send stanzas and receive responses. Webhooks work the same way.
+      responses:
+        200:
+          content:
+            text/plain:
+              schema:
+                description: Plain text response used as message body.
+                example: Hello
+                type: string
+            application/x-www-form-urlencoded:
+              schema:
+                description: A subset of the JSON schema, only top level string fields.
+                example: body=Hello
+            application/xmpp+xml:
+              schema:
+                description: Single XMPP stanza in XML format.
+                example: <message><body>Hello</body></message>
+            application/json:
+              schema:
+                $ref: '#/components/schemas/stanza'
+          description: The stanza was sent and returned a response.
+        401:
+          description: No credentials or auth token were provided.
+        202:
+          description: The stanza was sent without problem, and without response,
+            so an empty reply.
+        403:
+          description: Provided credentials or token not accepted.
+        400:
+          description: There was a syntax problem in the payload.
+        422:
+          description: The was a problem with the format (but not the syntax) of the
+            payload.
+        415:
+          description: Unsupported mediatype.
+components:
+  schemas:
+    stanza:
+      properties:
+        delay:
+          type: string
+          description: Timestamp of when a stanza was delayed, in ISO 8601 / XEP-0082
+            format.
+        state:
+          enum:
+          - active
+          - inactive
+          - gone
+          - composing
+          - paused
+          description: Chat state notifications, e.g. "is typing..."
+          type: string
+          example: composing
+        thread:
+          type: string
+          description: Message thread identifier
+        status:
+          type: string
+          description: Textual status message.
+        id:
+          type: string
+          description: Reasonably unique id. mod_rest generates one if left out.
+        replace:
+          type: string
+          description: ID of message being replaced (e.g. for corrections)
+        from:
+          description: the sender
+          type: string
+          example: bob@localhost.example
+        body:
+          description: Human-readable chat message
+          type: string
+          example: Hello, World!
+        command:
+          oneOf:
+          - type: string
+          - type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/stanza/properties/formdata'
+              action:
+                type: string
+              note:
+                type: object
+                properties:
+                  text:
+                    type: string
+                  type:
+                    type: string
+                    enum:
+                    - info
+                    - warn
+                    - error
+              form:
+                $ref: '#/components/schemas/stanza/properties/dataform'
+              sessionid:
+                type: string
+              status:
+                type: string
+              node:
+                type: string
+              actions:
+                type: object
+                properties:
+                  complete:
+                    type: boolean
+                  prev:
+                    type: boolean
+                  next:
+                    type: boolean
+                  execute:
+                    type: string
+          description: Ad-hoc commands.
+        show:
+          description: indicator of availability, ie away or not
+          type: string
+          enum:
+          - away
+          - chat
+          - dnd
+          - xa
+        stats:
+          description: Statistics
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              unit:
+                type: string
+              value:
+                type: string
+        priority:
+          type: string
+          description: presence priority
+        kind:
+          description: Which kind of stanza
+          type: string
+          enum:
+          - message
+          - presence
+          - iq
+        to:
+          description: recipient
+          type: string
+          example: alice@example.com
+        type:
+          description: Stanza type
+          type: string
+          enum:
+          - chat
+          - normal
+          - headline
+          - groupchat
+          - get
+          - set
+          - result
+          - available
+          - unavailable
+          - subscribe
+          - subscribed
+          - unsubscribe
+          - unsubscribed
+        lang:
+          description: Language code
+          type: string
+          example: en
+        formdata:
+          additionalProperties:
+            oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          type: object
+          description: Simplified data form
+        join:
+          description: For joining Multi-User-Chats
+          type: boolean
+          enum:
+          - true
+        dataform:
+          properties:
+            title:
+              type: string
+            fields:
+              type: array
+              items:
+                type: object
+                properties:
+                  value:
+                    oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                  type:
+                    type: string
+                  label:
+                    type: string
+                  desc:
+                    type: string
+                  required:
+                    type: boolean
+                  var:
+                    type: string
+            type:
+              type: string
+              enum:
+              - form
+              - submit
+              - cancel
+              - result
+            instructions:
+              type: string
+          description: Data form
+          type: object
+        items:
+          oneOf:
+          - description: An items query or empty list
+            type: boolean
+            enum:
+            - true
+          - type: string
+            description: A query with a node, or an empty reply list with a node
+          - description: List of items referenced
+            type: array
+            items:
+              properties:
+                jid:
+                  type: string
+                  description: Address of item
+                node:
+                  type: string
+                name:
+                  type: string
+                  description: Descriptive name
+              required:
+              - jid
+              type: object
+          description: List of references to other entities
+        version:
+          oneOf:
+          - type: boolean
+          - properties:
+              version:
+                type: string
+              name:
+                type: string
+              os:
+                type: string
+            required:
+            - name
+            - version
+            type: object
+          description: Software version query
+        payload:
+          required:
+            - datatype
+            - data
+          properties:
+            data:
+              type: object
+            datatype:
+              type: string
+          description: A piece of arbitrary JSON with a type field attached
+          type: object
+        disco:
+          oneOf:
+          - type: boolean
+            description: Either a query, or an empty response
+          - type: string
+            description: A query with a node, or an empty response with a node
+          - properties:
+              features:
+                description: List of URIs indicating supported features
+                type: array
+                items:
+                  type: string
+              identities:
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    type:
+                      type: string
+                    category:
+                      type: string
+                description: List of abstract identities or types that describe the
+                  entity
+                type: array
+                example:
+                - name: Prosody
+                  type: im
+                  category: server
+              node:
+                type: string
+              extensions:
+                type: object
+            description: A full response
+            type: object
+          description: Discover supported features
+        oob_url:
+          type: string
+          description: URL of an attached media file.
+        html:
+          description: HTML version of 'body'
+          type: string
+          example: <body><p>Hello!</p></body>
+        subject:
+          description: Subject of message or group chat
+          type: string
+          example: Talking about stuff
+        ping:
+          description: A ping.
+          type: boolean
+          enum:
+          - true
+        nick:
+          type: string
+          description: Nickname of the sender
+      type: object
+      example:
+        body: Hello
+        type: chat
+        kind: message
+        state: active
+        to: alice@example.com
+  securitySchemes:
+    token:
+      description: Tokens from mod_http_oauth2.
+      scheme: Bearer
+      type: http
+    basic:
+      description: Use JID as username.
+      scheme: Basic
+      type: http
+...
