@@ -250,6 +250,8 @@ components:
           $ref: '#/components/schemas/thread'
         command:
           $ref: '#/components/schemas/command'
+        error:
+          $ref: '#/components/schemas/error'
       type: object
       example:
         body: Hello
@@ -541,6 +543,29 @@ components:
     nick:
       type: string
       description: Nickname of the sender
+    error:
+      type: object
+      description: Description of something gone wrong. See the Stanza Errors section in RFC 6120.
+      properties:
+        type:
+          description: General category of error
+          type: string
+          enum:
+          - auth
+          - cancel
+          - continue
+          - modify
+          - wait
+        condition:
+          description: Specific error condition.
+          type: string
+          # enum: [ full list available in RFC 6120 ]
+        code:
+          description: Legacy numeric error code. Similar to HTTP status codes.
+          type: integer
+        text:
+          description: Description of error intended for human eyes.
+          type: string
   securitySchemes:
     token:
       description: Tokens from mod_http_oauth2.
