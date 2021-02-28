@@ -65,11 +65,9 @@ local function amend_from_path(data, path)
 	if not st_kind then return; end
 	if st_kind == "iq" and st_type ~= "get" and st_type ~= "set" then
 		-- GET /iq/disco/jid
-		data = {
-			kind = "iq";
-			type = "get";
-			[st_type] = data;
-		}
+		data.kind = "iq";
+		data.type = "get";
+		data.[st_type] = true;
 	else
 		data.kind = st_kind;
 		data.type = st_type;
