@@ -62,6 +62,31 @@ paths:
             payload.
         415:
           description: Unsupported mediatype.
+  /rest/{kind}/{type}/{to}:
+    post:
+      responses:
+        200:
+          description: Okay
+      security:
+      - basic: []
+      - token: []
+      summary: Even more RESTful mapping.
+      parameters:
+      - name: kind
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/kind'
+      - name: type
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/type'
+      - name: to
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/to'
 components:
   schemas:
     stanza:

@@ -70,6 +70,18 @@ curl https://prosody.example:5281/rest \
 
 The `Content-Type` header is important!
 
+### Parameters in path
+
+New alternative format with the parameters `kind`, `type`, and `to`
+embedded in the path:
+
+```
+curl https://prosody.example:5281/rest/message/chat/john@example.com \
+    --oauth2-bearer dmVyeSBzZWNyZXQgdG9rZW4K \
+    -H 'Content-Type: text/plain' \
+    --data-binary 'Hello John!'
+```
+
 ### Replies
 
 A POST containing an `<iq>` stanza automatically wait for the reply,

@@ -59,7 +59,19 @@ local function check_credentials(request)
 	return nil;
 end
 
-local function parse(mimetype, data)
+-- (table, string) -> table
+local function amend_from_path(data, path)
+	local st_kind, st_type, st_to = path:match("^([mpi]%w+)/(%w+)/(.*)$");
+	if not st_kind then return; end
+	data.kind = st_kind;
+	data.type = st_type;
+	if st_to and st_to ~= "" then
+		data.to = st_to;
+	end
+	return data;
+end
+
+local function parse(mimetype, data, path) --> Stanza, error enum
 	mimetype = mimetype and mimetype:match("^[^; ]*");
 	if mimetype == "application/xmpp+xml" then
 		return xml.parse(data);
@@ -68,6 +80,7 @@ local function parse(mimetype, data)
 		if not parsed then
 			return parsed, err;
 		end
+		if path and not amend_from_path(parsed, path) then return nil, "invalid-path"; end
 		return jsonmap.json2st(parsed);
 	elseif mimetype == "application/cbor" and have_cbor then
 		local parsed, err = cbor.decode(data);
@@ -83,9 +96,22 @@ local function parse(mimetype, data)
 		for i = #parsed, 1, -1 do
 			parsed[i] = nil;
 		end
+		if path and not amend_from_path(parsed, path) then return nil, "invalid-path"; end
 		return jsonmap.json2st(parsed);
 	elseif mimetype == "text/plain" then
-		return st.message({ type = "chat" }, data);
+		if not path then
+			return st.message({ type = "chat" }, data);
+		end
+		local parsed = {};
+		if not amend_from_path(parsed, path) then return nil, "invalid-path"; end
+		if parsed.kind == "message" then
+			parsed.body = data;
+		elseif parsed.kind == "presence" then
+			parsed.show = data;
+		else
+			return nil, "invalid-path";
+		end
+		return jsonmap.json2st(parsed);
 	end
 	return nil, "unknown-payload-type";
 end
@@ -162,7 +188,7 @@ local post_errors = errors.init("mod_rest", {
 	mediatype = { code = 415, condition = "bad-format", text = "Unsupported media type" },
 });
 
-local function handle_post(event)
+local function handle_post(event, path)
 	local request, response = event.request, event.response;
 	local from;
 	local origin;
@@ -177,7 +203,7 @@ local function handle_post(event)
 		end
 		from = jid.join(origin.username, origin.host, origin.resource);
 	end
-	local payload, err = parse(request.headers.content_type, request.body);
+	local payload, err = parse(request.headers.content_type, request.body, path);
 	if not payload then
 		-- parse fail
 		local ctx = { error = err, type = request.headers.content_type, data = request.body, };
@@ -267,6 +293,7 @@ module:depends("http");
 module:provides("http", {
 		route = {
 			POST = handle_post;
+			["POST /*"] = handle_post;
 		};
 	});
 
