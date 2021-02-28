@@ -63,8 +63,17 @@ end
 local function amend_from_path(data, path)
 	local st_kind, st_type, st_to = path:match("^([mpi]%w+)/(%w+)/(.*)$");
 	if not st_kind then return; end
-	data.kind = st_kind;
-	data.type = st_type;
+	if st_kind == "iq" and st_type ~= "get" and st_type ~= "set" then
+		-- GET /iq/disco/jid
+		data = {
+			kind = "iq";
+			type = "get";
+			[st_type] = data;
+		}
+	else
+		data.kind = st_kind;
+		data.type = st_type;
+	end
 	if st_to and st_to ~= "" then
 		data.to = st_to;
 	end
@@ -111,6 +120,10 @@ local function parse(mimetype, data, path) --> Stanza, error enum
 		else
 			return nil, "invalid-path";
 		end
+		return jsonmap.json2st(parsed);
+	elseif not mimetype and path then
+		local parsed = amend_from_path({}, path);
+		if not parsed then return nil, "invalid-path"; end
 		return jsonmap.json2st(parsed);
 	end
 	return nil, "unknown-payload-type";
@@ -188,7 +201,17 @@ local post_errors = errors.init("mod_rest", {
 	mediatype = { code = 415, condition = "bad-format", text = "Unsupported media type" },
 });
 
-local function handle_post(event, path)
+-- GET → iq-get
+local function parse_request(request, path)
+	if path and request.method == "GET" then
+		-- e.g. /verison/{to}
+		return parse(nil, nil, "iq/"..path);
+	else
+		return parse(request.headers.content_type, request.body, path);
+	end
+end
+
+local function handle_request(event, path)
 	local request, response = event.request, event.response;
 	local from;
 	local origin;
@@ -203,7 +226,7 @@ local function handle_post(event, path)
 		end
 		from = jid.join(origin.username, origin.host, origin.resource);
 	end
-	local payload, err = parse(request.headers.content_type, request.body, path);
+	local payload, err = parse_request(request, path);
 	if not payload then
 		-- parse fail
 		local ctx = { error = err, type = request.headers.content_type, data = request.body, };
@@ -245,7 +268,7 @@ local function handle_post(event, path)
 	};
 
 	module:log("debug", "Received[rest]: %s", payload:top_tag());
-	local send_type = decide_type((request.headers.accept or "") ..",".. request.headers.content_type, supported_outputs)
+	local send_type = decide_type((request.headers.accept or "") ..",".. (request.headers.content_type or ""), supported_outputs)
 	if payload.name == "iq" then
 		function origin.send(stanza)
 			module:send(stanza);
@@ -292,8 +315,9 @@ end
 module:depends("http");
 module:provides("http", {
 		route = {
-			POST = handle_post;
-			["POST /*"] = handle_post;
+			POST = handle_request;
+			["POST /*"] = handle_request;
+			["GET /*"] = handle_request;
 		};
 	});
 

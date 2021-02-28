@@ -62,6 +62,109 @@ paths:
             payload.
         415:
           description: Unsupported mediatype.
+  /rest/ping/{to}:
+    get:
+      security:
+      - basic: []
+      - token: []
+      summary: Ping a local or remote server or other entity
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+            application/xmpp+xml:
+              schema:
+                description: Single XMPP stanza in XML format.
+                example: |
+                  <iq type="result"/>
+          description: OK
+      parameters:
+      - name: to
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/to'
+  /rest/disco/{to}:
+    get:
+      security:
+      - basic: []
+      - token: []
+      summary: Query a remote entity for supported features
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  disco:
+                    $ref: '#/components/schemas/disco'
+            application/xmpp+xml:
+              schema:
+                description: See XEP-0030
+          description: OK
+      parameters:
+      - name: to
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/to'
+  /rest/items/{to}:
+    get:
+      security:
+      - basic: []
+      - token: []
+      summary: Query an entity for related services, chat rooms or other items
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  disco:
+                    $ref: '#/components/schemas/items'
+            application/xmpp+xml:
+              schema:
+                description: See XEP-0030
+          description: OK
+      parameters:
+      - name: to
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/to'
+  /rest/version/{to}:
+    get:
+      security:
+      - basic: []
+      - token: []
+      summary: Ask what software version is used
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/stanza'
+            application/xmpp+xml:
+              schema:
+                description: Single XMPP stanza in XML format.
+                example: |
+                  <iq type="result">
+                    <query xmlns="jabber:iq:version">
+                      <name>Exodus</name>
+                      <version>0.7.0.4</version>
+                    </query>
+                  </iq>
+          description: OK
+      parameters:
+      - name: to
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/to'
   /rest/{kind}/{type}/{to}:
     post:
       responses:

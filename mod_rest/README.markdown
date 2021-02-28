@@ -101,6 +101,23 @@ instance *MAY* be returned in the HTTP response. Replies from other
 entities (connected clients or remote servers) will not be returned, but
 can be forwarded via the callback API described in the next section.
 
+### Simple info queries
+
+A subset of IQ stanzas can be sent as simple GET requests
+
+```
+curl https://prosody.example:5281/rest/version/example.com \
+    --oauth2-bearer dmVyeSBzZWNyZXQgdG9rZW4K \
+    -H 'Accept: application/json'
+```
+
+The supported queries are
+
+-   `disco`
+-   `items`
+-   `version`
+-   `ping`
+
 ## Receiving stanzas
 
 TL;DR: Set this webhook callback URL, get XML `POST`-ed there.
