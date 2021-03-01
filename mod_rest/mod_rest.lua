@@ -67,7 +67,7 @@ local function amend_from_path(data, path)
 		-- GET /iq/disco/jid
 		data.kind = "iq";
 		data.type = "get";
-		data.[st_type] = true;
+		data[st_type] = true;
 	else
 		data.kind = st_kind;
 		data.type = st_type;
