@@ -77,7 +77,7 @@ module:hook("message/host", function (event)
 		else
 			pubsub.config.broadcaster("items", node_arg, {
 				[from] = { ["pubsub#include_body"] = true }
-			}, item);
+			}, item, nil, pubsub.nodes[node_arg]);
 			reply:body("OK");
 		end
 	else
