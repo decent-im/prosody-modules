@@ -13,55 +13,29 @@ paths:
   /rest:
     post:
       requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              description: A subset of the JSON schema, only top level string fields.
-          application/xmpp+xml:
-            schema:
-              description: Single XMPP stanza in XML format.
-          application/json:
-            schema:
-              $ref: '#/components/schemas/stanza'
+        $ref: '#/components/requestBodies/common'
       security:
         - basic: []
         - token: []
       summary: Send stanzas and receive responses. Webhooks work the same way.
       responses:
         200:
-          content:
-            text/plain:
-              schema:
-                description: Plain text response used as message body.
-                example: Hello
-                type: string
-            application/x-www-form-urlencoded:
-              schema:
-                description: A subset of the JSON schema, only top level string fields.
-                example: body=Hello
-            application/xmpp+xml:
-              schema:
-                description: Single XMPP stanza in XML format.
-                example: <message><body>Hello</body></message>
-            application/json:
-              schema:
-                $ref: '#/components/schemas/stanza'
-          description: The stanza was sent and returned a response.
-        401:
-          description: No credentials or auth token were provided.
+          $ref: '#/components/responses/success'
         202:
-          description: The stanza was sent without problem, and without response,
-            so an empty reply.
-        403:
-          description: Provided credentials or token not accepted.
-        400:
-          description: There was a syntax problem in the payload.
-        422:
-          description: The was a problem with the format (but not the syntax) of the
-            payload.
-        415:
-          description: Unsupported mediatype.
+          $ref: '#/components/responses/sent'
+  /rest/{kind}/{type}/{to}:
+    post:
+      security:
+      - basic: []
+      - token: []
+      summary: Even more RESTful mapping with certain components in the path.
+      parameters:
+      - $ref: '#/components/parameters/kind'
+      - $ref: '#/components/parameters/type'
+      - $ref: '#/components/parameters/to'
+      responses:
+        200:
+          $ref: '#/components/responses/success'
   /rest/ping/{to}:
     get:
       security:
@@ -70,22 +44,11 @@ paths:
       summary: Ping a local or remote server or other entity
       responses:
         200:
-          content:
-            application/json:
-              schema:
-                type: object
-            application/xmpp+xml:
-              schema:
-                description: Single XMPP stanza in XML format.
-                example: |
-                  <iq type="result"/>
-          description: OK
+          $ref: '#/components/responses/success'
+        202:
+          $ref: '#/components/responses/sent'
       parameters:
-      - name: to
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/to'
+      - $ref: '#/components/parameters/to'
   /rest/disco/{to}:
     get:
       security:
@@ -94,23 +57,9 @@ paths:
       summary: Query a remote entity for supported features
       responses:
         200:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  disco:
-                    $ref: '#/components/schemas/disco'
-            application/xmpp+xml:
-              schema:
-                description: See XEP-0030
-          description: OK
+          $ref: '#/components/responses/success'
       parameters:
-      - name: to
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/to'
+      - $ref: '#/components/parameters/to'
   /rest/items/{to}:
     get:
       security:
@@ -119,77 +68,20 @@ paths:
       summary: Query an entity for related services, chat rooms or other items
       responses:
         200:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  disco:
-                    $ref: '#/components/schemas/items'
-            application/xmpp+xml:
-              schema:
-                description: See XEP-0030
-          description: OK
+          $ref: '#/components/responses/success'
       parameters:
-      - name: to
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/to'
+      - $ref: '#/components/parameters/to'
   /rest/version/{to}:
     get:
       security:
       - basic: []
       - token: []
-      summary: Ask what software version is used
+      summary: Ask what software version is used.
       responses:
         200:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/stanza'
-            application/xmpp+xml:
-              schema:
-                description: Single XMPP stanza in XML format.
-                example: |
-                  <iq type="result">
-                    <query xmlns="jabber:iq:version">
-                      <name>Exodus</name>
-                      <version>0.7.0.4</version>
-                    </query>
-                  </iq>
-          description: OK
+          $ref: '#/components/responses/success'
       parameters:
-      - name: to
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/to'
-  /rest/{kind}/{type}/{to}:
-    post:
-      responses:
-        200:
-          description: Okay
-      security:
-      - basic: []
-      - token: []
-      summary: Even more RESTful mapping.
-      parameters:
-      - name: kind
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/kind'
-      - name: type
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/type'
-      - name: to
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/to'
+      - $ref: '#/components/parameters/to'
 components:
   schemas:
     stanza:
@@ -575,4 +467,60 @@ components:
       description: Use JID as username.
       scheme: Basic
       type: http
+  requestBodies:
+    common:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            description: A subset of the JSON schema, only top level string fields.
+        application/xmpp+xml:
+          schema:
+            description: Single XMPP stanza in XML format.
+        application/json:
+          schema:
+            $ref: '#/components/schemas/stanza'
+  responses:
+    success:
+      description: The stanza was sent and returned a response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/stanza'
+        application/xmpp+xml:
+          schema:
+            description: Single XMPP stanza in XML format.
+            example: <message><body>Hello</body></message>
+        application/x-www-form-urlencoded:
+          schema:
+            description: A subset of the JSON schema, only top level string fields.
+            example: body=Hello
+        text/plain:
+          schema:
+            description: Plain text response used as message body.
+            example: Hello
+            type: string
+    sent:
+      description: The stanza was sent without problem, and without response,
+        so an empty reply.
+  parameters:
+    to:
+      name: to
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/to'
+    kind:
+      name: kind
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/kind'
+    type:
+      name: type
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/type'
+
 ...
