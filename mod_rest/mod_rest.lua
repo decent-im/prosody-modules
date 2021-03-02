@@ -309,6 +309,11 @@ local function handle_request(event, path)
 	end
 end
 
+local demo_handlers = {};
+if module:get_option_path("rest_demo_resources", nil) then
+	demo_handlers = module:require"apidemo";
+end
+
 -- Handle stanzas submitted via HTTP
 module:depends("http");
 module:provides("http", {
@@ -316,6 +321,12 @@ module:provides("http", {
 			POST = handle_request;
 			["POST /*"] = handle_request;
 			["GET /*"] = handle_request;
+
+			-- Only if api_demo_resources are set
+			["GET /"] = demo_handlers.redirect;
+			["GET /demo/"] = demo_handlers.main_page;
+			["GET /demo/openapi.yaml"] = demo_handlers.schema;
+			["GET /demo/*"] = demo_handlers.resources;
 		};
 	});
 
