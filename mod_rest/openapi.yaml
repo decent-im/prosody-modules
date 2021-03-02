@@ -299,7 +299,7 @@ components:
       - type: object
         properties:
           data:
-            $ref: '#/components/schemas/stanza/properties/formdata'
+            $ref: '#/components/schemas/formdata'
           action:
             type: string
           note:
@@ -314,7 +314,7 @@ components:
                 - warn
                 - error
           form:
-            $ref: '#/components/schemas/stanza/properties/dataform'
+            $ref: '#/components/schemas/dataform'
           sessionid:
             type: string
           status:
