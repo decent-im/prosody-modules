@@ -2,12 +2,28 @@ local mod_muc = module:depends("muc")
 local http = require "net.http"
 local st = require "util.stanza"
 local url_pattern = [[https?://%S+]]
-local xmlns_fasten = "urn:xmpp:fasten:0";
-local xmlns_xhtml = "http://www.w3.org/1999/xhtml";
+local domain_pattern = '^%w+://([^/]+)'
+local xmlns_fasten = "urn:xmpp:fasten:0"
+local xmlns_xhtml = "http://www.w3.org/1999/xhtml"
+local whitelist = module:get_option_set("ogp_domain_whitelist", {})
+
+
+local function is_whitelisted(url)
+	if whitelist:empty() then
+		return true
+	end
+	local domain = url:match(domain_pattern)
+	if whitelist:contains(domain) then
+		return true;
+	end
+	return false
+end
 
 
 local function fetch_ogp_data(room, url, origin_id)
-	if not url then return; end
+	if not url or not is_whitelisted(url) then
+		return;
+	end
 
 	http.request(
 		url,
