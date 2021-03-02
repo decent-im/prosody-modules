@@ -5,16 +5,9 @@ local url_pattern = [[https?://%S+]]
 local xmlns_fasten = "urn:xmpp:fasten:0";
 local xmlns_xhtml = "http://www.w3.org/1999/xhtml";
 
-local function ogp_handler(event)
-	local room, stanza = event.room, st.clone(event.stanza)
-	local body = stanza:get_child_text("body")
-	if not body then return; end
 
-	local url = body:match(url_pattern)
+local function fetch_ogp_data(room, url, origin_id)
 	if not url then return; end
-
-	local origin_id = stanza:find("{urn:xmpp:sid:0}origin-id@id")
-	if not origin_id then return; end
 
 	http.request(
 		url,
@@ -69,6 +62,20 @@ local function ogp_handler(event)
 			module:log("info", tostring(fastening))
 		end
 	)
+end
+
+local function ogp_handler(event)
+	local room, stanza = event.room, st.clone(event.stanza)
+	local body = stanza:get_child_text("body")
+
+	if not body then return; end
+
+	local origin_id = stanza:find("{urn:xmpp:sid:0}origin-id@id")
+	if not origin_id then return; end
+
+	for url in body:gmatch(url_pattern) do
+		fetch_ogp_data(room, url, origin_id);
+	end
 end
 
 module:hook("muc-occupant-groupchat", ogp_handler)
