@@ -25,6 +25,8 @@ via the `ogp_domain_whitelist` setting.
 
 For example:
 
-    Component "muc.example.org" "muc"
-      modules_enabled = { "ogp" }
-      ogp_domain_whitelist = { "prosody.im" }
+```lua
+Component "muc.example.org" "muc"
+  modules_enabled = { "ogp" }
+  ogp_domain_whitelist = { "prosody.im" }
+```
