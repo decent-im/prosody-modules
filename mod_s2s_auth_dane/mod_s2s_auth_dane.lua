@@ -231,6 +231,8 @@ if have_async then
 	end
 end
 
+local new_dane = module:get_option_boolean("use_dane", false);
+
 function module.add_host(module)
 	local function on_new_s2s(event)
 		local host_session = event.origin;
@@ -244,9 +246,11 @@ function module.add_host(module)
 		-- Let it run in parallel until we need to check the cert
 	end
 
-	-- New outgoing connections
-	module:hook("stanza/http://etherx.jabber.org/streams:features", on_new_s2s, 501);
-	module:hook("s2sout-authenticate-legacy", on_new_s2s, 200);
+	if not new_dane then
+		-- New outgoing connections
+		module:hook("stanza/http://etherx.jabber.org/streams:features", on_new_s2s, 501);
+		module:hook("s2sout-authenticate-legacy", on_new_s2s, 200);
+	end
 
 	-- New incoming connections
 	module:hook("s2s-stream-features", on_new_s2s, 10);
