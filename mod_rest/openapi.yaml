@@ -45,8 +45,6 @@ paths:
       responses:
         200:
           $ref: '#/components/responses/success'
-        202:
-          $ref: '#/components/responses/sent'
       parameters:
       - $ref: '#/components/parameters/to'
   /rest/disco/{to}:
