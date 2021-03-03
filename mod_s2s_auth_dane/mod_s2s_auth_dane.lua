@@ -21,6 +21,7 @@ module:set_global();
 
 local have_async, async = pcall(require, "util.async");
 local noop = function () end
+local unpack = table.unpack or _G.unpack;
 local type = type;
 local t_insert = table.insert;
 local set = require"util.set";
