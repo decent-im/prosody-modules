@@ -6,7 +6,7 @@ info:
     API for sending and receiving stanzas, in a REST-ish fashion or by
     responding to webhooks. Multiple formats supported, including native XML
     and a simplified JSON mapping.
-  version: 0.1.0
+  version: 0.2.0
   license:
     name: MIT
 paths:
@@ -77,7 +77,14 @@ paths:
       summary: Ask what software version is used.
       responses:
         200:
-          $ref: '#/components/responses/success'
+          description: Version query response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/iq_result_version'
+            application/xmpp+xml:
+              schema:
+                $ref: '#/components/schemas/iq_result_version'
       parameters:
       - $ref: '#/components/parameters/to'
 components:
@@ -125,7 +132,9 @@ components:
         dataform:
           $ref: '#/components/schemas/dataform'
         version:
-          $ref: '#/components/schemas/version'
+          oneOf:
+            - $ref: '#/components/schemas/version'
+            - type: boolean
         payload:
           $ref: '#/components/schemas/payload'
         disco:
@@ -352,21 +361,41 @@ components:
           - jid
           type: object
       description: List of references to other entities
+
+    iq_result_version:
+      description: Version query response
+      type: object
+      xml:
+        name: iq
+      properties:
+        type:
+          type: string
+          enum:
+          - result
+          xml:
+            attribute: true
+        version:
+          $ref: '#/components/schemas/version'
+
     version:
-      oneOf:
-      - type: boolean
-      - properties:
-          version:
-            type: string
-          name:
-            type: string
-          os:
-            type: string
-        required:
-        - name
-        - version
-        type: object
+      type: object
       description: Software version query
+      properties:
+        name:
+          type: string
+          example: My Software
+        version:
+          type: string
+          example: 1.0.0
+        os:
+          type: string
+          example: Linux
+      required:
+      - name
+      - version
+      xml:
+        name: query
+        namespace: jabber:iq:version
     payload:
       required:
         - datatype
