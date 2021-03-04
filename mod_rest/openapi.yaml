@@ -3,7 +3,7 @@ openapi: 3.0.1
 
 info:
   title: mod_rest API
-  version: 0.3.0
+  version: 0.3.1
   description: |
     API for sending and receiving stanzas, in a REST-ish fashion or by
     responding to webhooks. Multiple formats supported, including native XML
@@ -41,6 +41,8 @@ paths:
       - $ref: '#/components/parameters/kind'
       - $ref: '#/components/parameters/type'
       - $ref: '#/components/parameters/to'
+      requestBody:
+        $ref: '#/components/requestBodies/common'
       responses:
         200:
           $ref: '#/components/responses/success'
