@@ -3,7 +3,7 @@ openapi: 3.0.1
 
 info:
   title: mod_rest API
-  version: 0.3.1
+  version: 0.3.2
   description: |
     API for sending and receiving stanzas, in a REST-ish fashion or by
     responding to webhooks. Multiple formats supported, including native XML
@@ -596,15 +596,15 @@ components:
     common:
       required: true
       content:
-        application/x-www-form-urlencoded:
-          schema:
-            description: A subset of the JSON schema, only top level string fields.
-        application/xmpp+xml:
-          schema:
-            description: Single XMPP stanza in XML format.
         application/json:
           schema:
             $ref: '#/components/schemas/stanza'
+        application/xmpp+xml:
+          schema:
+            description: Single XMPP stanza in XML format.
+        application/x-www-form-urlencoded:
+          schema:
+            description: A subset of the JSON schema, only top level string fields.
 
   responses:
     success:
