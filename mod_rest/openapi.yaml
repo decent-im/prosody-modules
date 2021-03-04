@@ -3,7 +3,7 @@ openapi: 3.0.1
 
 info:
   title: mod_rest API
-  version: 0.2.1
+  version: 0.3.0
   description: |
     API for sending and receiving stanzas, in a REST-ish fashion or by
     responding to webhooks. Multiple formats supported, including native XML
@@ -57,7 +57,15 @@ paths:
       - $ref: '#/components/parameters/to'
       responses:
         200:
-          $ref: '#/components/responses/success'
+          description: Test reachability of some address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/iq_pong'
+            application/xmpp+xml:
+              schema:
+                $ref: '#/components/schemas/iq_pong'
+
 
   /rest/version/{to}:
     get:
@@ -187,6 +195,19 @@ components:
           $ref: '#/components/schemas/stats'
         error:
           $ref: '#/components/schemas/error'
+
+    iq_pong:
+      description: Test reachability of some XMPP address
+      type: object
+      xml:
+        name: iq
+      properties:
+        type:
+          type: string
+          enum:
+          - result
+          xml:
+            attribute: true
 
     iq_result_version:
       description: Version query response
