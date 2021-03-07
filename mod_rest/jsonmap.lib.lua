@@ -235,7 +235,7 @@ field_mappings = {
 		end;
 		json2st = function (s)
 			if type(s) == "string" then
-				return st.stanza("query", { xmlns = "jabber:x:oob" }):text_tag("url", s);
+				return st.stanza("x", { xmlns = "jabber:x:oob" }):text_tag("url", s);
 			end
 		end;
 	};
