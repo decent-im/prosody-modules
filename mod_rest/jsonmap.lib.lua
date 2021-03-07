@@ -228,7 +228,7 @@ field_mappings = {
 	};
 
 	-- XEP-0066: Out of Band Data
-	oob_url = { type = "func", xmlns = "jabber:x:oob", tagname = "query",
+	oob_url = { type = "func", xmlns = "jabber:x:oob", tagname = "x",
 		-- XXX namespace depends on whether it's in an iq or message stanza
 		st2json = function (s)
 			return s:get_child_text("url");
