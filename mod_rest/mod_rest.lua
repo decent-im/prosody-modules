@@ -65,9 +65,11 @@ local function amend_from_path(data, path)
 	if not st_kind then return; end
 	if st_kind == "iq" and st_type ~= "get" and st_type ~= "set" then
 		-- GET /iq/disco/jid
-		data.kind = "iq";
-		data.type = "get";
-		data[st_type] = true;
+		data = {
+			kind = "iq";
+			type = "get";
+			[st_type] = st_type == "ping" or data or {};
+		};
 	else
 		data.kind = st_kind;
 		data.type = st_type;
@@ -87,7 +89,10 @@ local function parse(mimetype, data, path) --> Stanza, error enum
 		if not parsed then
 			return parsed, err;
 		end
-		if path and not amend_from_path(parsed, path) then return nil, "invalid-path"; end
+		if path then
+			parsed = amend_from_path(parsed, path);
+			if not parsed then return nil, "invalid-path"; end
+		end
 		return jsonmap.json2st(parsed);
 	elseif mimetype == "application/cbor" and have_cbor then
 		local parsed, err = cbor.decode(data);
@@ -98,19 +103,29 @@ local function parse(mimetype, data, path) --> Stanza, error enum
 	elseif mimetype == "application/x-www-form-urlencoded"then
 		local parsed = http.formdecode(data);
 		if type(parsed) == "string" then
+			-- This should reject GET /iq/query/to?messagebody
+			if path then
+				return nil, "invalid-query";
+			end
 			return parse("text/plain", parsed);
 		end
 		for i = #parsed, 1, -1 do
 			parsed[i] = nil;
 		end
-		if path and not amend_from_path(parsed, path) then return nil, "invalid-path"; end
+		if path then
+			parsed = amend_from_path(parsed, path);
+			if not parsed then return nil, "invalid-path"; end
+		end
 		return jsonmap.json2st(parsed);
 	elseif mimetype == "text/plain" then
 		if not path then
 			return st.message({ type = "chat" }, data);
 		end
 		local parsed = {};
-		if not amend_from_path(parsed, path) then return nil, "invalid-path"; end
+		if path then
+			parsed = amend_from_path(parsed, path);
+			if not parsed then return nil, "invalid-path"; end
+		end
 		if parsed.kind == "message" then
 			parsed.body = data;
 		elseif parsed.kind == "presence" then
@@ -203,6 +218,9 @@ local post_errors = errors.init("mod_rest", {
 local function parse_request(request, path)
 	if path and request.method == "GET" then
 		-- e.g. /verison/{to}
+		if request.url.query then
+			return parse("application/x-www-form-urlencoded", request.url.query, "iq/"..path);
+		end
 		return parse(nil, nil, "iq/"..path);
 	else
 		return parse(request.headers.content_type, request.body, path);
