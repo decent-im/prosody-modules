@@ -241,7 +241,7 @@ local function handle_request(event, path)
 	end
 
 	local to = jid.prep(payload.attr.to);
-	if not to then
+	if payload.attr.to and not to then
 		return post_errors.new("to");
 	end
 
