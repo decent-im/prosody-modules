@@ -22,6 +22,9 @@ end
 do
 	local f = module:load_resource("openapi.yaml");
 	_M.schema = {
+		headers = {
+			content_type = "text/x-yaml";
+		};
 		body = f:read("*a");
 	}
 	f:close();
