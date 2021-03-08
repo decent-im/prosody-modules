@@ -30,6 +30,7 @@ local function fetch_ogp_data(room, url, origin_id)
 		nil,
 		function(response_body, response_code, _)
 			if response_code ~= 200 then
+				module:log("debug", "Call to %s returned code %s and body %s", url, response_code, response_body)
 				return
 			end
 
@@ -58,7 +59,7 @@ local function fetch_ogp_data(room, url, origin_id)
 				end
 
 				if property and content then
-					module:log("info", property .. "\t" .. content)
+					module:log("debug", property .. "\t" .. content)
 					fastening:tag(
 						"meta",
 						{
@@ -75,7 +76,7 @@ local function fetch_ogp_data(room, url, origin_id)
 			if found_metadata then
 				mod_muc.get_room_from_jid(room.jid):broadcast_message(fastening)
 			end
-			module:log("info", tostring(fastening))
+			module:log("debug", tostring(fastening))
 		end
 	)
 end
