@@ -217,7 +217,7 @@ local post_errors = errors.init("mod_rest", {
 -- GET → iq-get
 local function parse_request(request, path)
 	if path and request.method == "GET" then
-		-- e.g. /verison/{to}
+		-- e.g. /version/{to}
 		if request.url.query then
 			return parse("application/x-www-form-urlencoded", request.url.query, "iq/"..path);
 		end

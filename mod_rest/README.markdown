@@ -384,7 +384,7 @@ stanza, for full flexibility use the XML mode.
     `"composing"` (typing).
 
 `html`
-:   String with HTML allowing rich formating. **MUST** be contained in a
+:   String with HTML allowing rich formatting. **MUST** be contained in a
     `<body>` element.
 
 `oob_url`
@@ -467,7 +467,7 @@ Used to execute arbitrary commands on supporting entities.
 
     `data`
     :   Map with only the data for result dataforms. Fields may be
-        stings or arrays of strings.
+        strings or arrays of strings.
 
 ##### Example
 
