@@ -84,19 +84,32 @@ properties:
   config:
     type: object
     properties:
-      name: string
-      description: string
-      language: string
-      persistent: boolean
-      public: boolean
-      members_only: boolean
-      allow_member_invites: boolean
-      public_jids: boolean
-      subject: string
-      changesubject: boolean
-      historylength: integer
-      moderated: boolean
-      archiving: boolean
+      name:
+        type: string
+      description:
+        type: string
+      language:
+        type: string
+      persistent:
+        type: boolean
+      public:
+        type: boolean
+      members_only:
+        type: boolean
+      allow_member_invites:
+        type: boolean
+      public_jids:
+        type: boolean
+      subject:
+        type: string
+      changesubject:
+        type: boolean
+      historylength:
+        type: integer
+      moderated:
+        type: boolean
+      archiving:
+        type: boolean
   affiliations:
     oneOf:
     - type: array
@@ -111,7 +124,8 @@ properties:
             pattern: ^[^@/]+@[^/]+$
           affiliation:
             $ref: '#/definitions/affiliation'
-          nick: string
+          nick:
+            type: string
     - type: object
       additionalProperties:
         $ref: '#/definitions/affiliation'
