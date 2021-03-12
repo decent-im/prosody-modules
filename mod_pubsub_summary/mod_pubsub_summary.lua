@@ -7,8 +7,8 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 	-- Note: This prefers content over summary, it was made for a news feed where
 	-- the interesting stuff was in the content and the summary was .. meh.
 	local content_tag = payload:get_child("content") or payload:get_child("summary");
-	local content = content_tag:get_text();
-	if content_tag.attr.type == "html" then
+	local content = content_tag and content_tag:get_text();
+	if content and content_tag.attr.type == "html" then
 		content = content:gsub("\n*<p[^>]*>\n*(.-)\n*</p>\n*", "%1\n\n");
 		content = content:gsub("<li>(.-)</li>\n", "* %1\n");
 		content = content:gsub("<a[^>]*href=[\"'](.-)[\"'][^>]*>(.-)</a>", "%2 <%1>");
