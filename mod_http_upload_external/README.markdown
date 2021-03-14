@@ -10,7 +10,7 @@ This module implements [XEP-0363], which lets clients upload files
 over HTTP to an external web server.
 
 This module generates URLs that are signed using a HMAC. Any web service that can authenticate
-these URLs can be used. 
+these URLs can be used.
 
 Implementations
 ---------------
@@ -20,7 +20,7 @@ Implementations
 * [Go implementation, Prosody Filer](https://github.com/ThomasLeister/prosody-filer)
 * [Perl implementation for nginx](https://github.com/weiss/ngx_http_upload)
 
-To implement your own service compatible with this module, check out the implementation notes below 
+To implement your own service compatible with this module, check out the implementation notes below
 (and if you publish your implementation - let us know!).
 
 Configuration
@@ -70,6 +70,16 @@ http_upload_external_file_size_limit = 123 -- bytes
 ```
 
 Default is 100MB (100\*1024\*1024).
+
+Access
+------
+
+You may want to give upload access to additional entities such as components
+by using the `http_upload_access` config option.
+
+``` {.lua}
+http_upload_access = {"gateway.example.com"};
+```
 
 Compatibility
 =============

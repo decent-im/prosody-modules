@@ -11,6 +11,7 @@ local uuid = require"util.uuid".generate;
 local http = require "util.http";
 local dataform = require "util.dataforms".new;
 local HMAC = require "util.hashes".hmac_sha256;
+local jid = require "util.jid";
 
 -- config
 local file_size_limit = module:get_option_number(module.name .. "_file_size_limit", 100 * 1024 * 1024); -- 100 MB
@@ -18,6 +19,7 @@ local base_url = assert(module:get_option_string(module.name .. "_base_url"),
 	module.name .. "_base_url is a required option");
 local secret = assert(module:get_option_string(module.name .. "_secret"),
 	module.name .. "_secret is a required option");
+local access = module:get_option_set(module.name .. "_access", {});
 
 local token_protocol = module:get_option_string(module.name .. "_protocol", "v1");
 
@@ -56,8 +58,11 @@ local function magic_crypto_dust(random, filename, filesize, filetype)
 end
 
 local function handle_request(origin, stanza, xmlns, filename, filesize, filetype)
-	-- local clients only
-	if origin.type ~= "c2s" then
+	local user_bare = jid.bare(stanza.attr.from);
+	local user_host = jid.host(user_bare);
+
+	-- local clients or whitelisted jids/hosts only
+	if not (origin.type == "c2s" or access:contains(user_bare) or access:contains(user_host)) then
 		module:log("debug", "Request for upload slot from a %s", origin.type);
 		origin.send(st.error_reply(stanza, "cancel", "not-authorized"));
 		return nil, nil;
