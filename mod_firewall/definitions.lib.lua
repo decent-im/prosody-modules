@@ -188,6 +188,55 @@ local list_backends = {
 			return self.items and self.items[item] == true;
 		end;
 	};
+
+	-- %LIST: pubsub:pubsub.example.com/node
+	-- TODO or the actual URI scheme? Bit overkill maybe?
+	-- TODO Publish items back to the service?
+	-- Step 1: Receiving pubsub events and storing them in the list
+	-- We'll start by using only the item id.
+	-- TODO Invent some custom schema for this? Needed for just a set of strings?
+	pubsubitemid = {
+		init = function(self, pubsub_spec, opts)
+			local service_addr, node = pubsub_spec:match("^([^/]*)/(.*)");
+			module:depends("pubsub_subscription");
+			module:add_item("pubsub-subscription", {
+					service = service_addr;
+					node = node;
+					on_subscribed = function ()
+						self.items = {};
+					end;
+					on_item = function (event)
+						self:add(event.item.attr.id);
+					end;
+					on_retract = function (event)
+						self:remove(event.item.attr.id);
+					end;
+					on_purge = function ()
+						self.items = {};
+					end;
+					on_unsubscribed = function ()
+						self.items = nil;
+					end;
+					on_delete= function ()
+						self.items = nil;
+					end;
+				});
+			-- TODO Initial fetch? Or should mod_pubsub_subscription do this?
+		end;
+		add = function (self, item)
+			if self.items then
+				self.items[item] = true;
+			end
+		end;
+		remove = function (self, item)
+			if self.items then
+				self.items[item] = nil;
+			end
+		end;
+		contains = function (self, item)
+			return self.items and self.items[item] == true;
+		end;
+	};
 };
 list_backends.https = list_backends.http;
 
