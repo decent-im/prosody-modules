@@ -186,29 +186,21 @@ local function subscribe_all_rooms(user_jid)
 	return rooms_with_activity;
 end
 
---- FIXME:
--- The subscribe/unsubscribe code below doesn't work in the case where
--- the user joins from multiple resources with the same nick.
---
--- For example, resource A joining, followed by resource B joining, followed
--- by A leaving and B leaving will ultimately trigger muc-occupant-joined for
--- resource A and muc-occupant-left for resource B.
-
-module:hook("muc-occupant-joined", function(event)
+module:hook("muc-occupant-pre-join", function(event)
 	local room_jid, user_jid = event.room.jid, event.stanza.attr.from;
 	local ok, _ = unsubscribe_room(user_jid, room_jid);
 	if ok then
 		module:log("debug", "Unsubscribed %s to %s Reason: muc-occupant-joined", user_jid, room_jid)
 	end
-end);
+end, -500);
 
-module:hook("muc-occupant-left", function(event)
-	local room_jid, user_jid = event.room.jid, event.occupant.jid;
+module:hook("muc-occupant-pre-leave", function(event)
+	local room_jid, user_jid = event.room.jid, event.stanza.attr.from;
 	local ok, _ = subscribe_room(user_jid, room_jid);
 	if ok then
 		module:log("debug", "Subscribed %s to %s Reason: muc-occupant-left", user_jid, room_jid)
 	end
-end);
+end, -500);
 
 module:hook("presence/host", function (event)
 	local origin, stanza = event.origin, event.stanza;
