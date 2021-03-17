@@ -11,7 +11,7 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 	if content and content_tag.attr.type == "html" then
 		content = content:gsub("\n*<p[^>]*>\n*(.-)\n*</p>\n*", "%1\n\n");
 		content = content:gsub("<li>(.-)</li>\n", "* %1\n");
-		content = content:gsub("<a[^>]*href=[\"'](.-)[\"'][^>]*>(.-)</a>", "%2 <%1>");
+		content = content:gsub("<a[^>]*href=[\"'](.-)[\"'][^>]*>(.-)</a>", "\1%1\2%2\3");
 		content = content:gsub("<b>(.-)</b>", "*%1*");
 		content = content:gsub("<strong>(.-)</strong>", "*%1*");
 		content = content:gsub("<em>(.-)</em>", "*%1*");
@@ -19,6 +19,7 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 		content = content:gsub("<img[^>]*src=[\"'](.-)[\"'][^>]*>", " %1 "); -- TODO alt= would have been nice to grab
 		content = content:gsub("<br[^>]*>", "\n");
 		content = content:gsub("<[^>]+>", "");
+		content = content:gsub("\1(.-)\2(.-)\3", "%2 <%1>");
 		content = content:gsub("^%s*", ""):gsub("%s*$", "");
 		content = content:gsub("\n\n\n+", "\n\n");
 		content = content:gsub("&(%w+);", {
