@@ -231,6 +231,8 @@ local function handle_request(event, path)
 	local request, response = event.request, event.response;
 	local from;
 	local origin;
+	local echo = path == "echo";
+	if echo then path = nil; end
 
 	if not request.headers.authorization then
 		response.headers.www_authenticate = www_authenticate_header;
@@ -285,6 +287,12 @@ local function handle_request(event, path)
 
 	module:log("debug", "Received[rest]: %s", payload:top_tag());
 	local send_type = decide_type((request.headers.accept or "") ..",".. (request.headers.content_type or ""), supported_outputs)
+
+	if echo then
+		response.headers.content_type = send_type;
+		return encode(send_type, payload);
+	end
+
 	if payload.name == "iq" then
 		function origin.send(stanza)
 			module:send(stanza);
