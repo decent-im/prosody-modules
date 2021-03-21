@@ -1,0 +1,204 @@
+{
+   "_common" : {
+      "delay" : {
+         "format" : "date-time",
+         "title" : "XEP-0203: Delayed Delivery",
+         "type" : "string",
+         "xml" : {
+            "name" : "delay",
+            "namespace" : "urn:xmpp:delay",
+            "x_single_attribute" : "stamp"
+         }
+      },
+      "from" : {
+         "description" : "the sender of the stanza",
+         "example" : "bob@example.net",
+         "format" : "xmpp-jid",
+         "type" : "string",
+         "xml" : {
+            "attribute" : true
+         }
+      },
+      "id" : {
+         "description" : "Reasonably unique id. mod_rest generates one if left out.",
+         "type" : "string",
+         "xml" : {
+            "attribute" : true
+         }
+      },
+      "lang" : {
+         "description" : "Language code",
+         "example" : "en",
+         "type" : "string",
+         "xml" : {
+            "attribute" : true,
+            "prefix" : "xml"
+         }
+      },
+      "nick" : {
+         "type" : "string",
+         "xml" : {
+            "name" : "nick",
+            "namespace" : "http://jabber.org/protocol/nick"
+         }
+      },
+      "to" : {
+         "description" : "the intended recipient for the stanza",
+         "example" : "alice@another.example",
+         "format" : "xmpp-jid",
+         "type" : "string",
+         "xml" : {
+            "attribute" : true
+         }
+      },
+      "type" : {
+         "description" : "Stanza type",
+         "type" : "string",
+         "xml" : {
+            "attribute" : true
+         }
+      }
+   },
+   "properties" : {
+      "iq" : {
+         "properties" : {
+            "ping" : {
+               "description" : "Test reachability of some XMPP address",
+               "enum" : [
+                  true
+               ],
+               "title" : "XEP-0199: XMPP Ping",
+               "type" : "boolean",
+               "xml" : {
+                  "name" : "ping",
+                  "namespace" : "urn:xmpp:ping",
+                  "x_name_is_value" : true
+               }
+            },
+            "version" : {
+               "description" : "Ask about software version information",
+               "properties" : {
+                  "name" : {
+                     "example" : "My Software",
+                     "type" : "string"
+                  },
+                  "os" : {
+                     "example" : "Linux",
+                     "type" : "string"
+                  },
+                  "version" : {
+                     "example" : "1.0.0",
+                     "type" : "string"
+                  }
+               },
+               "required" : [
+                  "name",
+                  "version"
+               ],
+               "title" : "XEP-0092: Software Version",
+               "type" : "object",
+               "xml" : {
+                  "name" : "query",
+                  "namespace" : "jabber:iq:version"
+               }
+            }
+         },
+         "type" : "object",
+         "xml" : {
+            "name" : "iq"
+         }
+      },
+      "message" : {
+         "properties" : {
+            "body" : {
+               "description" : "Human-readable chat message",
+               "example" : "Hello, World!",
+               "type" : "string"
+            },
+            "replace" : {
+               "description" : "For indicating that a message is a correction of the last sent message.",
+               "title" : "XEP-0308: Last Message Correction",
+               "type" : "string",
+               "xml" : {
+                  "name" : "replace",
+                  "namespace" : "urn:xmpp:message-correct:0",
+                  "x_single_attribute" : "id"
+               }
+            },
+            "state" : {
+               "description" : "Chat state notifications, e.g. \"is typing...\"",
+               "enum" : [
+                  "active",
+                  "inactive",
+                  "gone",
+                  "composing",
+                  "paused"
+               ],
+               "type" : "string",
+               "xml" : {
+                  "namespace" : "http://jabber.org/protocol/chatstates",
+                  "x_name_is_value" : true
+               }
+            },
+            "subject" : {
+               "description" : "Subject of message or group chat",
+               "example" : "Talking about stuff",
+               "type" : "string"
+            },
+            "thread" : {
+               "description" : "Message thread identifier",
+               "properties" : {
+                  "id" : {
+                     "type" : "string",
+                     "xml" : {
+                        "text" : true
+                     }
+                  },
+                  "parent" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "type" : "object"
+            }
+         },
+         "type" : "object",
+         "xml" : {
+            "name" : "message"
+         }
+      },
+      "presence" : {
+         "properties" : {
+            "priority" : {
+               "description" : "Presence priority",
+               "type" : "string"
+            },
+            "show" : {
+               "description" : "indicator of availability, ie away or not",
+               "enum" : [
+                  "away",
+                  "chat",
+                  "dnd",
+                  "xa"
+               ],
+               "type" : "string"
+            },
+            "status" : {
+               "description" : "Textual status message.",
+               "type" : "string"
+            }
+         },
+         "type" : "object",
+         "xml" : {
+            "name" : "presence"
+         }
+      }
+   },
+   "type" : "object",
+   "xml" : {
+      "name" : "xmpp",
+      "namespace" : "jabber:client"
+   }
+}

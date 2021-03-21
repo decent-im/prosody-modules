@@ -3,37 +3,26 @@ local jid = require "util.jid";
 local json = require "util.json";
 local st = require "util.stanza";
 local xml = require "util.xml";
+local map = require "util.datamapper";
 
+local schema do
+	local f = assert(module:load_resource("res/schema-xmpp.json"));
+	schema = json.decode(f:read("*a"))
+	f:close();
+	-- Copy common properties to all stanza kinds
+	if schema._common then
+		for key, prop in pairs(schema._common) do
+			for _, copyto in pairs(schema.properties) do
+				copyto.properties[key] = prop;
+			end
+		end
+		schema._common = nil;
+	end
+end
+
+-- Some mappings that are still hard to do in a nice way with util.datamapper
 local field_mappings; -- in scope for "func" mappings
 field_mappings = {
-	-- top level stanza attributes
-	-- needed here to mark them as known fields
-	kind = "attr",
-	type = "attr",
-	to = "attr",
-	from = "attr",
-	id = "attr",
-	lang = "attr",
-
-	-- basic message
-	body = "text_tag",
-	subject = "text_tag",
-	thread = "text_tag",
-
-	-- basic presence
-	show = "text_tag",
-	status = "text_tag",
-	priority = "text_tag",
-
-	state = { type = "name", xmlns = "http://jabber.org/protocol/chatstates" },
-	nick = { type = "text_tag", xmlns = "http://jabber.org/protocol/nick", tagname = "nick" },
-	delay = { type = "attr", xmlns = "urn:xmpp:delay", tagname = "delay", attr = "stamp" },
-	replace = { type = "attr", xmlns = "urn:xmpp:message-correct:0", tagname = "replace", attr = "id" },
-
-	-- XEP-0045 MUC
-	-- TODO history, password, ???
-	join = { type = "bool_tag", xmlns = "http://jabber.org/protocol/muc", tagname = "x" },
-
 	-- XEP-0071
 	html = {
 		type = "func", xmlns = "http://jabber.org/protocol/xhtml-im", tagname = "html",
@@ -45,31 +34,6 @@ field_mappings = {
 				return assert(xml.parse("<x:html xmlns:x='http://jabber.org/protocol/xhtml-im' xmlns='http://www.w3.org/1999/xhtml'>" .. s .. "</x:html>"));
 			end
 		end;
-	};
-
-	-- XEP-0199: XMPP Ping
-	ping = { type = "bool_tag", xmlns = "urn:xmpp:ping", tagname = "ping" },
-
-	-- XEP-0092: Software Version
-	version = { type = "func", xmlns = "jabber:iq:version", tagname = "query",
-		st2json = function (s)
-			return {
-				name = s:get_child_text("name");
-				version = s:get_child_text("version");
-				os = s:get_child_text("os");
-			}
-		end,
-		json2st = function (s)
-			local v = st.stanza("query", { xmlns = "jabber:iq:version" });
-			if type(s) == "table" then
-				v:text_tag("name", s.name);
-				v:text_tag("version", s.version);
-				if s.os then
-					v:text_tag("os", s.os);
-				end
-			end
-			return v;
-		end
 	};
 
 	-- XEP-0030
@@ -228,6 +192,7 @@ field_mappings = {
 	};
 
 	-- XEP-0066: Out of Band Data
+	-- TODO Replace by oob.url in datamapper schema
 	oob_url = { type = "func", xmlns = "jabber:x:oob", tagname = "x",
 		-- XXX namespace depends on whether it's in an iq or message stanza
 		st2json = function (s)
@@ -416,6 +381,10 @@ field_mappings = {
 
 local byxmlname = {};
 for k, spec in pairs(field_mappings) do
+	for _, replace in pairs(schema.properties) do
+		replace.properties[k] = nil
+	end
+
 	if type(spec) == "table" then
 		spec.key = k;
 		if spec.xmlns and spec.tagname then
@@ -461,14 +430,8 @@ local kind_by_type = {
 }
 
 local function st2json(s)
-	local t = {
-		kind = s.name,
-		type = s.attr.type,
-		to = s.attr.to,
-		from = s.attr.from,
-		id = s.attr.id,
-		lang = s.attr["xml:lang"],
-	};
+	local t = map.parse(schema.properties[s.name], s);
+
 	if s.name == "presence" and not s.attr.type then
 		t.type = "available";
 	end
@@ -501,17 +464,7 @@ local function st2json(s)
 			mapping = byxmlname[prefix];
 		end
 
-		if not mapping then -- luacheck: ignore 542
-			-- pass
-		elseif mapping.type == "text_tag" then
-			t[mapping.key] = tag:get_text();
-		elseif mapping.type == "name" then
-			t[mapping.key] = tag.name;
-		elseif mapping.type == "attr" then
-			t[mapping.key] = tag.attr[mapping.attr];
-		elseif mapping.type == "bool_tag" then
-			t[mapping.key] = true;
-		elseif mapping.type == "func" and mapping.st2json then
+		if mapping and mapping.type == "func" and mapping.st2json then
 			t[mapping.key] = mapping.st2json(tag);
 		end
 	end
@@ -547,27 +500,17 @@ local function json2st(t)
 		end
 	end
 
-	if t_type == "available" then
+	if kind == "presence" and t_type == "available" then
 		t_type = nil;
+	elseif kind == "iq" and not t_type then
+		t_type = "get";
 	end
 
-	local s = st.stanza(kind or "message", {
-		type = t_type;
-		to = str(t.to) and jid.prep(t.to);
-		from = str(t.to) and jid.prep(t.from);
-		id = str(t.id),
-		["xml:lang"] = str(t.lang),
-	});
+	local s = map.unparse(schema.properties[kind or "message"], t);
 
-	if t.to and not s.attr.to then
-		return nil, "invalid-jid-to";
-	end
-	if t.from and not s.attr.from then
-		return nil, "invalid-jid-from";
-	end
-	if kind == "iq" and not s.attr.type then
-		s.attr.type = "get";
-	end
+	s.attr.type = t_type;
+	s.attr.to = str(t.to) and jid.prep(t.to);
+	s.attr.from = str(t.to) and jid.prep(t.from);
 
 	if type(t.error) == "table" then
 		return st.error_reply(st.reply(s), str(t.error.type), str(t.error.condition), str(t.error.text), str(t.error.by));
@@ -578,25 +521,9 @@ local function json2st(t)
 
 	for k, v in pairs(t) do
 		local mapping = field_mappings[k];
-		if mapping then
-			if mapping == "text_tag" then
-				s:text_tag(k, v);
-			elseif mapping == "attr" then -- luacheck: ignore 542
-				-- handled already
-			elseif mapping.type == "text_tag" then
-				s:text_tag(mapping.tagname or k, v, mapping.xmlns and { xmlns = mapping.xmlns });
-			elseif mapping.type == "name" then
-				s:tag(v, { xmlns = mapping.xmlns }):up();
-			elseif mapping.type == "attr" then
-				s:tag(mapping.tagname or k, { xmlns = mapping.xmlns, [mapping.attr or k] = v }):up();
-			elseif mapping.type == "bool_tag" then
-				s:tag(mapping.tagname or k, { xmlns = mapping.xmlns }):up();
-			elseif mapping.type == "func" and mapping.json2st then
+		if mapping and mapping.type == "func" and mapping.json2st then
 				s:add_child(mapping.json2st(v)):up();
 			end
-		else
-			return nil, "unknown-field";
-		end
 	end
 
 	s:reset();

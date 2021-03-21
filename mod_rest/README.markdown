@@ -8,6 +8,7 @@ rockspec:
       mod_rest.jsonmap: jsonmap.lib.lua
     copy_directories:
     - example
+    - res
 ---
 
 # Introduction
