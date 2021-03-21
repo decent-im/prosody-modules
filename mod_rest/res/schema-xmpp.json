@@ -209,7 +209,9 @@
          "properties" : {
             "priority" : {
                "description" : "Presence priority",
-               "type" : "string"
+               "maximum" : 127,
+               "minimum" : -128,
+               "type" : "integer"
             },
             "show" : {
                "description" : "indicator of availability, ie away or not",
