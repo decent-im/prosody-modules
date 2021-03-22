@@ -1,6 +1,7 @@
 local usermanager = require "core.usermanager";
 
 local json = require "util.json";
+local st = require "util.stanza";
 
 module:depends("http");
 
@@ -16,6 +17,9 @@ local site_name = module:get_option_string("site_name", module.host);
 local json_content_type = "application/json";
 
 local www_authenticate_header = ("Bearer realm=%q"):format(module.host.."/"..module.name);
+
+local xmlns_pubsub = "http://jabber.org/protocol/pubsub";
+local xmlns_nick = "http://jabber.org/protocol/nick";
 
 local function check_credentials(request)
 	local auth_type, auth_data = string.match(request.headers.authorization or "", "^(%S+)%s(.+)$");
@@ -164,9 +168,9 @@ local function get_user_info(username)
 	local display_name;
 	do
 		local pep_service = mod_pep.get_pep_service(username);
-		local ok, _, nick_item = pep_service:get_last_item("http://jabber.org/protocol/nick", true);
+		local ok, _, nick_item = pep_service:get_last_item(xmlns_nick, true);
 		if ok and nick_item then
-			display_name = nick_item:get_child_text("nick", "http://jabber.org/protocol/nick");
+			display_name = nick_item:get_child_text("nick", xmlns_nick);
 		end
 	end
 
@@ -357,6 +361,40 @@ function get_user_by_name(event, username)
 	return json.encode(user_info);
 end
 
+function update_user(event, username)
+	local current_user = get_user_info(username);
+
+	local request = event.request;
+	if request.headers.content_type ~= json_content_type
+	or (not request.body or #request.body == 0) then
+		return 400;
+	end
+	local new_user = json.decode(event.request.body);
+	if not new_user then
+		return 400;
+	end
+
+	if new_user.username and new_user.username ~= username then
+		return 400;
+	end
+
+	local final_user = {};
+
+	if new_user.display_name then
+		local pep_service = mod_pep.get_pep_service(username);
+		-- TODO: publish
+		local nick_item = st.stanza("item", { xmlns = xmlns_pubsub, id = "current" })
+			:text_tag("nick", new_user.display_name, { xmlns = xmlns_nick });
+		if pep_service:publish(xmlns_nick, true, "current", nick_item, {
+			access_model = "open";
+			_defaults_only = true;
+		}) then
+			final_user.display_name = new_user.display_name;
+		end
+	end
+	return 200;
+end
+
 function delete_user(event, username) --luacheck: ignore 212/event
 	if not usermanager.delete_user(username, module.host) then
 		return 404;
@@ -519,6 +557,7 @@ module:provides("http", {
 
 		["GET /users"] = list_users;
 		["GET /users/*"] = get_user_by_name;
+		["PUT /users/*"] = update_user;
 		["DELETE /users/*"] = delete_user;
 
 		["GET /groups"] = list_groups;
