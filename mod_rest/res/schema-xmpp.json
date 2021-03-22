@@ -62,6 +62,23 @@
    "properties" : {
       "iq" : {
          "properties" : {
+            "oob" : {
+               "properties" : {
+                  "desc" : {
+                     "type" : "string"
+                  },
+                  "url" : {
+                     "format" : "uri",
+                     "type" : "string"
+                  }
+               },
+               "title" : "XEP-0066: Out of Band Data",
+               "type" : "object",
+               "xml" : {
+                  "name" : "query",
+                  "namespace" : "jabber:iq:oob"
+               }
+            },
             "ping" : {
                "description" : "Test reachability of some XMPP address",
                "enum" : [
@@ -150,6 +167,23 @@
                "description" : "Human-readable chat message",
                "example" : "Hello, World!",
                "type" : "string"
+            },
+            "oob" : {
+               "properties" : {
+                  "desc" : {
+                     "type" : "string"
+                  },
+                  "url" : {
+                     "format" : "uri",
+                     "type" : "string"
+                  }
+               },
+               "title" : "XEP-0066: Out of Band Data",
+               "type" : "object",
+               "xml" : {
+                  "name" : "x",
+                  "namespace" : "jabber:x:oob"
+               }
             },
             "replace" : {
                "description" : "For indicating that a message is a correction of the last sent message.",
