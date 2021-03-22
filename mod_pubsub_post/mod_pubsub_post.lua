@@ -16,6 +16,26 @@ local hmacs = {
 
 local pubsub_service = module:depends("pubsub").service;
 
+local mappings = module:get_option("pubsub_post_mappings", nil);
+local datamapper;
+if type(mappings) == "table" then
+	datamapper = require "util.datamapper";
+	for node, f in pairs(mappings) do
+		if type(f) == "string" then
+			local fh = assert(module:load_resource(f));
+			mappings[node] = assert(json.parse(fh:read("*a")));
+			fh:close()
+		end
+	end
+end
+
+local function wrap(node, parsed, raw)
+	if mappings and mappings[node] then
+		return datamapper.unparse(mappings[node], parsed)
+	end
+	return st.stanza("json", { xmlns="urn:xmpp:json:0" }):text(raw);
+end
+
 local error_mapping = {
 	["forbidden"] = 403;
 	["item-not-found"] = 404;
@@ -42,8 +62,8 @@ local function handle_json(node, actor, data)
 	if type(parsed) ~= "table" then
 		return { status_code = 400; body = "object or array expected"; };
 	end
-	local wrapper = st.stanza("json", { xmlns="urn:xmpp:json:0" }):text(data);
-	return publish_payload(node, actor, type(parsed.id) == "string" and parsed.id or "current", wrapper);
+	local payload = wrap(node, parsed, data)
+	return publish_payload(node, actor, type(parsed.id) == "string" and parsed.id or "current", payload);
 end
 
 local function publish_atom(node, actor, feed)
