@@ -63,7 +63,14 @@ local function handle_json(node, actor, data)
 		return { status_code = 400; body = "object or array expected"; };
 	end
 	local payload = wrap(node, parsed, data)
-	return publish_payload(node, actor, type(parsed.id) == "string" and parsed.id or "current", payload);
+	local item_id = "current";
+	if payload.attr["http://jabber.org/protocol/pubsub\1id"] then
+		item_id = payload.attr["http://jabber.org/protocol/pubsub\1id"];
+		payload.attr["http://jabber.org/protocol/pubsub\1id"] = nil;
+	elseif type(parsed.id) == "string" then
+		item_id = parsed.id;
+	end
+	return publish_payload(node, actor, item_id, payload);
 end
 
 local function publish_atom(node, actor, feed)
