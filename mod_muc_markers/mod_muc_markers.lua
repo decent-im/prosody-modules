@@ -74,11 +74,11 @@ module:hook("muc-occupant-groupchat", function (event)
 end);
 
 module:hook("muc-message-is-historic", function (event)
-	local marker = event.stanza:get_child(nil, xmlns_markers)
+	local marker = event.stanza:get_child(nil, xmlns_markers);
 
 	-- Prevent stanza from reaching the archive (it's just noise)
-	if marker and marker_element_names:contains(marker.name) then
-		return false
+	if marker then
+		return false;
 	end
 end);
 
