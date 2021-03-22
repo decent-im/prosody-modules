@@ -2,6 +2,7 @@ local usermanager = require "core.usermanager";
 
 local json = require "util.json";
 local st = require "util.stanza";
+local array = require "util.array";
 
 module:depends("http");
 
@@ -174,9 +175,21 @@ local function get_user_info(username)
 		end
 	end
 
+	local roles = nil;
+	if usermanager.get_roles then
+		local roles_map = usermanager.get_roles(username.."@"..module.host, module.host)
+		roles = array()
+		if roles_map then
+			for role in pairs(roles_map) do
+				roles:push(role)
+			end
+		end
+	end
+
 	return {
 		username = username;
 		display_name = display_name;
+		roles = roles;
 	};
 end
 
@@ -392,6 +405,23 @@ function update_user(event, username)
 			final_user.display_name = new_user.display_name;
 		end
 	end
+
+	if new_user.roles then
+		if not usermanager.set_roles then
+			return 500, "feature-not-implemented"
+		end
+
+		local backend_roles = {};
+		for _, role in ipairs(new_user.roles) do
+			backend_roles[role] = true;
+		end
+		local jid = username.."@"..module.host;
+		if not usermanager.set_roles(jid, module.host, backend_roles) then
+			module:log("error", "failed to set roles %q for %s", backend_roles, jid)
+			return 500
+		end
+	end
+
 	return 200;
 end
 

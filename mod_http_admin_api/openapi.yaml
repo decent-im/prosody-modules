@@ -61,7 +61,7 @@ paths:
     put:
       tags:
       - user
-      summary: Updated user (NYI)
+      summary: Updated user
       description: Update a user
       operationId: updateUser
       parameters:
