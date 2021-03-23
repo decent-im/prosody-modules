@@ -175,9 +175,7 @@ components:
         ping:
           $ref: '#/components/schemas/ping'
         version:
-          oneOf:
-            - $ref: '#/components/schemas/version'
-            - type: boolean
+          $ref: '#/components/schemas/version'
         disco:
           $ref: '#/components/schemas/disco'
         items:
