@@ -408,6 +408,8 @@ local kind_by_type = {
 local function st2json(s)
 	local t = map.parse(schema.properties[s.name], s);
 
+	t.kind = s.name;
+
 	if s.name == "presence" and not s.attr.type then
 		t.type = "available";
 	end
