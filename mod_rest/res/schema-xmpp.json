@@ -62,6 +62,29 @@
    "properties" : {
       "iq" : {
          "properties" : {
+            "lastactivity" : {
+               "properties" : {
+                  "seconds" : {
+                     "minimum" : 0,
+                     "type" : "integer",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "status" : {
+                     "type" : "string",
+                     "xml" : {
+                        "text" : true
+                     }
+                  }
+               },
+               "title" : "XEP-0012: Last Activity",
+               "type" : "object",
+               "xml" : {
+                  "name" : "query",
+                  "namespace" : "jabber:iq:last"
+               }
+            },
             "oob" : {
                "properties" : {
                   "desc" : {
@@ -90,6 +113,87 @@
                   "name" : "ping",
                   "namespace" : "urn:xmpp:ping",
                   "x_name_is_value" : true
+               }
+            },
+            "register" : {
+               "description" : "Register with a service",
+               "properties" : {
+                  "address" : {
+                     "type" : "string"
+                  },
+                  "city" : {
+                     "type" : "string"
+                  },
+                  "date" : {
+                     "type" : "string"
+                  },
+                  "email" : {
+                     "type" : "string"
+                  },
+                  "first" : {
+                     "type" : "string"
+                  },
+                  "instructions" : {
+                     "type" : "string"
+                  },
+                  "key" : {
+                     "type" : "string"
+                  },
+                  "last" : {
+                     "type" : "string"
+                  },
+                  "misc" : {
+                     "type" : "string"
+                  },
+                  "name" : {
+                     "type" : "string"
+                  },
+                  "nick" : {
+                     "type" : "string"
+                  },
+                  "password" : {
+                     "type" : "string"
+                  },
+                  "phone" : {
+                     "type" : "string"
+                  },
+                  "registered" : {
+                     "type" : "boolean",
+                     "xml" : {
+                        "x_name_is_value" : true
+                     }
+                  },
+                  "remove" : {
+                     "type" : "boolean",
+                     "xml" : {
+                        "x_name_is_value" : true
+                     }
+                  },
+                  "state" : {
+                     "type" : "string"
+                  },
+                  "text" : {
+                     "type" : "string"
+                  },
+                  "url" : {
+                     "type" : "string"
+                  },
+                  "username" : {
+                     "type" : "string"
+                  },
+                  "zip" : {
+                     "type" : "string"
+                  }
+               },
+               "required" : [
+                  "username",
+                  "password"
+               ],
+               "title" : "XEP-0077: In-Band Registration",
+               "type" : "object",
+               "xml" : {
+                  "name" : "query",
+                  "namespace" : "jabber:iq:register"
                }
             },
             "stats" : {
@@ -163,10 +267,68 @@
       },
       "message" : {
          "properties" : {
+            "attach_to" : {
+               "title" : "XEP-0367: Message Attaching",
+               "type" : "string",
+               "xml" : {
+                  "name" : "attach-to",
+                  "namespace" : "urn:xmpp:message-attaching:1",
+                  "x_single_attribute" : "id"
+               }
+            },
             "body" : {
                "description" : "Human-readable chat message",
                "example" : "Hello, World!",
                "type" : "string"
+            },
+            "displayed" : {
+               "description" : "Message ID of a message that has been displayed",
+               "title" : "XEP-0333: Chat Markers",
+               "type" : "string",
+               "xml" : {
+                  "namespace" : "urn:xmpp:chat-markers:0"
+               }
+            },
+            "fallback" : {
+               "title" : "XEP-0428: Fallback Indication",
+               "type" : "boolean",
+               "xml" : {
+                  "name" : "fallback",
+                  "namespace" : "urn:xmpp:fallback:0",
+                  "x_name_is_value" : true
+               }
+            },
+            "forwarded" : {
+               "title" : "XEP-0297: Stanza Forwarding",
+               "type" : "object",
+               "xml" : {
+                  "name" : "forwarded",
+                  "namespace" : "urn:xmpp:forward:0"
+               }
+            },
+            "markable" : {
+               "title" : "XEP-0333: Chat Markers",
+               "type" : "boolean",
+               "xml" : {
+                  "namespace" : "urn:xmpp:chat-markers:0",
+                  "x_name_is_value" : true
+               }
+            },
+            "occupant_id" : {
+               "properties" : {
+                  "id" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "title" : "XEP-0421: Anonymous unique occupant identifiers for MUCs",
+               "type" : "object",
+               "xml" : {
+                  "name" : "occupant-id",
+                  "namespace" : "urn:xmpp:occupant-id:0"
+               }
             },
             "oob" : {
                "properties" : {
@@ -183,6 +345,74 @@
                "xml" : {
                   "name" : "x",
                   "namespace" : "jabber:x:oob"
+               }
+            },
+            "reactions" : {
+               "properties" : {
+                  "id" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "reactions" : {
+                     "items" : {
+                        "type" : "string",
+                        "xml" : {
+                           "name" : "reaction"
+                        }
+                     },
+                     "type" : "array",
+                     "xml" : {
+                        "name" : "reactions",
+                        "wrapped" : false
+                     }
+                  }
+               },
+               "title" : "XEP-0444: Message Reactions",
+               "type" : "object",
+               "xml" : {
+                  "namespace" : "urn:xmpp:reactions:0"
+               }
+            },
+            "reference" : {
+               "properties" : {
+                  "begin" : {
+                     "minimum" : 0,
+                     "type" : "integer",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "end" : {
+                     "minimum" : 0,
+                     "type" : "integer",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "type" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "uri" : {
+                     "format" : "uri",
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "required" : [
+                  "type",
+                  "uri"
+               ],
+               "title" : "XEP-0372: References",
+               "type" : "object",
+               "xml" : {
+                  "namespace" : "urn:xmpp:reference:0"
                }
             },
             "replace" : {
@@ -241,6 +471,50 @@
       },
       "presence" : {
          "properties" : {
+            "caps" : {
+               "properties" : {
+                  "ext" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "hash" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "node" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "ver" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "title" : "XEP-0115: Entity Capabilities",
+               "type" : "object",
+               "xml" : {
+                  "name" : "c",
+                  "namespace" : "http://jabber.org/protocol/caps"
+               }
+            },
+            "idle_since" : {
+               "format" : "date-time",
+               "title" : "XEP-0319: Last User Interaction in Presence",
+               "type" : "string",
+               "xml" : {
+                  "name" : "idle",
+                  "namespace" : "urn:xmpp:idle:1",
+                  "x_single_attribute" : "since"
+               }
+            },
             "priority" : {
                "description" : "Presence priority",
                "maximum" : 127,
@@ -260,6 +534,19 @@
             "status" : {
                "description" : "Textual status message.",
                "type" : "string"
+            },
+            "vcard_update" : {
+               "properties" : {
+                  "photo" : {
+                     "type" : "string"
+                  }
+               },
+               "title" : "XEP-0153: vCard-Based Avatars",
+               "type" : "object",
+               "xml" : {
+                  "name" : "x",
+                  "namespace" : "vcard-temp:x:update"
+               }
             }
          },
          "type" : "object",
