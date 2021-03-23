@@ -20,7 +20,7 @@ local index do
 end
 
 do
-	local f = module:load_resource("openapi.yaml");
+	local f = module:load_resource("res/openapi.yaml");
 	_M.schema = {
 		headers = {
 			content_type = "text/x-yaml";
