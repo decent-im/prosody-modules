@@ -315,19 +315,12 @@
                }
             },
             "occupant_id" : {
-               "properties" : {
-                  "id" : {
-                     "type" : "string",
-                     "xml" : {
-                        "attribute" : true
-                     }
-                  }
-               },
                "title" : "XEP-0421: Anonymous unique occupant identifiers for MUCs",
-               "type" : "object",
+               "type" : "string",
                "xml" : {
                   "name" : "occupant-id",
-                  "namespace" : "urn:xmpp:occupant-id:0"
+                  "namespace" : "urn:xmpp:occupant-id:0",
+                  "x_single_attribute" : "id"
                }
             },
             "oob" : {
