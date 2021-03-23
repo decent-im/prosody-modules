@@ -207,7 +207,7 @@ local post_errors = errors.init("mod_rest", {
 	name = { code = 422, condition = "unsupported-stanza-type", text = "Invalid stanza, must be 'message', 'presence' or 'iq'.", },
 	to = { code = 422, condition = "improper-addressing", text = "Invalid destination JID", },
 	from = { code = 422, condition = "invalid-from", text = "Invalid source JID", },
-	post_auth = { code = 403, condition = "not-authorized", text = "Not authorized to send stanza with requested 'from'", },
+	from_auth = { code = 403, condition = "not-authorized", text = "Not authorized to send stanza with requested 'from'", },
 	iq_type = { code = 422, condition = "invalid-xml", text = "'iq' stanza must be of type 'get' or 'set'", },
 	iq_tags = { code = 422, condition = "bad-format", text = "'iq' stanza must have exactly one child tag", },
 	mediatype = { code = 415, condition = "bad-format", text = "Unsupported media type" },
