@@ -31,7 +31,6 @@ do
 	www_authenticate_header = table.concat(header, ", ");
 end
 
--- Bearer token
 local function check_credentials(request)
 	local auth_type, auth_data = string.match(request.headers.authorization, "^(%S+)%s(.+)$");
 	if not (auth_type and auth_data) or not auth_mechanisms:contains(auth_type) then
