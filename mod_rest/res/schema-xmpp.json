@@ -434,6 +434,7 @@
                   "composing",
                   "paused"
                ],
+               "title" : "XEP-0085: Chat State Notifications",
                "type" : "string",
                "xml" : {
                   "namespace" : "http://jabber.org/protocol/chatstates",
