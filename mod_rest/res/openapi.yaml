@@ -47,6 +47,20 @@ paths:
         200:
           $ref: '#/components/responses/success'
 
+  /rest/echo:
+    post:
+      summary: Build as stanza and return it for inspection.
+      tags:
+      - debug
+      security:
+        - basic: []
+        - token: []
+      requestBody:
+        $ref: '#/components/requestBodies/common'
+      responses:
+        200:
+          $ref: '#/components/responses/success'
+
   /rest/ping/{to}:
     get:
       tags:
