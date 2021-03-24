@@ -418,6 +418,36 @@
                   "x_single_attribute" : "id"
                }
             },
+            "stanza_ids" : {
+               "items" : {
+                  "properties" : {
+                     "by" : {
+                        "format" : "xmpp-jid",
+                        "type" : "string",
+                        "xml" : {
+                           "attribute" : true
+                        }
+                     },
+                     "id" : {
+                        "type" : "string",
+                        "xml" : {
+                           "attribute" : true
+                        }
+                     }
+                  },
+                  "required" : [
+                     "id",
+                     "by"
+                  ],
+                  "type" : "object",
+                  "xml" : {
+                     "name" : "stanza-id",
+                     "namespace" : "urn:xmpp:sid:0"
+                  }
+               },
+               "title" : "XEP-0359: Unique and Stable Stanza IDs",
+               "type" : "array"
+            },
             "state" : {
                "description" : "Chat state notifications, e.g. \"is typing...\"",
                "enum" : [
