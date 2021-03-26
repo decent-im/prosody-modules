@@ -15,7 +15,9 @@ rockspec:
 
 This is yet another RESTful API for sending and receiving stanzas via
 Prosody. It can be used to build bots and components implemented as HTTP
-services.
+services. It is the spiritual successor to [mod_post_msg] and absorbs
+use cases from [mod_http_rest] and [mod_component_http] and other such
+modules floating around the Internet.
 
 # Usage
 
