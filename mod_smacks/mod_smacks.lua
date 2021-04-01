@@ -181,6 +181,7 @@ local function request_ack_if_needed(session, force, reason, stanza)
 				if not session.awaiting_ack and not session.hibernating and not session.destroyed then
 					session.log("debug", "Sending <r> (inside timer, before send) from %s - #queue=%d", reason, #queue);
 					(session.sends2s or session.send)(st.stanza("r", { xmlns = session.smacks }))
+					if session.destroyed then return end -- sending something can trigger destruction
 					session.awaiting_ack = true;
 					-- expected_h could be lower than this expression e.g. more stanzas added to the queue meanwhile)
 					session.last_requested_h = session.last_acknowledged_stanza + #queue;
