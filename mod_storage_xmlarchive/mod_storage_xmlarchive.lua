@@ -12,6 +12,7 @@ local st = require"util.stanza";
 local dt = require"util.datetime";
 local new_stream = require "util.xmppstream".new;
 local xml = require "util.xml";
+local async = require "util.async";
 local empty = {};
 
 if not dm.append_raw then
@@ -130,10 +131,25 @@ function archive:set(username, id, data, new_when, new_with)
 	return ok, err;
 end
 
+local function get_nexttick()
+	if async.ready() then
+		return function ()
+			-- slow down
+			local wait, done = async.waiter();
+			module:add_timer(0, done);
+			wait();
+		end
+	else
+		-- no async, no-op
+		return function () end
+	end
+end
+
 function archive:_get_idx(username, id, dates)
 	module:log("debug", "Looking for item with id %q", id);
 	dates = dates or self:dates(username) or empty;
 	local date = id:match("^%d%d%d%d%-%d%d%-%d%d");
+	local tick = get_nexttick();
 	for d = 1, #dates do
 		if not date or date == dates[d] then
 			module:log("debug", "Loading index for %s", dates[d]);
@@ -151,6 +167,9 @@ function archive:_get_idx(username, id, dates)
 			module:log("debug", "Skipping remaining dates after %s", date);
 			return; -- List is assumed to be sorted
 		end
+
+		-- insert pauses to allow other processing
+		if d % 14 == 0 then tick(); end
 	end
 	module:log("debug", "Item not found");
 end
@@ -261,6 +280,8 @@ function archive:find(username, query)
 		return xmlfile:read(length);
 	end
 
+	local tick = get_nexttick();
+
 	return function ()
 		if limit and count >= limit then if xmlfile then xmlfile:close() end return; end
 		for d = start_day, last_day, step do
@@ -319,6 +340,8 @@ function archive:find(username, query)
 				xmlfile:close();
 				xmlfile = nil;
 			end
+			-- If we're running through a lot of day-files then lets allow for other processing between each day
+			tick();
 		end
 	end
 end
