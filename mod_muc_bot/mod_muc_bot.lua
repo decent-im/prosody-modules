@@ -28,6 +28,8 @@ module:hook("muc-occupant-groupchat", function(event)
 		local join = st.presence({from = event.from; to = virtual_occupant_jid});
 		local dest_x = st.stanza("x", {xmlns = "http://jabber.org/protocol/muc#user"});
 		occupant:set_session(event.from, join, true);
+		room:save_occupant(occupant);
+		room:publicise_occupant_status(occupant, dest_x);
 		-- Inject virtual occupant to trick all the other hooks on this event that
 		-- this is an actual legitimate participant.
 		event.occupant = occupant;
