@@ -38,6 +38,14 @@ those sessions, similar to how normal chat messages work.
 
 -   Probably many.
 
+## TODO
+
+-   Integrate with bookmarks
+-   tracking outgoing presence
+-   leaving rooms
+-   nickname management
+-   bookmark sync
+
 # Compatibility
 
 Briefly tested with Prosody trunk (as of this writing).
