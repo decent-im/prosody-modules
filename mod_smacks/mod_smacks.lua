@@ -506,9 +506,9 @@ module:hook("pre-resource-unbind", function (event)
 						session.log("debug", "No push happened since hibernation started, hibernating session for up to %d extra seconds", resume_timeout);
 						return resume_timeout;
 					end
-					if current_time-timeout_start < resume_timeout and session.push_identifier ~= nil then
-						session.log("debug", "A push happened since hibernation started, hibernating session for up to %d extra seconds", current_time-timeout_start);
-						return current_time-timeout_start;		-- time left to wait
+					if session.push_identifier ~= nil and current_time-timeout_start < resume_timeout then
+						session.log("debug", "A push happened since hibernation started, hibernating session for up to %d extra seconds", resume_timeout-(current_time-timeout_start));
+						return resume_timeout-(current_time-timeout_start);		-- time left to wait
 					end
 					session.log("debug", "Destroying session for hibernating too long");
 					session_registry.set(session.username, session.resumption_token, nil);
