@@ -11,7 +11,8 @@ local tostring = tostring;
 local t_insert = table.insert;
 local t_concat = table.concat;
 local socket = require "socket";
-local get_stats = require "core.statsmanager".get_stats;
+local statsman = require "core.statsmanager";
+local get_stats = statsman.get_stats;
 
 local function escape(text)
 	return text:gsub("\\", "\\\\"):gsub("\"", "\\\""):gsub("\n", "\\n");
@@ -126,6 +127,9 @@ end
 local function get_metrics(event)
 	local response = event.response;
 	response.headers.content_type = "text/plain; version=0.0.4";
+	if statsman.collect then
+		statsman.collect()
+	end
 
 	local answer = {};
 	for key, fields in pairs(parse_stats()) do
