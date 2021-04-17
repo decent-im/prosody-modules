@@ -95,6 +95,7 @@ end
 local function get_last_room_message_id(room_jid)
 	local last_room_message_id = room_activity_cache:get(room_jid);
 	if last_room_message_id then
+		module:log("debug", "Last room message: %s (cached)", last_room_message_id);
 		return last_room_message_id;
 	end
 
@@ -113,6 +114,7 @@ local function get_last_room_message_id(room_jid)
 
 	local id = data();
 	room_activity_cache:set(room_jid, id);
+	module:log("debug", "Last room message: %s (queried)", id);
 	return id;
 end
 
