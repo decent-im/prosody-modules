@@ -22,7 +22,7 @@ mod\_prometheus itself doesn’t have any configuration option, but it
 requires Prosody’s [internal statistics
 provider](https://prosody.im/doc/statistics#built-in_providers) to be
 enabled.  You may also want to change the default collection interval
-to the one your statistics consumer is using.
+to the one your statistics consumer is using. See below for more information.
 
 ```lua
 statistics = "internal"
@@ -39,6 +39,20 @@ See also the documentation of Prosody’s [HTTP
 server](https://prosody.im/doc/http), since Prometheus is an HTTP
 protocol that is how you can customise its URL.  The default one being
 http://localhost:5280/metrics
+
+Scrape interval vs statistics_interval
+--------------------------------------
+
+The `statistics_interval` should be set to `"manual"` on trunk if and only
+if you have a single Prometheus instance scraping Prosody. This will allow
+the internal statistics gathering to run optimally.
+
+If you have multiple instances scraping Prosody, set `statistics_interval`
+to the scrape interval of Prometheus to avoid errors in rate calculations
+and similar.
+
+Future work will allow the use of `"manual"` with multiple Prometheus
+instances and varying scrape intervals (stay tuned).
 
 Compatibility
 =============
