@@ -2,6 +2,7 @@
 --
 -- Copyright (C) 2014 Daurnimator
 -- Copyright (C) 2018 Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+-- Copyright (C) 2021 Jonas Schäfer <jonas@zombofant.net>
 --
 -- This module is MIT/X11 licensed.
 
@@ -53,7 +54,7 @@ local function repr_labels(labels)
 	if #values == 0 then
 		return "";
 	end
-	return "{"..t_concat(values, ", ").."}";
+	return "{"..t_concat(values, ",").."}";
 end
 
 local function repr_sample(metric, labels, value, timestamp)
