@@ -142,12 +142,28 @@ components:
         kind: message
         to: alice@example.com
         state: active
+      oneOf:
+        - $ref: '#/components/schemas/message'
+        - $ref: '#/components/schemas/presence'
+        - $ref: '#/components/schemas/iq'
 
+    message:
+      type: object
       properties:
         kind:
-          $ref: '#/components/schemas/kind'
+          kind:
+          description: Which kind of stanza
+          type: string
+          enum:
+          - message
         type:
-          $ref: '#/components/schemas/type'
+          type: string
+          enum:
+          - chat
+          - error
+          - groupchat
+          - headline
+          - normal
         to:
           $ref: '#/components/schemas/to'
         from:
@@ -164,13 +180,6 @@ components:
         thread:
           $ref: '#/components/schemas/thread'
 
-        show:
-          $ref: '#/components/schemas/show'
-        status:
-          $ref: '#/components/schemas/status'
-        priority:
-          $ref: '#/components/schemas/priority'
-
         state:
           $ref: '#/components/schemas/state'
         nick:
@@ -180,11 +189,83 @@ components:
         replace:
           $ref: '#/components/schemas/replace'
 
+        html:
+          $ref: '#/components/schemas/html'
+        oob_url:
+          $ref: '#/components/schemas/oob_url'
+
+        error:
+          $ref: '#/components/schemas/error'
+
+    presence:
+      type: object
+      properties:
+        kind:
+          kind:
+          description: Which kind of stanza
+          type: string
+          enum:
+          - presence
+        type:
+          type: string
+          enum:
+            - available
+            - unavailable
+            - subscribe
+            - subscribed
+            - unsubscribe
+            - unsubscribed
+            - error
+        to:
+          $ref: '#/components/schemas/to'
+        from:
+          $ref: '#/components/schemas/from'
+        id:
+          $ref: '#/components/schemas/id'
+        lang:
+          $ref: '#/components/schemas/lang'
+
+        show:
+          $ref: '#/components/schemas/show'
+        status:
+          $ref: '#/components/schemas/status'
+        priority:
+          $ref: '#/components/schemas/priority'
+
+        nick:
+          $ref: '#/components/schemas/nick'
+        delay:
+          $ref: '#/components/schemas/delay'
+
         join:
           $ref: '#/components/schemas/join'
 
-        html:
-          $ref: '#/components/schemas/html'
+        error:
+          $ref: '#/components/schemas/error'
+
+    iq:
+      type: object
+      properties:
+        kind:
+          description: Which kind of stanza
+          type: string
+          enum:
+          - iq
+        type:
+          type: string
+          enum:
+          - get
+          - set
+          - result
+          - error
+        to:
+          $ref: '#/components/schemas/to'
+        from:
+          $ref: '#/components/schemas/from'
+        id:
+          $ref: '#/components/schemas/id'
+        lang:
+          $ref: '#/components/schemas/lang'
 
         ping:
           $ref: '#/components/schemas/ping'
@@ -197,16 +278,11 @@ components:
         command:
           $ref: '#/components/schemas/command'
 
-        oob_url:
-          $ref: '#/components/schemas/oob_url'
-        payload:
-          $ref: '#/components/schemas/payload'
-        dataform:
-          $ref: '#/components/schemas/dataform'
-        formdata:
-          $ref: '#/components/schemas/formdata'
         stats:
           $ref: '#/components/schemas/stats'
+        payload:
+          $ref: '#/components/schemas/payload'
+
         error:
           $ref: '#/components/schemas/error'
 
