@@ -17,6 +17,7 @@ local index do
 
 	-- SUCH HACK, VERY GSUB, WOW!
 	index = index:gsub("(%s?url%s*:%s*)%b\"\"", string.format("%%1%q", module:http_url().."/demo/openapi.yaml"), 1);
+	index = index:gsub("(%s*SwaggerUIBundle%s*%(%s*{)(%s*)", "%1%2validatorUrl: false,%2");
 end
 
 do
@@ -40,6 +41,7 @@ _M.redirect = {
 _M.main_page = {
 	headers = {
 		content_type = "text/html";
+		content_security_policy = "default-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-ancestors 'none'";
 	};
 	body = index;
 }
