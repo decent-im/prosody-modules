@@ -324,11 +324,15 @@
                }
             },
             "oob" : {
+               "description" : "Reference a media file",
                "properties" : {
                   "desc" : {
+                     "description" : "Optional description",
                      "type" : "string"
                   },
                   "url" : {
+                     "description" : "The URL of the attached media file",
+                     "example" : "https://media.example.net/thisfile.jpg",
                      "format" : "uri",
                      "type" : "string"
                   }

@@ -191,8 +191,8 @@ components:
 
         html:
           $ref: '#/components/schemas/html'
-        oob_url:
-          $ref: '#/components/schemas/oob_url'
+        oob:
+          $ref: '#/components/schemas/oob'
 
         error:
           $ref: '#/components/schemas/error'
@@ -558,10 +558,21 @@ components:
       - type: string
         description: Call a command by 'node' id, without arguments
 
-    oob_url:
-      description: URL of an attached media file.
-      example: https://media.example.net/thisfile.jpg
-      type: string
+    oob:
+      type: object
+      description: Reference a media file
+      xml:
+        name: x
+        namespace: jabber:x:oob
+      properties:
+        url:
+          type: string
+          description: URL of the attached media file
+          example: https://media.example.net/thisfile.jpg
+          format: uri
+        desc:
+          description: Optional description
+          type: string
 
     payload:
       description: A piece of arbitrary JSON with a type field attached
