@@ -24,9 +24,9 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/common'
       responses:
-        200:
+        '200':
           $ref: '#/components/responses/success'
-        202:
+        '202':
           $ref: '#/components/responses/sent'
 
   /rest/{kind}/{type}/{to}:
@@ -44,7 +44,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/common'
       responses:
-        200:
+        '200':
           $ref: '#/components/responses/success'
 
   /rest/echo:
@@ -58,7 +58,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/common'
       responses:
-        200:
+        '200':
           $ref: '#/components/responses/success'
 
   /rest/ping/{to}:
@@ -72,7 +72,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/to'
       responses:
-        200:
+        '200':
           description: Test reachability of some address
           content:
             application/json:
@@ -94,7 +94,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/to'
       responses:
-        200:
+        '200':
           description: Version query response
           content:
             application/json:
@@ -115,7 +115,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/to'
       responses:
-        200:
+        '200':
           $ref: '#/components/responses/success'
 
   /rest/items/{to}:
@@ -129,7 +129,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/to'
       responses:
-        200:
+        '200':
           $ref: '#/components/responses/success'
 
 components:
