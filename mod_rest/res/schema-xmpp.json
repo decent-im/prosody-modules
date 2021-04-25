@@ -306,6 +306,50 @@
                   "namespace" : "urn:xmpp:forward:0"
                }
             },
+            "invite" : {
+               "properties" : {
+                  "continue" : {
+                     "type" : "boolean",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "jid" : {
+                     "format" : "xmpp-jid",
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "password" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "reason" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "thread" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "required" : [
+                  "jid"
+               ],
+               "titel" : "XEP-0249: Direct MUC Invitations",
+               "type" : "object",
+               "xml" : {
+                  "name" : "x",
+                  "namespace" : "jabber:x:conference"
+               }
+            },
             "markable" : {
                "title" : "XEP-0333: Chat Markers",
                "type" : "boolean",

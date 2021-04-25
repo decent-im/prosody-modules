@@ -420,6 +420,41 @@ components:
       enum:
       - true
 
+    invite:
+      type: object
+      description: Invite to a group chat
+      required:
+      - jid
+      xml:
+        name: x
+        namespace: jabber:x:conference
+      properties:
+        jid:
+          type: string
+          description: Address of the group chat
+          format: xmpp-jid
+          xml:
+            attribute: true
+        reason:
+          type: string
+          description: Optional message by the inviter
+          xml:
+            attribute: true
+        password:
+          type: string
+          description: Password for the group chat, if required
+          xml:
+            attribute: true
+        thread:
+          type: string
+          xml:
+            attribute: true
+        continue:
+          type: boolean
+          description: Whether the group chat continues a one-to-one chat
+          xml:
+            attribute: true
+
     html:
       description: HTML version of 'body'
       example: <body><p>Hello!</p></body>
