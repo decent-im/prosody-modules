@@ -3,6 +3,7 @@ module:depends("http");
 local st = require "util.stanza";
 local json = require "util.json";
 local xml = require "util.xml";
+local http = require "net.http";
 local uuid_generate = require "util.uuid".generate;
 local timestamp_generate = require "util.datetime".datetime;
 local hashes = require "util.hashes";
@@ -102,6 +103,22 @@ local function handle_xml(node, actor, payload)
 	end
 end
 
+local function handle_urlencoded(node, actor, data)
+	local parsed = http.formdecode(data);
+	if type(parsed) ~= "table" then return {status_code = 400; body = "invalid payload"}; end
+	for i = 1, #parsed do parsed[i] = nil; end
+
+	local payload = wrap(node, parsed, json.encode(parsed));
+	local item_id = "current";
+	if payload.attr["http://jabber.org/protocol/pubsub\1id"] then
+		item_id = payload.attr["http://jabber.org/protocol/pubsub\1id"];
+		payload.attr["http://jabber.org/protocol/pubsub\1id"] = nil;
+	elseif type(parsed.id) == "string" then
+		item_id = parsed.id;
+	end
+	return publish_payload(node, actor, item_id, payload);
+end
+
 local actor_source = module:get_option_string("pubsub_post_actor"); -- COMPAT
 local default_secret = module:get_option_string("pubsub_post_default_secret");
 local actor_secrets = module:get_option("pubsub_post_secrets");
@@ -142,6 +159,8 @@ function handle_POST(event, path)
 		return handle_xml(path, actor, request.body);
 	elseif content_type == "application/json" or content_type:sub(-5) == "+json" then
 		return handle_json(path, actor, request.body);
+	elseif content_type == "application/x-www-form-urlencoded" then
+		return handle_urlencoded(path, actor, request.body);
 	end
 
 	module:log("debug", "Unsupported content-type: %q", content_type);

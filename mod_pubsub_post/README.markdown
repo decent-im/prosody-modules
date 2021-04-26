@@ -31,7 +31,13 @@ curl http://localhost:5280/pubsub_post/princely_musings \
     -H "Content-Type: application/xml" \
     --data-binary '<feed xmlns="http://www.w3.org/2005/Atom">
         <entry><title>Hello</title></entry></feed>'
+```
 
+## Simple form-data
+
+``` {.bash}
+curl http://localhost:5280/pubsub_post/princely_musings \
+    --data musing="To be, or not to be: that is the question"
 ```
 
 # Configuration
