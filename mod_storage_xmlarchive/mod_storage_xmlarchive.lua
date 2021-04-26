@@ -132,7 +132,9 @@ function archive:set(username, id, data, new_when, new_with)
 end
 
 local function get_nexttick()
-	if async.ready() then
+	-- COMPAT util.async under Lua 5.1 runs into problems trying to yield across
+	-- pcall barriers. Workaround for #1646
+	if _VERSION ~= "Lua 5.1" and async.ready() then
 		return function ()
 			-- slow down
 			local wait, done = async.waiter();
