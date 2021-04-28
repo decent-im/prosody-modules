@@ -1,6 +1,8 @@
 module:set_global();
 
 local s_format = string.format;
+local t_insert = table.insert;
+local t_concat = table.concat;
 local array = require"util.array";
 local it = require"util.iterators";
 local mt = require"util.multitable";
@@ -118,6 +120,80 @@ module:hook("stats-updated", function (event)
 		end
 	end
 end);
+
+local function openmetrics_handler(event)
+	local registry = event.metric_registry
+	local host, sect, name, typ, key;
+	for family_name, metric_family in pairs(registry:get_metric_families()) do
+		if not ignore_stats:contains(family_name) then
+			-- module:log("debug", "changed_stats[%q] = %s", stat, tostring(value));
+			local host_key
+			if metric_family.label_keys[1] == "host" then
+				host_key = 1
+			end
+			if family_name:sub(1, 12) == "prosody_mod_" then
+				sect, name = family_name:match("^prosody_mod_([^/]+)/(.+)$")
+			else
+				sect, name = family_name:match("^([^_]+)_(.+)$")
+			end
+			name = clean_fieldname(name)
+
+			local metric_type = metric_family.type_
+			if metric_type == "gauge" or metric_type == "unknown" then
+				typ = "GAUGE"
+			else
+				typ = "DCOUNTER"
+			end
+
+			for labelset, metric in metric_family:iter_metrics() do
+				host = host_key and labelset[host_key] or "global"
+				local name_parts = {}
+				for i, label in ipairs(labelset) do
+					if i ~= host_key then
+						t_insert(name_parts, label)
+					end
+				end
+				local full_name = t_concat(name_parts, "_")
+				local display_name = #name_parts > 0 and full_name or name
+				key = clean_fieldname(s_format("%s_%s_%s", host or "global", sect, name));
+
+				local unit
+				local factor = 1
+				unit = metric_family.unit
+				if unit == "seconds" and typ == "DCOUNTER" then
+					factor = 100
+					unit = "%time"
+				elseif typ == "DCOUNTER" then
+					unit = unit .. "/s"
+				end
+
+				if not meta:get(key, "") then
+					meta:set(key, "", "graph_title", s_format(metric_family.description));
+					if unit ~= "" then
+						meta:set(key, "", "graph_vlabel", unit);
+					end
+					meta:set(key, "", "graph_category", sect);
+				end
+				if not meta:get(key, display_name) then
+					meta:set(key, display_name, "label", display_name);
+					meta:set(key, display_name, "type", typ)
+				end
+
+				for suffix, extra_labels, value in metric:iter_samples() do
+					if metric_type == "histogram" or metric_type == "summary" then
+						if suffix == "_sum" then
+							data:set(key, display_name, value * factor)
+						end
+					elseif suffix == "_total" or suffix == "" then
+						data:set(key, display_name, value * factor)
+					end
+				end
+			end
+		end
+	end
+end
+
+module:hook("openmetrics-updated", openmetrics_handler);
 
 module:provides("net", {
 	listener = munin_listener;
