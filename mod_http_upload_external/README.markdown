@@ -159,16 +159,16 @@ as `hash_equals()` in PHP, `hmac.compare_digest()` in Python, or `ConstantTimeCo
 
 The token will be in the URL query parameter 'v2'. If it is absent, fail with 403 Forbidden.
 
-| Input         | Example     |Read from                                                            |
-|:--------------|:------------|:--------------------------------------------------------------------|
-|`file_path`    | foo/bar.jpg | The URL of the PUT request, with the service's base prefix removed. |
-|`content_size` | 1048576     | Content-Size header                                                 |
-|`content_type` | image/jpeg  | Content-Type header                                                 |
+| Input           | Example     |Read from                                                            |
+|:----------------|:------------|:--------------------------------------------------------------------|
+|`file_path`      | foo/bar.jpg | The URL of the PUT request, with the service's base prefix removed. |
+|`content_length` | 1048576     | Content-Length header                                               |
+|`content_type`   | image/jpeg  | Content-Type header                                                 |
 
 The parameters should be joined into a single string, separated by NUL bytes (`\0`):
 
 ```
-  signed_string = ( file_path + '\0' + content_size + '\0' + content_type )
+  signed_string = ( file_path + '\0' + content_length + '\0' + content_type )
 ```
 
 ```
