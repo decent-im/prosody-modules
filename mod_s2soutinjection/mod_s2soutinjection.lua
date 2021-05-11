@@ -16,6 +16,7 @@ module:hook("route/remote", function(event)
 	if not inject then return end
 	log("debug", "opening a new outgoing connection for this stanza");
 	local host_session = new_outgoing(from_host, to_host);
+	host_session.version = 1;
 
 	-- Store in buffer
 	host_session.bounce_sendq = bounce_sendq;
