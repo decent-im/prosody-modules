@@ -10,9 +10,11 @@ Introduction
 
 Allow client authentication to be handled by an external script/process.
 
+:::{.alert .alert-warning}
 **Warning:** This module is not currently maintained, and may be buggy and insecure in
 certain configurations/environments. It is **not** recommended for production use. Please
 use one of the [many other authentication modules](/type_auth).
+:::
 
 Installation
 ============
