@@ -45,3 +45,6 @@ curl https://xmpp.example.com/rest/message/groupchat/room@muc.example.com \
     -d nick="Botty"
 ```
 
+# Compatibility
+
+Prosody **trunk** required.
