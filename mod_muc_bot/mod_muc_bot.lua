@@ -68,4 +68,16 @@ if not module:get_option_boolean("bots_get_messages", true) then
 	end, -100);
 end
 
+if module:get_option_boolean("ignore_bot_errors", true) then
+	module:hook("message/full", function (event)
+		local stanza = event.stanza;
+		if stanza.attr.type == "error" then
+			if bots:contains(jid.bare(stanza.attr.from)) or bots:contains(jid.host(stanza.attr.from)) then
+				module:log("debug", "Ignoring error from known bot");
+				return true;
+			end
+		end
+	end, 1);
+end
+
 assert(string.sub("foo[bot]", -5, -1) == "[bot]", "substring indicies, how do they work?");
