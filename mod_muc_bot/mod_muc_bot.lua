@@ -55,4 +55,17 @@ module:hook("muc-occupant-pre-change", function(event)
 	end
 end, 3);
 
+if not module:get_option_boolean("bots_get_messages", true) then
+	module:hook("muc-broadcast-message", function (event)
+		event.room:broadcast(event.stanza, function (nick, occupant)
+			if nick:sub(-5, -1) == "[bot]" or bots:contains(occupant.bare_jid) or bots:contains(jid.host(occupant.bare_jid)) then
+				return false;
+			else
+				return true;
+			end
+		end);
+		return true;
+	end, -100);
+end
+
 assert(string.sub("foo[bot]", -5, -1) == "[bot]", "substring indicies, how do they work?");
