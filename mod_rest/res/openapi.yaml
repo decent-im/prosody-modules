@@ -149,9 +149,10 @@ components:
 
     message:
       type: object
+      xml:
+        name: message
       properties:
         kind:
-          kind:
           description: Which kind of stanza
           type: string
           enum:
@@ -388,11 +389,16 @@ components:
 
     priority:
       description: Presence priority
-      type: string
+      type: integer
+      maximum: 127
+      minimum: -128
 
     state:
       description: Chat state notifications, e.g. "is typing..."
       type: string
+      xml:
+        namespace: http://jabber.org/protocol/chatstates
+        x_name_is_value: true
       enum:
       - active
       - inactive
@@ -404,15 +410,27 @@ components:
     nick:
       type: string
       description: Nickname of the sender
+      xml:
+        name: nick
+        namespace: http://jabber.org/protocol/nick
 
     delay:
       type: string
+      format: date-time
       description: Timestamp of when a stanza was delayed, in ISO 8601 / XEP-0082
         format.
+      xml:
+        name: delay
+        namespace: urn:xmpp:delay
+        x_single_attribute: stamp
 
     replace:
       type: string
       description: ID of message being replaced (e.g. for corrections)
+      xml:
+        name: replace
+        namespace: urn:xmpp:message-correct:0
+        x_single_attribute: id
 
     join:
       description: For joining Multi-User-Chats
@@ -612,6 +630,9 @@ components:
     payload:
       description: A piece of arbitrary JSON with a type field attached
       type: object
+      xml:
+        name: payload
+        namespace: urn:xmpp:json-msg:0
       required:
         - datatype
         - data
@@ -682,15 +703,25 @@ components:
     stats:
       description: Statistics
       type: array
+      xml:
+        name: query
+        namespace: http://jabber.org/protocol/stats
+        wrapped: true
       items:
         type: object
         properties:
           name:
             type: string
+            xml:
+              attribute: true
           unit:
             type: string
+            xml:
+              attribute: true
           value:
             type: string
+            xml:
+              attribute: true
 
     error:
       description: Description of something gone wrong. See the Stanza Errors section in RFC 6120.
