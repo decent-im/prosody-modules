@@ -239,6 +239,8 @@ components:
           $ref: '#/components/schemas/nick'
         delay:
           $ref: '#/components/schemas/delay'
+        vcard_update:
+          $ref: '#/components/schemas/vcard_update'
 
         join:
           $ref: '#/components/schemas/join'
@@ -755,6 +757,16 @@ components:
           type: string
           xml:
             attribute: true
+
+    vcard_update:
+      type: object
+      xml:
+        name: x
+        namespace: vcard-temp:x:update
+      properties:
+        photo:
+          type: string
+          example: adc83b19e793491b1c6ea0fd8b46cd9f32e592fc
 
     error:
       description: Description of something gone wrong. See the Stanza Errors section in RFC 6120.
