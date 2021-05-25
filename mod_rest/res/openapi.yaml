@@ -233,6 +233,8 @@ components:
         priority:
           $ref: '#/components/schemas/priority'
 
+        caps:
+          $ref: '#/components/schemas/caps'
         nick:
           $ref: '#/components/schemas/nick'
         delay:
@@ -730,6 +732,29 @@ components:
             type: string
             xml:
               attribute: true
+
+    caps:
+      type: object
+      xml:
+        name: c
+        namespace: http://jabber.org/protocol/caps
+      properties:
+        ver:
+          type: string
+          xml:
+            attribute: true
+        hash:
+          type: string
+          xml:
+            attribute: true
+        node:
+          type: string
+          xml:
+            attribute: true
+        ext:
+          type: string
+          xml:
+            attribute: true
 
     error:
       description: Description of something gone wrong. See the Stanza Errors section in RFC 6120.
