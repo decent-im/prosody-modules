@@ -276,6 +276,8 @@ components:
           $ref: '#/components/schemas/ping'
         version:
           $ref: '#/components/schemas/version'
+        lastactivity:
+          $ref: '#/components/schemas/lastactivity'
         disco:
           $ref: '#/components/schemas/disco'
         items:
@@ -734,6 +736,22 @@ components:
             type: string
             xml:
               attribute: true
+
+    lastactivity:
+      type: object
+      xml:
+        name: query
+        namespace: jabber:iq:last
+      properties:
+        seconds:
+          type: integer
+          minimum: 0
+          xml:
+            attribute: true
+        status:
+          type: string
+          xml:
+            text: true
 
     caps:
       type: object
