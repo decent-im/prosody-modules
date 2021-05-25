@@ -372,7 +372,15 @@ components:
 
     thread:
       description: Message thread identifier
-      type: string
+      properties:
+        parent:
+          type: string
+          xml:
+            attribute: true
+        id:
+          type: string
+          xml:
+            text: true
 
     show:
       description: indicator of availability, ie away or not
