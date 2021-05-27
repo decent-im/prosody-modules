@@ -3,9 +3,11 @@ local usermanager = require "core.usermanager";
 local json = require "util.json";
 local st = require "util.stanza";
 local array = require "util.array";
+local statsmanager = require "core.statsmanager";
 
 module:depends("http");
 
+local announce = module:depends("announce");
 local invites = module:depends("invites");
 local tokens = module:depends("tokenauth");
 local mod_pep = module:depends("pep");
@@ -578,6 +580,83 @@ local function get_server_info(event)
 	});
 end
 
+local function maybe_export_plain_gauge(mf)
+	if mf == nil then
+		return nil
+	end
+	return mf.data.value
+end
+
+local function maybe_export_plain_counter(mf)
+	if mf == nil then
+		return nil
+	end
+	return {
+		since = mf.data._created,
+		value = mf.data.value,
+	}
+end
+
+local function maybe_export_summed_gauge(mf)
+	if mf == nil then
+		return nil
+	end
+	local sum = 0;
+	for _, metric in mf:iter_metrics() do
+		sum = sum + metric.value;
+	end
+	return sum;
+end
+
+local function get_server_metrics(event)
+	event.response.headers["Content-Type"] = json_content_type;
+	local result = {};
+	local families = statsmanager.get_metric_registry():get_metric_families();
+	result.memory = maybe_export_plain_gauge(families.process_resident_memory_bytes);
+	result.cpu = maybe_export_plain_counter(families.process_cpu_seconds);
+	result.c2s = maybe_export_summed_gauge(families["prosody_mod_c2s/connections"])
+	return json.encode(result);
+end
+
+local function post_server_announcement(event)
+	local request = event.request;
+	if request.headers.content_type ~= json_content_type
+	or (not request.body or #request.body == 0) then
+		return 400;
+	end
+	local body = json.decode(event.request.body);
+	if not body then
+		return 400;
+	end
+
+	if type(body.recipients) ~= "table" and body.recipients ~= "online" and body.recipients ~= "all" then
+		return 400;
+	end
+
+	if not body.body or #body.body == 0 then
+		return 400;
+	end
+
+	local message = st.message():tag("body"):text(body.body):up();
+	local host = module.host
+	message.attr.from = host
+	if body.recipients == "online" then
+		announce.send_to_online(message, host);
+	elseif body.recipients == "all" then
+		for username in usermanager.users(host) do
+			message.attr.to = username .. "@" .. host
+			module:send(st.clone(message))
+		end
+	else
+		for _, addr in ipairs(body.recipients) do
+			message.attr.to = addr
+			module:send(message)
+		end
+	end
+
+	return 201;
+end
+
 module:provides("http", {
 	route = check_auth {
 		["GET /invites"] = list_invites;
@@ -597,5 +676,8 @@ module:provides("http", {
 		["DELETE /groups/*"] = delete_group;
 
 		["GET /server/info"] = get_server_info;
+
+		["GET /server/metrics"] = get_server_metrics;
+		["POST /server/announcement"] = post_server_announcement;
 	};
 });

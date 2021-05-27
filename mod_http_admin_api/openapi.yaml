@@ -437,6 +437,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerInfo'
+  /server/metrics:
+    get:
+      tags:
+      - server
+      summary: Get metrics from the running server
+      operationId: getServerMetrics
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerMetrics'
+  /server/announcement:
+    post:
+      tags:
+      - server
+      summary: Post an announcement to some or all users
+      operationId: postServerAnnouncement
+      requestBody:
+        description: Announcement parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Announcement"
+      responses:
+        201:
+          description: Announcement has been sent
 components:
   schemas:
     UserList:
@@ -736,3 +765,38 @@ components:
         version:
           type: string
           description: A human-readable version string
+    ServerMetrics:
+      type: object
+      description: A selection of instantaneous metrics of the prosody server
+      properties:
+        memory:
+          type: integer
+          description: RSS in bytes
+        cpu:
+          type: object
+          description: CPU time counter
+          required:
+          - value
+          - since
+          properties:
+            since:
+              type: float
+              description: The metric epoch as UNIX timestamp
+            value:
+              type: float
+              description: Seconds of CPU time used since the metric epoch
+        c2s:
+          type: integer
+          description: Number of active c2s sessions
+    Announcement:
+      type: object
+      description: An announcemen to post to users on the server
+      required:
+      - body
+      - recipients
+      properties:
+        body:
+          type: string
+          description: The message body to send
+        recipients:
+          description: List of recipients or one of the strings "online" or "all"
