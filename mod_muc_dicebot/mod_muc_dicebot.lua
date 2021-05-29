@@ -37,6 +37,10 @@ local function muc_broadcast_message(event)
 
 	local stanza = event.stanza;
 	local body = stanza:get_child("body");
+	if not body then
+		return
+	end
+
 	local text = body:get_text();
 	module:log("error", "%q %q %q", stanza, body, text);
 	local dice = s_match(text, "^[%.!]r%s(.+)$");
