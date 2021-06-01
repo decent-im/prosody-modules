@@ -180,9 +180,14 @@ local function multi_step_command(_, data, state)
 	return next_step, state;
 end
 
+local permission = "any";
+if not module.send_iq then -- hacky attempt at detecting 0.11 or earlier
+	permission = "user";
+end
+
 module:depends("adhoc");
 module:provides("adhoc",
 	adhoc_new("Multi-step command demo",
 		"xmpp:zash.se/mod_adhoc_dataforms_demo#multi",
-		multi_step_command, "any"));
+		multi_step_command, permission));
 
