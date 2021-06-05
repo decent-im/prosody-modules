@@ -372,7 +372,7 @@ local function parse_firewall_rules(filename)
 			end
 			ruleset[chain] = ruleset[chain] or {};
 		elseif not(state) and line:sub(1,1) == "%" then -- Definition (zone, limit, etc.)
-			local what, name = line:match("^%%%s*(%w+) +([^ :]+)");
+			local what, name = line:match("^%%%s*([%w_]+) +([^ :]+)");
 			if not definition_handlers[what] then
 				return nil, errmsg("Definition of unknown object: "..what);
 			elseif not name or not idsafe(name) then
