@@ -126,8 +126,9 @@ The following zone-matching conditions are supported:
 
 ### Lists
 
-It is possible to create or load lists of strings for use in scripts. For example, you might load a JID blacklist,
-a list of malware URLs or simple words that you want to filter messages on.
+It is possible to create or load lists of strings for use in scripts. For
+example, you might load a list of blocked JIDs, malware URLs or simple words
+that you want to filter messages on.
 
   List type    Example
   -----------  -----------------------
@@ -183,13 +184,13 @@ Checks whether a simple [expression](#expressions) is found in a given list.
 
 Example:
 
-    %LIST blacklist: file:/etc/prosody/blacklist.txt
+    %LIST blocked_jids: file:/etc/prosody/blocked_jids.txt
 
-    # Rule to block presence subscription requests from blacklisted JIDs
+    # Rule to block presence subscription requests from blocked JIDs
     KIND: presence
     TYPE: subscribe
-    CHECK LIST: blacklist contains $<@from>
-    BOUNCE=policy-violation (Your JID is blacklisted)
+    CHECK LIST: blocked_jids contains $<@from>
+    BOUNCE=policy-violation (Your JID is blocked)
 
 #### SCAN
 
@@ -279,8 +280,8 @@ end (so it must match the entire portion of the JID).
     FROM: <<admin%d*>>@example.com
 
 **Note:** It is important to know that 'example.com' is a valid JID on
-its own, and does **not** match 'user@example.com'. To perform domain
-whitelists or blacklists, use [Zones](#zones).
+its own, and does **not** match 'user@example.com'. To efficiently match
+domains we recommend defining them as [Zones](#zones).
 
   Condition        Matches
   ---------------- ---------------------------------------------------------------
