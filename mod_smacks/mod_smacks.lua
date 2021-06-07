@@ -230,7 +230,7 @@ local function outgoing_stanza_filter(stanza, session)
 
 		queue[#queue+1] = cached_stanza;
 		if session.hibernating then
-			session.log("debug", "hibernating, stanza queued");
+			session.log("debug", "hibernating since %s, stanza queued", datetime.datetime(session.hibernating));
 			module:fire_event("smacks-hibernation-stanza-queued", {origin = session, queue = queue, stanza = cached_stanza});
 			return nil;
 		end
