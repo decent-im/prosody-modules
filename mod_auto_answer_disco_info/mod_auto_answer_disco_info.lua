@@ -24,4 +24,11 @@ local function disco_handler(event)
 	end
 end
 
-module:hook("iq-get/full/http://jabber.org/protocol/disco#info:query", disco_handler, 1);
+module:hook("iq/full", function(event)
+	local stanza = event.stanza;
+	if stanza.attr.type == "get" then
+		if stanza:get_child("query", "http://jabber.org/protocol/disco#info") then
+			return disco_handler(event);
+		end
+	end
+end, 1);
