@@ -31,6 +31,8 @@ commands).
 
 There are three types of invitation that can be created:
 
+| Invite type | Description |
+|--|--|
 | Account-only invites | These can be used to register a new account |
 | Contact-only invites | These can be shared with a contact so they can easily add you to their contact list |
 | Account-and-contact invites | Like a contact-only invite, but also allows the contact to register on the current server if they don't already have an XMPP account |
