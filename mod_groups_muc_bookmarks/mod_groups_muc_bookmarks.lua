@@ -91,6 +91,9 @@ local function remove_bookmark(jid, room, autojoin, name)
 
 	autojoin = autojoin or false and true
 	local current = get_current_bookmarks(jid, pep_service)
+	if not current then
+		return
+	end
 	current:maptags(function (node)
 		if node.attr.xmlns and node.attr.xmlns ~= XMLNS_XEP0048 then
 			return node
