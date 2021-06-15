@@ -330,8 +330,28 @@ local function logs_page(event, path)
 		local nick = select(3, jid_split(item.attr.from));
 		local oob = use_oob and item:get_child("x", "jabber:x:oob");
 
+		local edit = item:find("{urn:xmpp:message-correct:0}replace/@id");
+		if edit then
+			local found = false;
+			for n = i-1, 1, -1 do
+				if not logs[n] then
+					break; -- Probably reached logs[0]
+				elseif logs[n].id == edit and nick == logs[n].nick then
+					found = true;
+					logs[n].edited = key;
+					edit = logs[n].key;
+					break;
+				end
+			end
+			if not found then
+				-- Ignore unresolved edit.
+				edit = nil;
+			end
+		end
+
 		if body or verb or oob then
 			local line = {
+				id = item.attr.id,
 				key = key;
 				datetime = datetime.datetime(when);
 				time = datetime.time(when);
@@ -341,6 +361,7 @@ local function logs_page(event, path)
 				nick = nick;
 				st_name = item.name;
 				st_type = item.attr.type;
+				edit = edit;
 			};
 			if oob then
 				line.oob = {

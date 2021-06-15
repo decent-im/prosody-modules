@@ -45,7 +45,8 @@ li:hover .time{opacity:1;}
 .button{display:inline-block}
 .button>a{color:white;background-color:orange;border-radius:4px}
 form{text-align:right}
-li:target{outline:1px gray dotted}
+li.edited{display:none}
+li:target{outline:1px gray dotted;display:inherit}
 @media (prefers-color-scheme: dark) {
 html{color:#eee}
 body{background-color:#161616}
@@ -107,11 +108,11 @@ td{color:#444}
 </div>
 
 <ol class="chat-logs">{lines#
-<li {item.lang&lang="{item.lang}"} class="{item.st_name} {item.st_type?}" id="{item.key}">
+<li {item.lang&lang="{item.lang}"} class="{item.st_name} {item.st_type?} {item.edited&edited}" id="{item.key}">
 <a class="time" href="#{item.key}"><time id="{item.time}" datetime="{item.datetime}">{item.time}</time></a>
 <b class="nick">{item.nick}</b>
 <em class="verb">{item.verb?}</em>
-<q class="body">{item.body?}</q>
+<q class="body">{item.edited&<del>}{item.body?}{item.edited&</del> <a href="#{item.edited}">&#9999;</a>}{item.edit& <a href="#{item.edit}">&#9999;</a>}</q>
 {item.oob.url&<figure><a rel="nofollow" href="{item.oob.url?}"><img style="max-height:9em;max-width:16em" alt="{item.oob.desc?}" src="{item.oob.url?}"/></a><figcaption>{item.oob.desc?}</figcaption></figure>}
 </li>}
 </ol>
