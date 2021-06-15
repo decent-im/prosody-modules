@@ -316,6 +316,7 @@ local function logs_page(event, path)
 		local subject = item:get_child_text("subject");
 		local verb = nil;
 		local lang = body_tag and body_tag.attr["xml:lang"] or item.attr["xml:lang"];
+
 		if subject then
 			verb, body = "set the topic to", subject;
 		elseif body and body:sub(1,4) == "/me " then
@@ -325,7 +326,9 @@ local function logs_page(event, path)
 			verb = item.attr.type == "unavailable" and "has left" or "has joined";
 			lang = "en";
 		end
+
 		local oob = use_oob and item:get_child("x", "jabber:x:oob");
+
 		if body or verb or oob then
 			local line = {
 				key = key;
@@ -346,6 +349,7 @@ local function logs_page(event, path)
 			end
 			logs[i], i = line, i + 1;
 		end
+
 		first = first or key;
 		last = key;
 	end
