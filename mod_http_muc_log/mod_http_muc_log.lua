@@ -327,6 +327,7 @@ local function logs_page(event, path)
 			lang = "en";
 		end
 
+		local nick = select(3, jid_split(item.attr.from));
 		local oob = use_oob and item:get_child("x", "jabber:x:oob");
 
 		if body or verb or oob then
@@ -337,7 +338,7 @@ local function logs_page(event, path)
 				verb = verb;
 				body = body;
 				lang = lang;
-				nick = select(3, jid_split(item.attr.from));
+				nick = nick;
 				st_name = item.name;
 				st_type = item.attr.type;
 			};
