@@ -5,6 +5,8 @@ local get_stats = require "core.statsmanager".get_stats;
 local list_users = require "core.usermanager".users;
 local os_time = os.time;
 
+assert(get_stats, "not compatible with trunk based on openmetrics");
+
 module:depends("http");
 
 local expose_users = module:get_option_boolean("nodeinfo2_expose_users", true);

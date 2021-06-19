@@ -5,6 +5,8 @@ local time_now = require "util.time".now;
 local filters = require "util.filters";
 local serialize = require "util.serialization".serialize;
 
+assert(statsman.get_stats, "not compatible with trunk based on openmetrics");
+
 local statistics_interval = module:context("*"):get_option_number("statistics_interval", 60);
 if module:context("*"):get_option("statistics", "internal") ~= "internal" then
 	module:log("error", "Not using internal statistics, can't do anyting");

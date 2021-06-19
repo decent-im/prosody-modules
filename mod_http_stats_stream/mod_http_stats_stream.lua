@@ -4,6 +4,8 @@ local statsman = require "core.statsmanager";
 local http = require "net.http.server";
 local json = require "util.json";
 
+assert(statsman.get_stats, "not compatible with trunk based on openmetrics");
+
 local sessions = {};
 
 local function updates_client_closed(response)

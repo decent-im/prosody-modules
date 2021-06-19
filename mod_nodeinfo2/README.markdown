@@ -42,7 +42,10 @@ configuration actually happens in this dependency.
 Compatibility
 =============
 
-  ----- -----------
-  trunk Works
-  0.11  Should work
-  ----- -----------
+  ------- --------------------
+  trunk   Does not work [^1]
+  0.11    Should work
+  ------- --------------------
+
+[^1]: not after
+    [5f15ab7c6ae5](https://hg.prosody.im/trunk/rev/5f15ab7c6ae5)

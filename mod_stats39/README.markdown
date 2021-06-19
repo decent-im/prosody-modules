@@ -61,3 +61,14 @@ S:
 </iq>
 ```
 
+# Compatibly
+
+  Prosody version   Works
+  ----------------- -------
+  0.9.x             No
+  0.10.x            Yes
+  0.11.x            Yes
+  Trunk[^1]         No
+
+[^1]: Does not work with trunk since the [change to
+    OpenMetrics](https://hg.prosody.im/trunk/rev/5f15ab7c6ae5)

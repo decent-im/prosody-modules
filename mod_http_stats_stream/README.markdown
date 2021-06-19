@@ -36,4 +36,5 @@ evtSource.addEventListener("stats-updated", function(e) {
 
 # Compatibility
 
-Prosody \>= 0.11.0
+* Prosody \>= 0.11.0
+* Trunk < [5f15ab7c6ae5](https://hg.prosody.im/trunk/rev/5f15ab7c6ae5)

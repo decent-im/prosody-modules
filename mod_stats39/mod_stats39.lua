@@ -2,6 +2,8 @@ local statsman = require "core.statsmanager";
 local st = require "util.stanza";
 local s_format = string.format;
 
+assert(statsman.get_stats, "not compatible with trunk based on openmetrics");
+
 module:add_feature("http://jabber.org/protocol/stats");
 
 module:hook("iq/host/http://jabber.org/protocol/stats:query", function (event)
