@@ -17,8 +17,6 @@ local get_stats = statsman.get_stats;
 local get_metric_registry = statsman.get_metric_registry;
 local collect = statsman.collect;
 
-assert(get_stats, "not compatible with trunk based on openmetrics");
-
 local function escape(text)
 	return text:gsub("\\", "\\\\"):gsub("\"", "\\\""):gsub("\n", "\\n");
 end
