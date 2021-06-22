@@ -5,23 +5,38 @@ local url_pattern = [[https?://%S+]]
 local domain_pattern = '^%w+://([^/]+)'
 local xmlns_fasten = "urn:xmpp:fasten:0"
 local xmlns_xhtml = "http://www.w3.org/1999/xhtml"
-local whitelist = module:get_option_set("ogp_domain_whitelist", {})
+local allowlist = module:get_option_set("ogp_domain_allowlist", module:get_option_set("ogp_domain_whitelist", {}))
+local denylist = module:get_option_set("ogp_domain_denylist", {})
 
 
-local function is_whitelisted(url)
-	if whitelist:empty() then
+local function is_allowed(domain)
+	if allowlist:empty() then
 		return true
 	end
-	local domain = url:match(domain_pattern)
-	if whitelist:contains(domain) then
-		return true;
+	if allowlist:contains(domain) then
+		return true
+	end
+	return false
+end
+
+local function is_denied(domain)
+	if denylist:empty() then
+		return false
+	end
+	if denylist:contains(domain) then
+		return true
 	end
 	return false
 end
 
 
 local function fetch_ogp_data(room, url, origin_id)
-	if not url or not is_whitelisted(url) then
+	if not url then
+		return;
+	end
+
+	local domain = url:match(domain_pattern);
+	if is_denied(domain) or not is_allowed(domain) then
 		return;
 	end
 

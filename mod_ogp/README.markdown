@@ -20,13 +20,13 @@ The module is intentionally simple in the sense that it is basically a transport
 Configuration
 -------------
 
-You can present a whitelist of domains for which OGP metadata will be fetched
-via the `ogp_domain_whitelist` setting.
+You can present an allowlist or denylist of domains for which OGP metadata will be fetched
+via the `ogp_domain_allowlist` and `ogp_domain_denylist` settings repectively.
 
 For example:
 
 ```lua
 Component "muc.example.org" "muc"
   modules_enabled = { "ogp" }
-  ogp_domain_whitelist = { "prosody.im" }
+  ogp_domain_allowlist = { "prosody.im" }
 ```
