@@ -6,7 +6,7 @@ With mod_ogp enabled, when a user sends a URL in a MUC (where the message has it
 If it finds any, it sends a [XEP-0422 fastening](https://xmpp.org/extensions/xep-0422.html) applied to the original message that looks like:
 
 ```xml
-<message id="example" from="chatroom@muc.example.org" to="chatroom@muc.example.org">
+<message id="example" from="chatroom@muc.example.org" to="user@chat.example.org/resource">
 <apply-to xmlns="urn:xmpp:fasten:0" id="origin-id-X">
 <meta xmlns="http://www.w3.org/1999/xhtml" property="og:title" content="The Rock"/>
 <meta xmlns="http://www.w3.org/1999/xhtml" property="og:url" content="https://www.imdb.com/title/tt0117500/"/>
