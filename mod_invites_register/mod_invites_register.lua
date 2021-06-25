@@ -57,7 +57,7 @@ module:hook("presence/bare", function (event)
 				module:log("debug", "Sending automatic subscription request to %s from %s", contact, username);
 				if rostermanager.set_contact_pending_out(username, host, contact) then
 					rostermanager.roster_push(username, host, contact);
-					module:send(st.presence({type = "subscribe", to = contact }));
+					module:send(st.presence({type = "subscribe", from = username.."@"..host, to = contact }));
 				else
 					module:log("warn", "Failed to set contact pending out for %s", username);
 				end
