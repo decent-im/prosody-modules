@@ -11,3 +11,4 @@ module:hook("stats-update", function ()
   gc_bytes:set(kbytes * 1024);
 end);
 
+custom_metric("counter", "lua_info", "", "Lua runtime version", { "version" }):with_labels(_VERSION):set(1);
