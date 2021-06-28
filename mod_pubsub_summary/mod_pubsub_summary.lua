@@ -14,8 +14,8 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 		content = content:gsub("<a[^>]*href=[\"'](.-)[\"'][^>]*>(.-)</a>", "\1%1\2%2\3");
 		content = content:gsub("<b>(.-)</b>", "*%1*");
 		content = content:gsub("<strong>(.-)</strong>", "*%1*");
-		content = content:gsub("<em>(.-)</em>", "*%1*");
-		content = content:gsub("<i>(.-)</i>", "*%1*");
+		content = content:gsub("<em>(.-)</em>", "_%1_");
+		content = content:gsub("<i>(.-)</i>", "_%1_");
 		content = content:gsub("<img[^>]*src=[\"'](.-)[\"'][^>]*>", " %1 "); -- TODO alt= would have been nice to grab
 		content = content:gsub("<br[^>]*>", "\n");
 		content = content:gsub("<[^>]+>", "");
