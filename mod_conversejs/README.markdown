@@ -1,4 +1,5 @@
 ---
+summary: Simplify setup of Converse.js
 depends:
 - 'mod\_bosh'
 - 'mod\_websocket'
@@ -14,11 +15,10 @@ rockspec:
 Introduction
 ============
 
-This module serves a small snippet of HTML that loads
-[Converse.js](https://conversejs.org/), configured to work with the
-VirtualHost that it is loaded onto.
-
-It becomes available on an URL like `https://example.com:5281/conversejs`
+This module simplifies setup of [Converse.js](https://conversejs.org/)
+by serving it from Prosodys internal [http server][doc:http] along with
+generated configuration to match the local VirtualHost. It becomes
+available on an URL like `https://example.com:5281/conversejs`
 
 Configuration
 =============
