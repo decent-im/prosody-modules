@@ -48,7 +48,7 @@ local compliance = {
 
 	array {"Advanced Mobile"; check("cloud_notify")};
 
-	array {"Core A/V Calling"; check("external_services", "turncredentials", "extdisco")};
+	array {"Core A/V Calling"; check("turn_external", "external_services", "turncredentials", "extdisco")};
 
 };
 
