@@ -13,6 +13,15 @@ end
 
 local libjs_path = module:get_option_string("libjs_path", "/usr/share/javascript");
 
+do -- sanity check
+	local lfs = require "lfs";
+
+	local exists, err = lfs.attributes(libjs_path, "mode");
+	if exists ~= "directory" then
+		module:log("error", "Problem with 'libjs_path': %s", err or "not a directory");
+	end
+end
+
 module:provides("http", {
 		default_path = "/share";
 		route = {
