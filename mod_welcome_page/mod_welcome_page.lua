@@ -11,6 +11,7 @@ local invite_only = module:get_option_boolean("registration_invite_only", true);
 local open_registration = module:get_option_boolean("welcome_page_open_registration", not invite_only);
 
 module:depends("http");
+module:depends("http_libjs");
 local invites = module:depends("invites");
 
 local function load_template(path)
