@@ -77,7 +77,7 @@ local function check_certs_validity()
 	module:log(log_warn and "warn" or "info", fmt, certfile, timediff);
 	if nag_admin then
 		local body = fmt:format("for host ".. module.host, timediff);
-		for _,admin in ipairs(module:get_option_array("admins", {})) do
+		for admin in module:get_option_inherited_set("admins", {}) do
 			module:send(st.message({ from = module.host, to = admin, type = "chat" }, body));
 		end
 	end
