@@ -28,7 +28,7 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 				lt = "<";
 				gt = ">";
 				amp = "&";
-				nbsp = utf8 and utf8.char(0xa0) or " ";
+				nbsp = "\194\160"; -- U+00A0
 			});
 	end
 	local summary;
