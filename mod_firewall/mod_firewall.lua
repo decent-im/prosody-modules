@@ -216,6 +216,9 @@ local available_deps = {
 			return ("local multi_throttle_%s = rates.%s:multi();"):format(throttle, throttle);
 		end;
 	};
+	full_sessions = {
+		global_code = [[local full_sessions = prosody.full_sessions;]];
+	};
 	rostermanager = {
 		global_code = [[local rostermanager = require "core.rostermanager";]];
 	};

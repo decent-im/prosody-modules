@@ -304,7 +304,7 @@ end
 
 -- TO FULL JID?
 function condition_handlers.TO_FULL_JID()
-	return "not not full_sessions[to]", { "to" };
+	return "not not full_sessions[to]", { "to", "full_sessions" };
 end
 
 -- CHECK LIST: spammers contains $<@from>
