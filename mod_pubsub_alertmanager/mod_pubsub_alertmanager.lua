@@ -1,5 +1,7 @@
 local st = require "util.stanza";
 local json = require "util.json";
+local filters = {};
+local render = require "util.interpolation".new("%b{}", tostring, filters);
 local uuid_generate = require "util.uuid".generate;
 
 module:depends("http");
@@ -54,6 +56,37 @@ function handle_POST(event, path)
 	end
 	return 202;
 end
+
+local template = [[
+*ALARM!*
+Status: {status}
+Starts at: {startsAt}{endsAt&
+Ends at: {endsAt}}
+Labels: {labels%
+  {idx}: {item}}
+Annotations: {annotations%
+  {idx}: {item}}
+]]
+
+module:hook("pubsub-summary/urn:uuid:e3bec775-c607-4e9b-9a3f-94de1316d861:v4", function(event)
+	local payload = event.payload;
+
+	local data = {
+		status = payload.attr.status,
+		annotations = {},
+		labels = {},
+		endsAt = payload:find("ends/@at"),
+		startsAt = payload:find("starts/@at"),
+	};
+	for label in payload:childtags("label") do
+		data.labels[tostring(label.attr.name)] = label:get_text();
+	end
+	for annotation in payload:childtags("annotation") do
+		data.annotations[tostring(annotation.attr.name)] = annotation:get_text();
+	end
+
+	return render(template, data);
+end);
 
 module:provides("http", {
 	route = {
