@@ -195,7 +195,7 @@ local function handle_request(origin, stanza, xmlns, filename, filesize)
 			:tag("file-too-large", {xmlns=xmlns})
 				:tag("max-file-size"):text(("%d"):format(file_size_limit));
 	elseif not check_quota(username, host, filesize) then
-		module:log("debug", "Upload of %dB by %s would exceed quota", filesize, origin.full_jid);
+		module:log("debug", "Upload of %dB by %s would exceed quota", filesize, user_bare);
 		return nil, st.error_reply(stanza, "wait", "resource-constraint", "Quota reached");
 	end
 
@@ -215,7 +215,7 @@ local function handle_request(origin, stanza, xmlns, filename, filesize)
 	end
 
 	local slot = random_dir.."/"..filename;
-	pending_slots[slot] = origin.full_jid;
+	pending_slots[slot] = user_bare;
 
 	module:add_timer(900, function()
 		pending_slots[slot] = nil;
