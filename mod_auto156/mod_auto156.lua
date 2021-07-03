@@ -29,7 +29,7 @@ local function check_domain(domain)
 		if #uris == 0 then
 			return promise.reject(404);
 		end
-		return uris;
+		return {links=uris};
 	end);
 end
 
@@ -37,8 +37,8 @@ module:depends("http");
 module:provides("http", {
 	route = {
 		["GET /*"] = function(_, domain)
-			return check_domain(domain):next(function(uris)
-				return {headers = {content_type = "application/json"}, body = json.encode({links = uris})};
+			return check_domain(domain):next(function(altmethods)
+				return {headers = {content_type = "application/json"}, body = json.encode(altmethods)};
 			end);
 		end,
 	},
