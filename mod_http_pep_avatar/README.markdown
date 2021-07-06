@@ -14,7 +14,7 @@ Simply load the module. Avatars are then available at
 
     modules_enabled = {
         ...
-        "http_avatar";
+        "http_pep_avatar";
     }
 
 # Access
