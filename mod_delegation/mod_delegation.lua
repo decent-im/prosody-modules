@@ -540,6 +540,7 @@ local function disco_hook(event)
 	end
 
 end
+module:hook("account-disco-info", disco_hook, -2^32)
 
 -- disco#items
 
