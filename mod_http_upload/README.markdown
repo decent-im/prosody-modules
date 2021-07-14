@@ -27,7 +27,8 @@ It should **not** be added to modules_enabled.
 ## Discoverability
 
 Prosody makes subdomains of your VirtualHosts easily discoverable by
-clients. To make the component discoverable by other hosts, use
+clients. To make the component discoverable by other hosts where the
+component is **not a subdomain** of the VirtualHost, you can use
 [`disco_items`][doc:modules:mod_disco#configuration].
 
 ``` {.lua}
