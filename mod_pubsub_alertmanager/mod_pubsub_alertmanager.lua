@@ -57,7 +57,7 @@ function handle_POST(event, path)
 	return 202;
 end
 
-local template = [[
+local template = module:get_option_string("alertmanager_body_template", [[
 *ALARM!*
 Status: {status}
 Starts at: {startsAt}{endsAt&
@@ -66,7 +66,7 @@ Labels: {labels%
   {idx}: {item}}
 Annotations: {annotations%
   {idx}: {item}}
-]]
+]]);
 
 module:hook("pubsub-summary/urn:uuid:e3bec775-c607-4e9b-9a3f-94de1316d861:v4", function(event)
 	local payload = event.payload;
