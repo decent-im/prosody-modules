@@ -20,6 +20,43 @@ webhooks from.
 
 # Configuration
 
+## Prometheus
+
+A Prometheus `rule_files` might contain something along these lines:
+
+``` yaml
+groups:
+- name: Stuff
+  rules:
+  - alert: Down
+    expr: up == 0
+    for: 5m
+    annotations:
+      title: 'Stuff is down!'
+    labels:
+      severity: 'critical'
+```
+
+## Alertmanager
+On the Alertmanager site the webhook configuration may look something
+like this:
+
+``` yaml
+receivers:
+- name: pubsub
+  webhook_configs:
+  - url: http://pubsub.localhost:5280/pubsub_alertmanager
+```
+
+And then finally some Alertmanager routes would point at that receiver:
+
+``` yaml
+route:
+  receiver: pubsub
+```
+
+## Prosody
+
 On the Prosody side, apart from creating and configuring the node(s)
 that will be used, configure your pubsub service like this:
 
@@ -41,6 +78,8 @@ Annotations: {annotations%
 
 alertmanager_node_template = "alerts/{alert.labels.severity}"
 ```
+
+## All Options
 
 Available configuration options:
 
