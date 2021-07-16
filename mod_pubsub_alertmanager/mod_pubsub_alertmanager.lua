@@ -26,6 +26,8 @@ local function publish_payload(node, actor, item_id, payload)
 	return 202;
 end
 
+local node_template = module:get_option_string("alertmanager_node_template", "{path?alerts}");
+
 function handle_POST(event, path)
 	local request = event.request;
 
@@ -49,7 +51,8 @@ function handle_POST(event, path)
 			item:tag("link", { href=alert.generatorURL }):up();
 		end
 
-		local ret = publish_payload(path, request.ip, uuid_generate(), item);
+		local node = render(node_template, {alert = alert, path = path, payload = payload, request = request});
+		local ret = publish_payload(node, request.ip, uuid_generate(), item);
 		if ret ~= 202 then
 			return ret
 		end
@@ -91,5 +94,6 @@ end);
 module:provides("http", {
 	route = {
 		["POST /*"] = handle_POST;
+		["POST"] = handle_POST;
 	};
 });
