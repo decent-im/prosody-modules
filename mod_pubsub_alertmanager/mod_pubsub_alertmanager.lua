@@ -1,8 +1,11 @@
 local st = require "util.stanza";
 local json = require "util.json";
-local filters = {};
+local filters = { --[[ TODO what's useful? ]] };
 local render = require "util.interpolation".new("%b{}", tostring, filters);
 local uuid_generate = require "util.uuid".generate;
+
+-- TODO alertmanager supports inclusion of HTTP auth and OAuth, worth looking
+-- into for using instead of request IP
 
 module:depends("http");
 
