@@ -79,6 +79,11 @@ Annotations: {annotations%
 alertmanager_node_template = "alerts/{alert.labels.severity}"
 ```
 
+If no node template is given, either an optional part after
+"pubsub_alertmanager" in the HTTP path is used as node, or the string
+"alerts". Here, an alerts would be published to different nodes based on
+the 'severity' label, so e.g. `alerts/critical` in this example.
+
 ## All Options
 
 Available configuration options:
