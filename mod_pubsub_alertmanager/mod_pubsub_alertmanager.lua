@@ -79,6 +79,8 @@ module:hook("pubsub-summary/urn:uuid:e3bec775-c607-4e9b-9a3f-94de1316d861:v4", f
 
 	local data = {
 		status = payload.attr.status,
+		firing = "firing" == payload.attr.status,
+		resolved = "resolved" == payload.attr.status,
 		annotations = {},
 		labels = {},
 		endsAt = payload:find("ends/@at"),
