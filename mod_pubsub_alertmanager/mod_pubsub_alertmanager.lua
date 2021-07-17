@@ -47,7 +47,7 @@ function handle_POST(event, path)
 			item:text_tag("label", v, { name=k });
 		end
 		item:tag("starts", { at = alert.startsAt}):up();
-		if alert.endsAt then
+		if alert.endsAt and alert.status == "resolved" then
 			item:tag("ends", { at = alert.endsAt }):up();
 		end
 		if alert.generatorURL then
