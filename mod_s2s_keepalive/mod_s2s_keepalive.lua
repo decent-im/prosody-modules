@@ -64,7 +64,7 @@ end);
 
 module:hook("iq/host", function (event)
 	local stanza = event.stanza;
-	if stanza.attr.type ~= "result" and stanza.attr.type == "error" then
+	if stanza.attr.type ~= "result" and stanza.attr.type ~= "error" then
 		return -- not a reply iq stanza
 	end
 	if not (stanza.attr.id and stanza.attr.id:sub(1, #"keepalive:") == "keepalive:") then
