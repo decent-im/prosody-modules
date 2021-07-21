@@ -148,7 +148,7 @@ local function add_config_apps()
 end
 
 local function module_app_added(event)
-	module:log("warn", "ADDING %s", event.item.name)
+	module:log("info", "Adding %s", event.item.name)
 	add_app(event.item, module.name);
 end
 
