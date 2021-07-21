@@ -70,6 +70,13 @@ module:hook("iq/host", function (event)
 	if not (stanza.attr.id and stanza.attr.id:sub(1, #"keepalive:") == "keepalive:") then
 		return -- not a reply to this module
 	end
+	if stanza.attr.type == "error" then
+		local err = stanza:get_child("error");
+		local err_by = err and err.attr.by;
+		if err_by and prosody.hosts[err_by] then
+			return -- error produced by the local host
+		end
+	end
 
 	local origin = event.origin;
 	if origin.dummy then return end -- Probably a sendq bounce
