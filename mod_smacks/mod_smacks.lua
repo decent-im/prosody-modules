@@ -263,7 +263,7 @@ local function wrap_session_out(session, resume)
 			session.resumption_token = nil;
 		end
 		-- send out last ack as per revision 1.5.2 of XEP-0198
-		if session.smacks and session.conn then
+		if session.smacks and session.conn and session.handled_stanza_count then
 			(session.sends2s or session.send)(st.stanza("a", { xmlns = session.smacks, h = string.format("%d", session.handled_stanza_count) }));
 		end
 		return session_close(...);
