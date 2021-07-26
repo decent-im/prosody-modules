@@ -2,6 +2,9 @@
 labels:
 - 'Stage-Beta'
 summary: 'Allow account registration using invite tokens'
+rockspec:
+  dependencies:
+  - mod_invites
 ...
 
 Introduction
