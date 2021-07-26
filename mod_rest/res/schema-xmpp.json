@@ -343,7 +343,7 @@
                "required" : [
                   "jid"
                ],
-               "titel" : "XEP-0249: Direct MUC Invitations",
+               "title" : "XEP-0249: Direct MUC Invitations",
                "type" : "object",
                "xml" : {
                   "name" : "x",
