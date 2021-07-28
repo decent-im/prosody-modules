@@ -163,11 +163,11 @@ local function request_ack_if_needed(session, force, reason, stanza)
 	local queue = session.outgoing_stanza_queue;
 	local expected_h = session.last_acknowledged_stanza + #queue;
 	-- session.log("debug", "*** SMACKS(1) ***: awaiting_ack=%s, hibernating=%s", tostring(session.awaiting_ack), tostring(session.hibernating));
+	local max_unacked = max_unacked_stanzas;
+	if session.state == "inactive"  then
+		max_unacked = max_inactive_unacked_stanzas;
+	end
 	if session.awaiting_ack == nil and not session.hibernating then
-		local max_unacked = max_unacked_stanzas;
-		if session.state == "inactive"  then
-			max_unacked = max_inactive_unacked_stanzas;
-		end
 		-- this check of last_requested_h prevents ack-loops if missbehaving clients report wrong
 		-- stanza counts. it is set when an <r> is really sent (e.g. inside timer), preventing any
 		-- further requests until a higher h-value would be expected.
@@ -200,7 +200,7 @@ local function request_ack_if_needed(session, force, reason, stanza)
 	-- and there isn't already a timer for this event running.
 	-- If we wouldn't do this, stanzas added to the queue after the first "smacks-ack-delayed"-event
 	-- would not trigger this event (again).
-	if #queue > max_unacked_stanzas and session.awaiting_ack and session.delayed_ack_timer == nil then
+	if #queue > max_unacked and session.awaiting_ack and session.delayed_ack_timer == nil then
 		session.log("debug", "Calling delayed_ack_function directly (still waiting for ack)");
 		delayed_ack_function(session, stanza);		-- this is the only new stanza in the queue --> provide it to other modules
 	end
