@@ -14,7 +14,7 @@ indicated via the `Content-Type` header.
 -   JSON data is wrapped in a [XEP-0335] container.
 -   An Atom feed may have many `<entry>` and each one is published as
     its own PubSub item.
--   Other XML is simply published to a randomly named item as-is.
+-   Other XML is simply published to the item with ID `current`.
 
 ## JSON example
 
