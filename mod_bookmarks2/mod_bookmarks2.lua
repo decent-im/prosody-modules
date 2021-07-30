@@ -9,6 +9,8 @@ local jid_split = require "util.jid".split;
 local mod_pep = module:depends "pep";
 local private_storage = module:open_store("private", "map");
 
+local namespace = "urn:xmpp:bookmarks:0";
+
 local default_options = {
 	["persist_items"] = true;
 	-- This should be much higher, the XEP recommends 10000 but mod_pep rejects that.
@@ -19,7 +21,7 @@ local default_options = {
 
 module:hook("account-disco-info", function (event)
 	-- This Time it’s Serious!
-	event.reply:tag("feature", { var = "urn:xmpp:bookmarks:0#compat" }):up();
+	event.reply:tag("feature", { var = namespace.."#compat" }):up();
 end);
 
 local function on_retrieve_private_xml(event)
@@ -39,7 +41,7 @@ local function on_retrieve_private_xml(event)
 	local username = session.username;
 	local jid = username.."@"..session.host;
 	local service = mod_pep.get_pep_service(username);
-	local ok, ret = service:get_items("urn:xmpp:bookmarks:0", session.full_jid);
+	local ok, ret = service:get_items(namespace, session.full_jid);
 	if not ok then
 		if ret == "item-not-found" then
 			module:log("debug", "Got no PEP bookmarks item for %s, returning empty private bookmarks", jid);
@@ -56,14 +58,14 @@ local function on_retrieve_private_xml(event)
 		local item = ret[item_id];
 		local conference = st.stanza("conference");
 		conference.attr.jid = item.attr.id;
-		local bookmark = item:get_child("conference", "urn:xmpp:bookmarks:0");
+		local bookmark = item:get_child("conference", namespace);
 		conference.attr.name = bookmark.attr.name;
 		conference.attr.autojoin = bookmark.attr.autojoin;
-		local nick = bookmark:get_child_text("nick", "urn:xmpp:bookmarks:0");
+		local nick = bookmark:get_child_text("nick", namespace);
 		if nick ~= nil then
 			conference:text_tag("nick", nick, { xmlns = "storage:bookmarks" }):up();
 		end
-		local password = bookmark:get_child_text("password", "urn:xmpp:bookmarks:0");
+		local password = bookmark:get_child_text("password", namespace);
 		if password ~= nil then
 			conference:text_tag("password", password):up();
 		end
@@ -79,12 +81,12 @@ local function compare_bookmark2(a, b)
 	if a == nil or b == nil then
 		return false;
 	end
-	local a_conference = a:get_child("conference", "urn:xmpp:bookmarks:0");
-	local b_conference = b:get_child("conference", "urn:xmpp:bookmarks:0");
-	local a_nick = a:get_child_text("nick", "urn:xmpp:bookmarks:0");
-	local b_nick = b:get_child_text("nick", "urn:xmpp:bookmarks:0");
-	local a_password = a:get_child_text("password", "urn:xmpp:bookmarks:0");
-	local b_password = b:get_child_text("password", "urn:xmpp:bookmarks:0");
+	local a_conference = a:get_child("conference", namespace);
+	local b_conference = b:get_child("conference", namespace);
+	local a_nick = a:get_child_text("nick", namespace);
+	local b_nick = b:get_child_text("nick", namespace);
+	local a_password = a:get_child_text("password", namespace);
+	local b_password = b:get_child_text("password", namespace);
 	return (a.attr.id == b.attr.id and
 	        a_conference.attr.name == b_conference.attr.name and
 	        a_conference.attr.autojoin == b_conference.attr.autojoin and
@@ -99,7 +101,7 @@ local function publish_to_pep(jid, bookmarks, synchronise)
 		if synchronise then
 			-- If we set zero legacy bookmarks, purge the bookmarks 2 node.
 			module:log("debug", "No bookmark in the set, purging instead.");
-			return service:purge("urn:xmpp:bookmarks:0", jid, true);
+			return service:purge(namespace, jid, true);
 		else
 			return true;
 		end
@@ -107,11 +109,11 @@ local function publish_to_pep(jid, bookmarks, synchronise)
 
 	-- Retrieve the current bookmarks2.
 	module:log("debug", "Retrieving the current bookmarks 2.");
-	local has_bookmarks2, ret = service:get_items("urn:xmpp:bookmarks:0", jid);
+	local has_bookmarks2, ret = service:get_items(namespace, jid);
 	local bookmarks2;
 	if not has_bookmarks2 and ret == "item-not-found" then
 		module:log("debug", "Got item-not-found, assuming it was empty until now, creating.");
-		local ok, err = service:create("urn:xmpp:bookmarks:0", jid, default_options);
+		local ok, err = service:create(namespace, jid, default_options);
 		if not ok then
 			module:log("error", "Creating bookmarks 2 node failed: %s", err);
 			return ok, err;
@@ -133,16 +135,16 @@ local function publish_to_pep(jid, bookmarks, synchronise)
 
 	for bookmark in bookmarks:childtags("conference", "storage:bookmarks") do
 		-- Create the new conference element by copying everything from the legacy one.
-		local conference = st.stanza("conference", { xmlns = "urn:xmpp:bookmarks:0" });
+		local conference = st.stanza("conference", { xmlns = namespace });
 		conference.attr.name = bookmark.attr.name;
 		conference.attr.autojoin = bookmark.attr.autojoin;
 		local nick = bookmark:get_child_text("nick", "storage:bookmarks");
 		if nick ~= nil then
-			conference:text_tag("nick", nick, { xmlns = "urn:xmpp:bookmarks:0" }):up();
+			conference:text_tag("nick", nick):up();
 		end
 		local password = bookmark:get_child_text("password", "storage:bookmarks");
 		if password ~= nil then
-			conference:text_tag("password", password, { xmlns = "urn:xmpp:bookmarks:0" }):up();
+			conference:text_tag("password", password):up();
 		end
 
 		-- Create its wrapper.
@@ -160,7 +162,7 @@ local function publish_to_pep(jid, bookmarks, synchronise)
 				module:log("debug", "Item %s different from the previous one, publishing.", item.attr.id);
 				to_remove[bookmark.attr.jid] = nil;
 			end
-			local ok, err = service:publish("urn:xmpp:bookmarks:0", jid, bookmark.attr.jid, item, default_options);
+			local ok, err = service:publish(namespace, jid, bookmark.attr.jid, item, default_options);
 			if not ok then
 				module:log("error", "Publishing item %s failed: %s", item.attr.id, err);
 				return ok, err;
@@ -172,7 +174,7 @@ local function publish_to_pep(jid, bookmarks, synchronise)
 	if synchronise then
 		for id in pairs(to_remove) do
 			module:log("debug", "Item %s removed from bookmarks.", id);
-			local ok, err = service:retract("urn:xmpp:bookmarks:0", jid, id, st.stanza("retract", { id = id }));
+			local ok, err = service:retract(namespace, jid, id, st.stanza("retract", { id = id }));
 			if not ok then
 				module:log("error", "Retracting item %s failed: %s", id, err);
 				return ok, err;
@@ -245,7 +247,7 @@ local function migrate_legacy_bookmarks(event)
 	local data, err = private_storage:get(username, "storage:storage:bookmarks");
 	if not data then
 		module:log("debug", "No existing legacy bookmarks for %s, migration already done: %s", jid, err);
-		local ok, ret2 = service:get_items("urn:xmpp:bookmarks:0", session.full_jid);
+		local ok, ret2 = service:get_items(namespace, session.full_jid);
 		if not ok or not ret2 then
 			module:log("debug", "Additionally, no bookmarks 2 were existing for %s, assuming empty.", jid);
 			module:fire_event("bookmarks/empty", { session = session });
