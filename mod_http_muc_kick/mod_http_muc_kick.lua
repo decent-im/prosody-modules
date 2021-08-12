@@ -78,7 +78,7 @@ module:provides("http", {
             -- https://xmpp.org/extensions/xep-0045.html#kick
             local success, error, condition = muc:set_role(true, occupant_jid, nil, reason);
             if not success then
-                return handle_error(response, 400, "Coudln't kick user: ".. error .. ": " .. condition);
+                return handle_error(response, 400, "Couldn't kick user: ".. error .. ": " .. condition);
             end
             
             -- Kick was successful
