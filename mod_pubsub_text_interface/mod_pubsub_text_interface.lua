@@ -81,7 +81,7 @@ module:hook("message/host", function (event)
 			reply:body("OK");
 		end
 	else
-		reply:body("Unknown command. `help` to list commands.");
+		reply:body("Unknown command. `help` to list commands."):up();
 		reply:tag("response", { xmlns = xmlns_quick_resp, value = "help", }):up();
 	end
 	reply:reset();
