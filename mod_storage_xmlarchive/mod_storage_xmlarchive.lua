@@ -1,5 +1,5 @@
 -- mod_storage_xmlarchive
--- Copyright (C) 2015-2020 Kim Alvefur
+-- Copyright (C) 2015-2021 Kim Alvefur
 --
 -- This file is MIT/X11 licensed.
 --
@@ -84,7 +84,7 @@ function archive:get(username, id)
 	local data = xmlfile:read(item.length);
 	local parsed, perr = xml.parse(data);
 	if not parsed then return nil, perr; end
-	return parsed, dt.parse(item.when), item.with;
+	return parsed, tonumber(item.when) or dt.parse(item.when), item.with;
 end
 
 local overwrite = module:get_option("xmlarchive_overwrite", false);
