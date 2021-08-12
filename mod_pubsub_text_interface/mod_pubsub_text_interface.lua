@@ -33,7 +33,7 @@ module:hook("message/host", function (event)
 	command = (command or body):lower();
 
 	if command == "help" then
-		reply:body(help);
+		reply:body(help):up();
 		reply:tag("response", { xmlns = xmlns_quick_resp, value = "list", }):up();
 		reply:tag("response", { xmlns = xmlns_quick_resp, value = "subscriptions", }):up();
 	elseif command == "list" then
