@@ -22,6 +22,11 @@ end
 local archive = {};
 local archive_mt = { __index = archive };
 
+archive.caps = {
+	total = false,
+	quota = nil,
+};
+
 local is_stanza = st.is_stanza or function (s)
 	return getmetatable(s) == st.stanza_mt;
 end
