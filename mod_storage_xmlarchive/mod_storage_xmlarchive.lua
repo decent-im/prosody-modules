@@ -25,6 +25,7 @@ local archive_mt = { __index = archive };
 archive.caps = {
 	total = false,
 	quota = nil,
+	full_id_range = true;
 };
 
 local is_stanza = st.is_stanza or function (s)
@@ -229,6 +230,7 @@ function archive:find(username, query)
 	end
 	local items;
 	local first_item, last_item;
+	local stop_at_id;
 	if rev then
 		start_day, step, last_day = last_day, -step, start_day;
 		if query.before then
@@ -246,6 +248,9 @@ function archive:find(username, query)
 				items = items_;
 			end
 		end
+		if query.after then
+			stop_at_id = query.after;
+		end
 	elseif query.after then
 		local after_day, after_item, items_ = self:_get_idx(username, query.after, dates);
 		if not after_day then
@@ -260,6 +265,11 @@ function archive:find(username, query)
 			start_day = after_day;
 			items = items_;
 		end
+		if query.before then
+			stop_at_id = query.before;
+		end
+	elseif query.before then
+		stop_at_id = query.before;
 	end
 
 	local date_open, xmlfile;
@@ -320,6 +330,11 @@ function archive:find(username, query)
 				if type(i_when) ~= "number" then
 					module:log("warn", "data[%q][%d].when is invalid", date, i);
 					break;
+				end
+
+				if stop_at_id and stop_at_id == item.id then
+					if xmlfile then xmlfile:close(); end
+					return;
 				end
 
 				if  (not q_with or i_with == q_with)
