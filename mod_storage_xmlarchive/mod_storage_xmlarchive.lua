@@ -26,6 +26,7 @@ archive.caps = {
 	total = false,
 	quota = nil,
 	full_id_range = true;
+	ids = true;
 };
 
 local is_stanza = st.is_stanza or function (s)
@@ -204,6 +205,33 @@ function archive:find(username, query)
 	end
 	reset_stream();
 
+	local filtered_ids = false;
+	local filtered_dates = false;
+	if query.ids then
+		filtered_ids = {};
+		filtered_dates = {};
+		for _, id in ipairs(query.ids) do
+			filtered_ids[id] = true;
+			if filtered_dates then
+				local date = id:match("^%d%d%d%d%-%d%d%-%d%d");
+				if date then
+					filtered_dates[date] = true;
+				else
+					-- if any id diverges from the standard then the item could be from any date
+					filtered_dates = nil;
+				end
+			end
+		end
+	end
+
+	if filtered_dates then
+		for i = #dates, 1, -1 do
+			if not filtered_dates[ dates[i] ] then
+				table.remove(dates, i);
+			end
+		end
+	end
+
 	local limit = query.limit;
 	local start_day, step, last_day = 1, 1, #dates;
 	local count = 0;
@@ -339,7 +367,8 @@ function archive:find(username, query)
 
 				if  (not q_with or i_with == q_with)
 				and (not q_start or i_when >= q_start)
-				and (not q_end or i_when <= q_end) then
+				and (not q_end or i_when <= q_end)
+				and (not filtered_ids or filtered_ids[item.id]) then
 					count = count + 1;
 					first_item = i + step;
 
