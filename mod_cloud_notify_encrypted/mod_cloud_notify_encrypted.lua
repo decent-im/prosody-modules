@@ -1,5 +1,6 @@
 local array = require "util.array";
 local base64 = require "util.encodings".base64;
+local valid_utf8 = require "util.encodings".utf8.valid;
 local ciphers = require "openssl.cipher";
 local jid = require "util.jid";
 local json = require "util.json";
@@ -78,6 +79,9 @@ function handle_push(event)
 		body = original_stanza:get_child_text("body");
 		if body and #body > 255 then
 			body = body:sub(1, 255);
+			if not valid_utf8(body) then
+				body = body:gsub("[\194-\244][\128-\191]*$", "");
+			end
 		end
 	end
 
