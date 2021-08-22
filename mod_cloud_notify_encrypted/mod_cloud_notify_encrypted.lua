@@ -14,6 +14,14 @@ local xmlns_push_encrypt = "tigase:push:encrypt:0";
 local xmlns_push_encrypt_aes_128_gcm = "tigase:push:encrypt:aes-128-gcm";
 local xmlns_push_jingle = "tigase:push:jingle:0";
 
+local function detect_stanza_encryption(stanza)
+	local eme = stanza:get_child("encryption", "urn:xmpp:eme:0");
+	if eme then return eme.attr.namespace or ""; end
+	-- Fallback for legacy OMEMO clients without EME
+	local omemo = stanza:get_child("encrypted", "eu.siacs.conversations.axolotl");
+	if omemo then return "eu.siacs.conversations.axolotl"; end
+end
+
 -- https://xeps.tigase.net//docs/push-notifications/encrypt/#41-discovering-support
 local function account_disco_info(event)
 	event.reply:tag("feature", {var=xmlns_push_encrypt}):up();
@@ -61,9 +69,16 @@ function handle_push(event)
 	local push_summary = event.push_summary;
 
 	local original_stanza = event.original_stanza;
-	local body = original_stanza:get_child_text("body");
-	if body and #body > 255 then
-		body = body:sub(1, 255);
+	local is_encrypted_msg = detect_stanza_encryption(original_stanza);
+	local body;
+	if is_encrypted_msg then
+		-- TODO: localization
+		body = "You have received an encrypted message";
+	else
+		body = original_stanza:get_child_text("body");
+		if body and #body > 255 then
+			body = body:sub(1, 255);
+		end
 	end
 
 	local push_payload = {
