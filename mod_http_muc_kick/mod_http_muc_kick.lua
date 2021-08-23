@@ -30,7 +30,7 @@ local function get_muc(muc_jid)
         return nil, host, err;
     end
 
-    muc = prosody.hosts[host].modules.muc.get_room_from_jid(muc_jid);
+    local muc = prosody.hosts[host].modules.muc.get_room_from_jid(muc_jid);
     if not muc then
         return nil, host, "No MUC '"..muc_node.."' found for host: "..host;
     end
