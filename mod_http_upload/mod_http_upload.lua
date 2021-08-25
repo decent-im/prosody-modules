@@ -198,6 +198,11 @@ local function handle_request(origin, stanza, xmlns, filename, filesize)
 		module:log("debug", "Upload of %dB by %s would exceed quota", filesize, user_bare);
 		return nil, st.error_reply(stanza, "wait", "resource-constraint", "Quota reached");
 	end
+	local base_url = module:http_url();
+	if base_url:match("^http://") then
+		module:log("error", "File upload MUST happen with TLS but it isn’t enabled, see https://prosody.im/doc/http for how to fix this issue");
+		return nil, st.error_reply(stanza, "wait", "internal-server-error", "HTTPS is not configured properly on the server");
+	end
 
 	local random_dir = uuid();
 	local created, err = lfs.mkdir(join_path(storage_path, random_dir));
@@ -225,7 +230,6 @@ local function handle_request(origin, stanza, xmlns, filename, filesize)
 
 	origin.log("debug", "Given upload slot %q", slot);
 
-	local base_url = module:http_url();
 	local slot_url = url.parse(base_url);
 	slot_url.path = url.parse_path(slot_url.path or "/");
 	t_insert(slot_url.path, random_dir);
