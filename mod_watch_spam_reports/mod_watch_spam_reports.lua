@@ -7,7 +7,7 @@ module:depends("spam_reporting")
 
 module:hook("spam_reporting/spam-report", function(event)
 	local reporter_bare_jid = jid.bare(event.stanza.attr.from)
-	local report = reporter_bare_jid.." reported spam from "..event.jid..": "..event.reason
+	local report = reporter_bare_jid.." reported spam from "..event.jid..": "..(event.reason or "no reason given")
 	for admin_jid in admins
 		do
 			module:send(st.message({from=host,
@@ -18,7 +18,7 @@ end)
 
 module:hook("spam_reporting/abuse-report", function(event)
 	local reporter_bare_jid = jid.bare(event.stanza.attr.from)
-	local report = reporter_bare_jid.." reported abuse from "..event.jid..": "..event.reason
+	local report = reporter_bare_jid.." reported abuse from "..event.jid..": "..(event.reason or "no reason given")
 	for admin_jid in admins
 		do
 			module:send(st.message({from=host,
