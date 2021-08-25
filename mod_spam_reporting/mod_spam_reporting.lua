@@ -33,7 +33,7 @@ module:hook("iq-set/self/urn:xmpp:blocking:block", function (event)
 			end
 
 			if report_type then
-				module:log("warn", "Received report of %s from JID '%s', %s", report_type, jid, reason);
+				module:log("warn", "Received report of %s from JID '%s', %s", report_type, jid, reason or "no reason given");
 				module:fire_event(module.name.."/"..report_type.."-report", {
 					origin = event.origin, stanza = event.stanza, jid = jid,
 					item = item, report = report, reason = reason, });
