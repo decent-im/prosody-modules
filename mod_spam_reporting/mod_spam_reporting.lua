@@ -17,27 +17,27 @@ module:hook("iq-set/self/urn:xmpp:blocking:block", function (event)
 		local report = item:get_child("report", "urn:xmpp:reporting:0");
 		local jid = jid_prep(item.attr.jid);
 		if report and jid then
-			local type = report:get_child("spam") and "spam" or
+			local report_type = report:get_child("spam") and "spam" or
 				report:get_child("abuse") and "abuse" or
 				"unknown";
 			local reason = report:get_child_text("text");
 			module:log("warn", "Received report of %s from JID '%s', %s", type, jid, reason);
-			module:fire_event(module.name.."/"..type.."-report", {
+			module:fire_event(module.name.."/"..report_type.."-report", {
 				origin = event.origin, stanza = event.stanza, jid = jid,
 				item = item, report = report, reason = reason, });
 		else
 			report = item:get_child("report", "urn:xmpp:reporting:1");
 			if report and jid then
-				local type = "unknown";
+				local report_type = "unknown";
 				if report.attr.reason == "urn:xmpp:reporting:abuse" then
-					type = "abuse";
+					report_type = "abuse";
 				end
 				if report.attr.reason == "urn:xmpp:reporting:spam" then
-					type = "spam";
+					report_type = "spam";
 				end
 				local reason = report:get_child_text("text");
 				module:log("warn", "Received report of %s from JID '%s', %s", type, jid, reason);
-				module:fire_event(module.name.."/"..type.."-report", {
+				module:fire_event(module.name.."/"..report_type.."-report", {
 					origin = event.origin, stanza = event.stanza, jid = jid,
 					item = item, report = report, reason = reason, });
 			end
