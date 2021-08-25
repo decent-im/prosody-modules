@@ -1,5 +1,5 @@
 -- XEP-0377: Spam Reporting for Prosody
--- Copyright (C) -2016 Kim Alvefur
+-- Copyright (C) 2016-2021 Kim Alvefur
 --
 -- This file is MIT/X11 licensed.
 
@@ -28,7 +28,7 @@ module:hook("iq-set/self/urn:xmpp:blocking:block", function (event)
 		else
 			report = item:get_child("report", "urn:xmpp:reporting:1");
 			if report and jid then
-				local type
+				local type = "unknown";
 				if report.attr.reason == "urn:xmpp:reporting:abuse" then
 					type = "abuse";
 				end
