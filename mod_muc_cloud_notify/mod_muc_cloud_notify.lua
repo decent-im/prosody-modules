@@ -463,8 +463,9 @@ local function archive_message_added(event)
 	local body = stanza:get_child_text('body');
 
 	for reference in stanza:childtags("reference", "urn:xmpp:reference:0") do
-		if reference.attr['type'] == 'mention' and reference.attr['begin'] and reference.attr['end'] then
-			local nick = extract_reference(body, reference.attr['begin'], reference.attr['end']);
+		local ref_begin, ref_end = tonumber(reference.attr['begin']), tonumber(reference.attr['end']);
+		if reference.attr['type'] == 'mention' and ref_begin and ref_end then
+			local nick = extract_reference(body, ref_begin, ref_end);
 			local jid = room:get_registered_jid(nick);
 
 			if room._occupants[room.jid..'/'..nick] then
