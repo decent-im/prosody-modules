@@ -102,11 +102,14 @@ function response_type_handlers.code(params, granted_jid)
 	local granted_scopes = filter_scopes(granted_jid, params.scope);
 
 	local code = uuid.generate();
-	assert(codes:set(params.client_id .. "#" .. code, {
+	local ok = codes:set(params.client_id .. "#" .. code, {
 		issued = os.time();
 		granted_jid = granted_jid;
 		granted_scopes = granted_scopes;
-	}));
+	});
+	if not ok then
+		return {status_code = 429};
+	end
 
 	local redirect = url.parse(params.redirect_uri);
 	local query = http.formdecode(redirect.query or "");
