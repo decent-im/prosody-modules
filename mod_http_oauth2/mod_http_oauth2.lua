@@ -23,8 +23,12 @@ local function filter_scopes(request_jid, requested_scope_string) --luacheck: ig
 	return "prosody:scope:default";
 end
 
+local function code_expires_in(code)
+	return os.difftime(os.time(), code.issued);
+end
+
 local function code_expired(code)
-	return os.difftime(os.time(), code.issued) > 120;
+	return code_expires_in(code) > 120;
 end
 
 local codes = cache.new(10000, function (_, code)
@@ -37,7 +41,7 @@ module:add_timer(900, function()
 		codes:set(k, nil);
 		k, code = codes:tail();
 	end
-	return 900;
+	return code and code_expires_in(code) + 1 or 900;
 end)
 
 local function oauth_error(err_name, err_desc)
