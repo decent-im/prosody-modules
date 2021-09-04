@@ -492,7 +492,6 @@ function module.command(arg)
 						data.with = item.with;
 						data.when = tonumber(item.when) or dt.parse(item.when);
 						data.attr.stamp = item.when;
-						data.attr.stamp_legacy = dt.legacy(data.when);
 						assert(dm.list_append(user, host, store, data));
 					end
 					assert(os.remove(dm.getpath(user .. "@" .. date, host, store, "list")));
@@ -525,6 +524,10 @@ function module.command(arg)
 						table.insert(dates, date);
 						xmlfile = assert(io.open(dm.getpath(user .. "@" .. date, host, store, "xml"), "w"));
 					end
+					-- The property 'stamp_legacy' originally came from mod_offline and
+					-- was inherited into the mod_storage_internal archive format for
+					-- compat. It should not be needed since Prosody 0.10.0 but could
+					-- exist in older data.
 					item.attr.stamp, item.attr.stamp_legacy = nil, nil;
 					local stanza = tostring(st.deserialize(item)) .. "\n";
 					meta.offset, meta.length = xmlfile:seek(), #stanza;
