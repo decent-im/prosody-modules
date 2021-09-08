@@ -160,7 +160,7 @@ end
 local function remove_all_apps()
 	for k, v in pairs(site_apps) do
 		if v._source == module.name then
-			remove_app(k);
+			remove_app(v);
 		end
 	end
 end
