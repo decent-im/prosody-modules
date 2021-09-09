@@ -12,7 +12,8 @@ if prosody.shutdown then -- COMPAT hack to detect prosodyctl
 	invites = module:depends("invites");
 end
 
-local invite_stream_feature = st.stanza("register", { xmlns = "urn:xmpp:invite" }):up();
+local legacy_invite_stream_feature = st.stanza("register", { xmlns = "urn:xmpp:invite" }):up();
+local invite_stream_feature = st.stanza("register", { xmlns = "urn:xmpp:ibr-token:0" }):up();
 module:hook("stream-features", function(event)
 	local session, features = event.origin, event.features;
 
@@ -21,6 +22,7 @@ module:hook("stream-features", function(event)
 		return
 	end
 
+	features:add_child(legacy_invite_stream_feature);
 	features:add_child(invite_stream_feature);
 end);
 
