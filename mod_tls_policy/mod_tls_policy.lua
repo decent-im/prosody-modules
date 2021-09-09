@@ -11,7 +11,7 @@ local function hook(event_name, typ, policy)
 
 	module:hook(event_name, function (event)
 		local origin = event.origin;
-		if origin.encrypted then
+		if origin.conn and origin.conn:ssl() then
 			local info = origin.conn:socket():info();
 			for key, what in pairs(policy) do
 				module:log("debug", "Does info[%q] = %s match %s ?", key, tostring(info[key]), tostring(what));
