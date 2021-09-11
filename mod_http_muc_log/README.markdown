@@ -89,8 +89,9 @@ http_muc_log_lazy_calendar = false
 
 ## Pinned chatrooms
 
-The room list page is normally sorted by address. To override this, or
-pin certain rooms to the top:
+The room list page is normally sorted by address, rooms having a
+description before those that don't. To override this, or pin certain
+rooms to the top:
 
 ``` lua
 http_muc_log_list_order = {

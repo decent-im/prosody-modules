@@ -461,6 +461,11 @@ local function list_rooms(event)
 
 	table.sort(room_list, function (a, b)
 		if a.priority ~= b.priority then return a.priority > b.priority; end
+		if a.description ~= nil and b.description == nil then
+			return true;
+		elseif a.description == nil and b.description ~= nil then
+			return false;
+		end
 		return a.jid < b.jid;
 	end);
 
