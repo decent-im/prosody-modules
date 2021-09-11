@@ -434,6 +434,13 @@ local function logs_page(event, path)
 	});
 end
 
+local room_weights = setmetatable(module:get_option_array(module.name.."_list_order", {}):reverse(), nil);
+for i = #room_weights, 1, -1 do
+	local room_jid = room_weights[i];
+	room_weights[i] = nil;
+	room_weights[room_jid] = i;
+end
+
 local function list_rooms(event)
 	local request, response = event.request, event.response;
 	local room_list, i = {}, 1;
@@ -447,11 +454,13 @@ local function list_rooms(event)
 				name = room:get_name() or localpart;
 				lang = room.get_language and room:get_language();
 				description = room:get_description();
+				priority = room_weights[ room.jid ] or 0;
 			}, i + 1;
 		end
 	end
 
 	table.sort(room_list, function (a, b)
+		if a.priority ~= b.priority then return a.priority > b.priority; end
 		return a.jid < b.jid;
 	end);
 

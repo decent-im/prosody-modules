@@ -87,6 +87,18 @@ view, but it will likely be very slow.
 http_muc_log_lazy_calendar = false
 ```
 
+## Pinned chatrooms
+
+The room list page is normally sorted by address. To override this, or
+pin certain rooms to the top:
+
+``` lua
+http_muc_log_list_order = {
+    "general@channels.example.com",
+    "support@channels.example.com",
+}
+```
+
 Compatibility
 =============
 
