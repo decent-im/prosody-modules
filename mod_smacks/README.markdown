@@ -56,7 +56,7 @@ Configuration
   Option                              Default           Description
   ----------------------------------  ----------------- ------------------------------------------------------------------------------------------------------------------
   `smacks_hibernation_time`           600 (10 minutes)  The number of seconds a disconnected session should stay alive for (to allow reconnect)
-  `smacks_enabled_s2s`                false             Enable Stream Management on server connections? *Experimental*
+  `smacks_enabled_s2s`                true              Enable Stream Management on server connections? *Experimental*
   `smacks_max_unacked_stanzas`        0                 How many stanzas to send before requesting acknowledgement
   `smacks_max_ack_delay`              30 (1/2 minute)   The number of seconds an ack must be unanswered to trigger an "smacks-ack-delayed" event
   `smacks_max_hibernated_sessions`    10                The number of allowed sessions in hibernated state (limited per user)
