@@ -1,5 +1,5 @@
 ---
-summary: XEP-0283: Moved
+summary: "XEP-0283: Moved"
 labels:
 - 'Stage-Alpha'
 ...
