@@ -212,8 +212,8 @@ local function check_omemo_fallback(event)
 	end
 end
 
-module:hook("message/bare", check_omemo_fallback, 1);
-module:hook("message/full", check_omemo_fallback, 1);
+module:hook("message/bare", check_omemo_fallback, -0.5);
+module:hook("message/full", check_omemo_fallback, -0.5);
 
 module:depends("http")
 module:provides("http", {
