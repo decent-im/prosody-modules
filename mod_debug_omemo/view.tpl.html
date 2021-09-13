@@ -186,6 +186,8 @@ ol, ul {
 	<p>This was an {message.encryption} {message.direction} {message.type} message. The sending device id was <tt>{omemo.sender_id}</tt>.</p>
 
 	<h4>Recipient devices</h4>
+
+	{message.has_any_keys&
 	<table class="table">
 	<tr>
 		<th>Device ID</th>
@@ -197,7 +199,9 @@ ol, ul {
 		<td>{item.status?Unknown device} {item.prekey&<span class="badge badge-warning">Used pre-key</span>}</td>
 		<td>{item.comment?}</td>
 	</tr>}
-	</table>
+	</table>}
+
+	{message.has_no_keys&<p><strong>This message did not contain any OMEMO keys.</strong></p>}
 
 	<h3>Account status</h3>
 	<p>{user}'s account has {omemo.status} with OMEMO.</p>

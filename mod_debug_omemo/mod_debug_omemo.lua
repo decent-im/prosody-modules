@@ -159,6 +159,8 @@ local function render_message(event, path)
 		type = message.attr.type or "normal";
 		direction = direction;
 		encryption = is_encrypted and "encrypted" or "unencrypted";
+		has_any_keys = not message_rids:empty();
+		has_no_keys = message_rids:empty();
 	};
 
 	data.omemo = {
@@ -176,7 +178,7 @@ local function render_message(event, path)
 			};
 		end
 	else
-		data.omemo.devices[false] = { status = "No devices", };
+		data.omemo.devices[false] = { status = "No devices have published OMEMO keys on this account" };
 	end
 
 	event.response.headers.content_type = "text/html; charset=utf-8";
