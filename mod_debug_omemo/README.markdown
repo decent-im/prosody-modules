@@ -28,6 +28,5 @@ Compatibility
 
   ----- -------
   0.11  Hopefully works
-  ----- -------
   trunk Works
   ----- -------
