@@ -211,10 +211,10 @@ ol, ul {
 			<th>Access</th>
 		</tr>
 		{omemo.devices%<tr>
-			<td>{idx}</td>
-			<td>{item.status}</td>
-			<td>{item.bundle}</td>
-			<td>{item.access_model}</td>
+			<td>{idx?<i>N/A</i>}</td>
+			<td>{item.status?<i>N/A</i>}</td>
+			<td>{item.bundle?<i>N/A</i>}</td>
+			<td>{item.access_model?<i>N/A</i>}</td>
 		</tr>}
 	</table>
 </div>

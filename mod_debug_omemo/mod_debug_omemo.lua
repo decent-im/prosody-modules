@@ -167,12 +167,16 @@ local function render_message(event, path)
 	};
 
 	data.omemo.devices = {};
-	for _, device_info in ipairs(user_omemo_status.devices) do
-		data.omemo.devices[("%d"):format(device_info.id)] = {
-			status = device_info.valid and "OK" or "Problem";
-			bundle = device_info.have_bundle and "Published" or "Missing";
-			access_model = access_model_text[device_info.bundle_config and device_info.bundle_config.access_model or nil];
-		};
+	if user_omemo_status.devices then
+		for _, device_info in ipairs(user_omemo_status.devices) do
+			data.omemo.devices[("%d"):format(device_info.id)] = {
+				status = device_info.valid and "OK" or "Problem";
+				bundle = device_info.have_bundle and "Published" or "Missing";
+				access_model = access_model_text[device_info.bundle_config and device_info.bundle_config.access_model or nil];
+			};
+		end
+	else
+		data.omemo.devices[false] = { status = "No devices", };
 	end
 
 	event.response.headers.content_type = "text/html; charset=utf-8";
