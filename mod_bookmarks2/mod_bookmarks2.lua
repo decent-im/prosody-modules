@@ -14,7 +14,7 @@ local namespace = "urn:xmpp:bookmarks:1";
 local default_options = {
 	["persist_items"] = true;
 	-- This should be much higher, the XEP recommends 10000 but mod_pep rejects that.
-	["max_items"] = 255;
+	["max_items"] = module:get_option_number("pep_max_items", 256);
 	["send_last_published_item"] = "never";
 	["access_model"] = "whitelist";
 };
