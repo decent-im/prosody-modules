@@ -100,15 +100,24 @@ local access_model_text = {
 	presence = "Contacts only";
 };
 
+local function get_message(username, message_id)
+	if mam.get then
+		return mam:get(username, message_id);
+	end
+	-- COMPAT
+	local message;
+	for _, result in mam:find(username, { key = message_id }) do
+		message = result;
+	end
+	return message;
+end
+
 local function render_message(event, path)
 	local username, message_id = path:match("^([^/]+)/(.+)$");
 	if not username then
 		return 400;
 	end
-	local message;
-	for _, result in mam:find(username, { key = message_id }) do
-		message = result;
-	end
+	local message = get_message(username, message_id);
 	if not message then
 		return 404;
 	end
