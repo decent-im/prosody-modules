@@ -28,7 +28,7 @@ end, 19);
 
 module:hook("muc-occupant-groupchat", function(event)
 	local occupant = event.occupant;
-	if occupant.role ~= "visitor" then
+	if occupant == nil or occupant.role ~= "visitor" then
 		return;
 	end
 	local origin = event.origin;
