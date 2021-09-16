@@ -1,4 +1,5 @@
 local jid = require "util.jid";
+local id = require "util.id";
 local st = require "util.stanza";
 
 local quick_response_ns = "urn:xmpp:tmp:quick-response";
@@ -17,7 +18,7 @@ module:hook("muc-occupant-session-new", function(event)
 			type = "groupchat",
 			to = occupant.nick,
 			from = room.jid,
-			id = "foo",
+			id = id.medium(),
 			["xml:lang"] = "en",
 		}, welcome_message)
 			:tag("response", { xmlns = quick_response_ns, value = "yes", label = "I accept." }):up()
