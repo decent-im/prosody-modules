@@ -6,7 +6,7 @@ local welcome_message = module:get_option_string("tos_welcome_message");
 local yes_message = module:get_option_string("tos_yes_message");
 local no_message = module:get_option_string("tos_no_message");
 
-module:hook("muc-occupant-joined", function(event)
+module:hook("muc-occupant-session-new", function(event)
 	local origin = event.origin;
 	local room = event.room;
 	local occupant = event.occupant;
@@ -24,7 +24,7 @@ module:hook("muc-occupant-joined", function(event)
 			:tag("response", { xmlns = quick_response_ns, value = "no", label = "I decline." }):up();
 		origin.send(message);
 	end
-end);
+end, 19);
 
 module:hook("muc-occupant-groupchat", function(event)
 	local occupant = event.occupant;
