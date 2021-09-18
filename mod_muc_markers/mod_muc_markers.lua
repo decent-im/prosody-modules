@@ -76,8 +76,8 @@ end);
 module:hook("muc-message-is-historic", function (event)
 	local marker = event.stanza:get_child(nil, xmlns_markers);
 
-	-- Prevent stanza from reaching the archive (it's just noise)
-	if marker then
+	if marker and marker.name ~= "markable" then
+		-- Prevent stanza from reaching the archive (it's just noise)
 		return false;
 	end
 end);
