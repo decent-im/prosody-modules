@@ -4,6 +4,7 @@ local json = require "util.json";
 local st = require "util.stanza";
 local jid_node = require "util.jid".node;
 local jid_bare = require "util.jid".bare;
+local jid_resource = require "util.jid".resource;
 
 local authorization_url = module:get_option("muc_http_auth_url", "")
 local enabled_for = module:get_option_set("muc_http_auth_enabled_for",  nil)
@@ -51,7 +52,12 @@ local function handle_presence(event)
 	if not must_be_authorized(jid_node(room.jid)) then return; end
 
 	local user_bare_jid = jid_bare(stanza.attr.from);
-	local url = authorization_url .. "?userJID=" .. user_bare_jid .."&mucJID=" .. room.jid;
+	local user_nickname = jid_resource(stanza.attr.to);
+
+	-- Nickname is mandatory to enter a MUC
+	if not user_nickname then return; end
+
+	local url = authorization_url .. "?userJID=" .. user_bare_jid .."&mucJID=" .. room.jid .. "&nickname=" .. user_nickname;
 
 	local result = wait_for(http.request(url, options):next(handle_success, handle_error));
 	local response, err = result.response, result.err;

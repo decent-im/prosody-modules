@@ -2,9 +2,9 @@
 
 This module externalizes MUC authorization via HTTP.  
 Whenever a user wants to join a MUC, an HTTP GET request is made to `authorization_url`
-with the user bare jid (`userJID`) and the MUC jid (`mucJID`) as GET parameters.  
+with the user's bare jid (`userJID`), the MUC jid (`mucJID`) and the user's nickname (`nickname`) as GET parameters.  
 Example:  
-`https://www.prosody.im/users/can-join/?userJID=romeo@example.com&mucJID=teaparty@chat.example.com`
+`https://www.prosody.im/users/can-join/?userJID=romeo@example.com&mucJID=teaparty@chat.example.com&nickname=Romeo`
 
 This allows an external service to decide whether a user is authorized to join a MUC or not.  
 
@@ -41,7 +41,7 @@ modules_enabled = {
 
 |Name |Description |Default |
 |-----|------------|--------|
-|muc_http_auth_url| URL of the external HTTP service to which send `userJID` and `mucJID` in a GET request | "" |
+|muc_http_auth_url| URL of the external HTTP service to which send `userJID`, `mucJID` and `nickname` in a GET request | "" |
 |muc_http_auth_enabled_for| List of MUC names (node part) to enable this module for | nil |
 |muc_http_auth_disabled_for| List of MUC names (node part) to disable this module for | nil |
 |muc_http_auth_insecure| Disable certificate verification for request. Only intended for development of the external service. | false |
