@@ -5,6 +5,7 @@ local st = require "util.stanza";
 local jid_node = require "util.jid".node;
 local jid_bare = require "util.jid".bare;
 local jid_resource = require "util.jid".resource;
+local urlencode = require "util.http".urlencode;
 
 local authorization_url = module:get_option("muc_http_auth_url", "")
 local enabled_for = module:get_option_set("muc_http_auth_enabled_for",  nil)
