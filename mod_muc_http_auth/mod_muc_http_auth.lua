@@ -58,7 +58,7 @@ local function handle_presence(event)
 	-- Nickname is mandatory to enter a MUC
 	if not user_nickname then return; end
 
-	local url = authorization_url .. "?userJID=" .. user_bare_jid .."&mucJID=" .. room.jid .. "&nickname=" .. user_nickname;
+	local url = authorization_url .. "?userJID=" .. urlencode(user_bare_jid) .."&mucJID=" .. urlencode(room.jid) .. "&nickname=" .. urlencode(user_nickname);
 
 	local result = wait_for(http.request(url, options):next(handle_success, handle_error));
 	local response, err = result.response, result.err;
