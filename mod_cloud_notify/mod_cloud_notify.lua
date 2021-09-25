@@ -403,6 +403,15 @@ module:hook("message/offline/handle", function(event)
 	handle_notify_request(event.stanza, node, user_push_services, true);
 end, 1);
 
+-- publish on bare groupchat
+-- this picks up MUC messages when there are no devices connected 
+module:hook("message/bare/groupchat", function(event)
+	module:log("debug", "Invoking cloud handle_notify_request() for bare groupchat stanza");
+	local node, user_push_services = get_push_settings(event.stanza, event.origin);
+	handle_notify_request(event.stanza, node, user_push_services, true);
+end, 1);
+
+
 local function process_stanza_queue(queue, session, queue_type)
 	if not session.push_identifier then return; end
 	local user_push_services = {[session.push_identifier] = session.push_settings};
