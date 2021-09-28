@@ -293,8 +293,9 @@ local function handle_request(event, path)
 	end
 
 	if payload.name == "iq" then
+		local responses = st.stanza("xmpp");
 		function origin.send(stanza)
-			module:send(stanza);
+			responses:add_direct_child(stanza);
 		end
 
 		if payload.attr.type ~= "get" and payload.attr.type ~= "set" then
@@ -307,6 +308,9 @@ local function handle_request(event, path)
 			function (result)
 				module:log("debug", "Sending[rest]: %s", result.stanza:top_tag());
 				response.headers.content_type = send_type;
+				if responses[2] then
+					return encode(send_type, responses);
+				end
 				return encode(send_type, result.stanza);
 			end,
 			function (error)
