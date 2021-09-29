@@ -114,7 +114,7 @@ function check_message(data)
 		if not nick then return; end
 	end
 
-	local body = stanza:get_child_text();
+	local body = stanza:get_child_text("body");
 
 	if not body then return; end
 
