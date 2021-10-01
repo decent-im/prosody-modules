@@ -25,6 +25,7 @@ local function fetch_tweet_data(room, url, tweet_id, origin_id)
 
 			local response = json.decode(response_body);
 			if not response then return; end
+			if not response['data'] or not response['includes'] then return; end
 
 			local tweet = response['data'];
 			local author = response['includes']['users'][1];
