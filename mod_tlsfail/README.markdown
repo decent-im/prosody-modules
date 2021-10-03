@@ -1,5 +1,5 @@
 ---
-summary: 'TLS <failure/> test'
+summary: STARTTLS failure test
 ---
 
 This module responds to `<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>` with
