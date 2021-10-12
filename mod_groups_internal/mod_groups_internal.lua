@@ -146,7 +146,7 @@ function set_info(group_id, info)
 	-- TODO: we should probably prohibit changing/removing the MUC JID of
 	-- an existing group.
 	if info.muc_jid then
-		room = muc_host.get_room_from_jid(info.muc_jid);
+		local room = muc_host.get_room_from_jid(info.muc_jid);
 		room:set_name(info.name);
 	end
 
