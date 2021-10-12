@@ -305,6 +305,14 @@ local function setup()
 	end
 end
 
+module:hook_global("user-deleted", function(event)
+	if event.host ~= module.host then return end
+	local username = event.username;
+	for group_id in user_groups(username) do
+		remove_member(group_id, username);
+	end
+end);
+
 if prosody.start_time then  -- server already started
 	setup();
 else
