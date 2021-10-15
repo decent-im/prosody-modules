@@ -30,7 +30,7 @@ if delegation_session.connected_cb == nil then
 end
 local connected_cb = delegation_session.connected_cb
 
-local _DELEGATION_NS = 'urn:xmpp:delegation:1'
+local _DELEGATION_NS = 'urn:xmpp:delegation:2'
 local _FORWARDED_NS = 'urn:xmpp:forward:0'
 local _DISCO_INFO_NS = 'http://jabber.org/protocol/disco#info'
 local _DISCO_ITEMS_NS = 'http://jabber.org/protocol/disco#items'
@@ -41,7 +41,8 @@ local _BARE_SEP = ':bare:'
 local _REMAINING = ':*'
 local _MAIN_PREFIX = _DELEGATION_NS.._MAIN_SEP
 local _BARE_PREFIX = _DELEGATION_NS.._BARE_SEP
-local _DISCO_REMAINING = _DISCO_ITEMS_NS.._REMAINING
+local _DISCO_REMAINING = _BARE_PREFIX.."disco#info".._REMAINING
+local _DISCO_ITEMS_REMAINING = _BARE_PREFIX.."disco#items".._REMAINING
 local _PREFIXES = {_MAIN_PREFIX, _BARE_PREFIX}
 
 local disco_nest
@@ -105,9 +106,9 @@ local function set_connected(entity_jid)
 		for namespace, ns_data in pairs(jid2ns[jid_]) do
 			if ns_data.connected == nil then
 				ns_data.connected = entity_jid
-				-- disco remaining is a special namespace
-				-- there is no disco nesting for it
-				if namespace ~= _DISCO_REMAINING then
+				-- disco remaining and disco items remaining are special namespaces
+				-- there is no disco nesting for them
+				if namespace ~= _DISCO_ITEMS_REMAINING and namespace ~= _DISCO_REMAINING then
 					disco_nest(namespace, entity_jid)
 				end
 			end
@@ -218,6 +219,8 @@ local function managing_ent_result(event)
 
 	-- small hack for disco remaining feat
 	if namespace == _DISCO_ITEMS_NS then
+		namespace = _DISCO_ITEMS_REMAINING
+	elseif namespace == _DISCO_INFO_NS then
 		namespace = _DISCO_REMAINING
 	end
 
@@ -542,6 +545,22 @@ local function disco_hook(event)
 end
 module:hook("account-disco-info", disco_hook, -2^32)
 
+local function disco_node_hook(event)
+	-- we reach this hook if a disco node on account has not been found
+	-- we then forward the request to managing entity
+	if not event.exists then
+		-- this node is not handled by the server
+		local ns_data = ns_delegations[_DISCO_REMAINING]
+		if ns_data ~= nil then
+			-- remaining delegation is requested, we forward
+			forward_iq(event.stanza, ns_data)
+			-- and stop normal event handling
+			return true
+		end
+	end
+end
+module:hook("account-disco-info-node", disco_node_hook, -2^32)
+
 -- disco#items
 
 local function disco_items_node_hook(event)
@@ -549,7 +568,7 @@ local function disco_items_node_hook(event)
 	-- and forward the disco request to suitable entity
 	if not event.exists then
 		-- this node is not handled by the server
-		local ns_data = ns_delegations[_DISCO_REMAINING]
+		local ns_data = ns_delegations[_DISCO_ITEMS_REMAINING]
 		if ns_data ~= nil then
 			-- remaining delegation is requested, we forward
 			forward_iq(event.stanza, ns_data)
@@ -564,14 +583,14 @@ local function disco_items_hook(event)
 	-- FIXME: we forward all bare-jid disco-items requests (without node) which will replace any Prosody reply
 	--		for now it's OK because Prosody is not returning anything on request on bare jid
 	--		but to be properly done, any Prosody reply should be kept and managing entities items should be added (merged) to it.
-	--		account-disco-items can't be cancelled (return value of hooks are not checked in mod_disco), so corountine needs
+	--		account-disco-items can't be cancelled (return value of hooks are not checked in mod_disco), so coroutine needs
 	--		to be used with util.async (to get the IQ result, merge items then return from the event)
 	local origin, stanza = event.origin, event.stanza;
 	local node = stanza.tags[1].attr.node;
 	local username = jid_split(stanza.attr.to) or origin.username;
 	if not stanza.attr.to or is_contact_subscribed(username, module.host, jid_bare(stanza.attr.from)) then
 		if node == nil or node == "" then
-			local ns_data = ns_delegations[_DISCO_REMAINING]
+			local ns_data = ns_delegations[_DISCO_ITEMS_REMAINING]
 			if ns_data ~= nil then
 				forward_iq(event.stanza, ns_data)
 				return true
@@ -588,7 +607,7 @@ local function disco_items_raw_hook(event)
 	-- presence subscription)
 	-- we forward the request to managing entity
 	-- it's the responsability of the managing entity to filter the items
-	local ns_data = ns_delegations[_DISCO_REMAINING]
+	local ns_data = ns_delegations[_DISCO_ITEMS_REMAINING]
 	if ns_data ~= nil then
 		forward_iq(event.stanza, ns_data)
 		return true
