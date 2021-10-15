@@ -2,6 +2,11 @@
 summary: "Tigase custom push extensions for iOS"
 labels:
 - 'Stage-Beta'
+rockspec:
+  dependencies:
+	- mod_cloud_notify_encrypted
+	- mod_cloud_notify_priority_tag
+	- mod_cloud_notify_filters
 ...
 
 Introduction
