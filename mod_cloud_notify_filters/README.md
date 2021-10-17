@@ -2,6 +2,9 @@
 labels:
 - 'Stage-Alpha'
 summary: 'Support for push notification filtering rules'
+rockspec:
+  dependencies:
+  - mod_cloud_notify
 ...
 
 Introduction

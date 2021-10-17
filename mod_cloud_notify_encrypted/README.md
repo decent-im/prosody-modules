@@ -2,6 +2,9 @@
 labels:
 - 'Stage-Alpha'
 summary: 'Support for encrypted payloads in push notifications'
+rockspec:
+  dependencies:
+  - mod_cloud_notify
 ...
 
 Introduction
