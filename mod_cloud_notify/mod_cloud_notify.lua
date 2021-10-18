@@ -188,6 +188,11 @@ local function push_enable(event)
 		include_payload = include_payload;
 		options = publish_options and st.preserialize(publish_options);
 		timestamp = os_time();
+		client = {
+			id = origin.client_id;
+			resource = not origin.client_id and origin.jid.resource(origin.full_jid) or nil;
+			language = stanza.attr["xml:lang"];
+		};
 	};
 	local allow_registration = module:fire_event("cloud_notify/registration", {
 		origin = origin, stanza = stanza, push_info = push_service;
