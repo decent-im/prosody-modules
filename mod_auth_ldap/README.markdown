@@ -1,6 +1,6 @@
 ---
 labels:
-- 'Stage-Alpha'
+- 'Stage-Merged'
 - 'Type-Auth'
 summary: LDAP authentication module
 ...
