@@ -404,7 +404,7 @@ module:hook("message/offline/handle", function(event)
 end, 1);
 
 -- publish on bare groupchat
--- this picks up MUC messages when there are no devices connected 
+-- this picks up MUC messages when there are no devices connected
 module:hook("message/bare/groupchat", function(event)
 	module:log("debug", "Invoking cloud handle_notify_request() for bare groupchat stanza");
 	local node, user_push_services = get_push_settings(event.stanza, event.origin);
@@ -505,9 +505,9 @@ local function ack_delayed(event)
 	if not session.push_identifier then return; end
 	if stanza then process_stanza(session, stanza); return; end		-- don't iterate through smacks queue if we know which stanza triggered this
 	for i=1, #queue do
-		local stanza = queue[i];
+		local queued_stanza = queue[i];
 		-- process unacked stanzas (handle_notify_request() will only send push requests for new stanzas)
-		process_stanza(session, stanza);
+		process_stanza(session, queued_stanza);
 	end
 end
 
