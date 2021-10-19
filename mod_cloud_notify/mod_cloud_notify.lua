@@ -189,7 +189,7 @@ local function push_enable(event)
 		options = publish_options and st.preserialize(publish_options);
 		timestamp = os_time();
 		client_id = origin.client_id;
-		resource = not origin.client_id and origin.jid.resource(origin.full_jid) or nil;
+		resource = not origin.client_id and origin.resource or nil;
 		language = stanza.attr["xml:lang"];
 	};
 	local allow_registration = module:fire_event("cloud_notify/registration", {
