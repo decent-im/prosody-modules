@@ -14,10 +14,16 @@ local namespace = "urn:xmpp:bookmarks:1";
 local default_options = {
 	["persist_items"] = true;
 	-- This should be much higher, the XEP recommends 10000 but mod_pep rejects that.
-	["max_items"] = module:get_option_number("pep_max_items", 256);
+	["max_items"] = "max";
 	["send_last_published_item"] = "never";
 	["access_model"] = "whitelist";
 };
+
+if not pcall(mod_pep.check_node_config, nil, nil, default_options) then
+	-- 0.11 or earlier not supporting max_items="max" trows an error here
+	module:log("debug", "Setting max_items=pep_max_items because 'max' is not supported in this version");
+	default_options["max_items"] = module:get_option_number("pep_max_items", 256);
+end
 
 module:hook("account-disco-info", function (event)
 	-- This Time it’s Serious!
