@@ -62,6 +62,25 @@
    "properties" : {
       "iq" : {
          "properties" : {
+            "gateway" : {
+               "properties" : {
+                  "desc" : {
+                     "type" : "text"
+                  },
+                  "jid" : {
+                     "type" : "string"
+                  },
+                  "prompt" : {
+                     "type" : "string"
+                  }
+               },
+               "title" : "XEP-0100: Gateway Interaction",
+               "type" : "object",
+               "xml" : {
+                  "name" : "query",
+                  "namespace" : "jabber:iq:gateway"
+               }
+            },
             "lastactivity" : {
                "properties" : {
                   "seconds" : {
