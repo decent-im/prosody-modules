@@ -33,6 +33,7 @@ module:hook("muc-config-form", function(event)
 		name = "muc#roomconfig_webchat_url",
 		type = "text-single",
 		label = "URL where this room can be joined",
+		datatype = "xs:anyURI",
 		value = get_webchat_url(room),
 	});
 end);
