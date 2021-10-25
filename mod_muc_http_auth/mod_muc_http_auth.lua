@@ -4,6 +4,7 @@ local jid_host = require "util.jid".host;
 local jid_node = require "util.jid".node;
 local jid_resource = require "util.jid".resource;
 local json = require "util.json";
+local set = require "util.set";
 local st = require "util.stanza";
 local urlencode = require "util.http".urlencode;
 local wait_for = require "util.async".wait_for;
