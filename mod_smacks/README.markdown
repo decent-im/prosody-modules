@@ -66,11 +66,10 @@ Configuration
 Compatibility
 =============
 
-  ----- -----------------------------------------------------------------------------
-  0.10  Works
-  0.9   Works, no per user limit of hibernated sessions
-  0.8   Works, no per user limit of hibernated sessions, use version [7693724881b3]
-  ----- -----------------------------------------------------------------------------
+  ------- -------
+  trunk   Works
+  0.11    Works
+  ------- -------
 
 
 Clients
