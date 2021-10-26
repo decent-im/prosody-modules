@@ -62,6 +62,90 @@
    "properties" : {
       "iq" : {
          "properties" : {
+            "extdisco" : {
+               "properties" : {
+                  "services" : {
+                     "items" : {
+                        "properties" : {
+                           "expires" : {
+                              "format" : "datetime",
+                              "type" : "string",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           },
+                           "host" : {
+                              "required" : true,
+                              "type" : "string",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           },
+                           "name" : {
+                              "type" : "string",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           },
+                           "password" : {
+                              "type" : "string",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           },
+                           "port" : {
+                              "type" : "integer",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           },
+                           "restricted" : {
+                              "type" : "boolean",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           },
+                           "transport" : {
+                              "type" : "string",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           },
+                           "type" : {
+                              "required" : true,
+                              "type" : "string",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           },
+                           "username" : {
+                              "type" : "string",
+                              "xml" : {
+                                 "attribute" : true
+                              }
+                           }
+                        },
+                        "type" : "object",
+                        "xml" : {
+                           "name" : "service"
+                        }
+                     },
+                     "type" : "array"
+                  },
+                  "type" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "title" : "XEP-0215: External Service Discovery",
+               "type" : "object",
+               "xml" : {
+                  "name" : "services",
+                  "namespace" : "urn:xmpp:extdisco:2"
+               }
+            },
             "gateway" : {
                "properties" : {
                   "desc" : {
