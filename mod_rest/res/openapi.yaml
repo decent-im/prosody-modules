@@ -165,6 +165,9 @@ components:
           - groupchat
           - headline
           - normal
+          xml:
+            attribute: true
+
         to:
           $ref: '#/components/schemas/to'
         from:
@@ -194,6 +197,22 @@ components:
           $ref: '#/components/schemas/html'
         oob:
           $ref: '#/components/schemas/oob'
+        reactions:
+          $ref: '#/components/schemas/reactions'
+        occupant_id:
+          $ref: '#/components/schemas/occupant_id'
+        attach_to:
+          $ref: '#/components/schemas/attach_to'
+        fallback:
+          $ref: '#/components/schemas/fallback'
+        stanza_ids:
+          $ref: '#/components/schemas/stanza_ids'
+        reference:
+          $ref: '#/components/schemas/reference'
+        markable:
+          $ref: '#/components/schemas/markable'
+        displayed:
+          $ref: '#/components/schemas/displayed'
 
         error:
           $ref: '#/components/schemas/error'
@@ -217,6 +236,8 @@ components:
             - unsubscribe
             - unsubscribed
             - error
+          xml:
+            attribute: true
         to:
           $ref: '#/components/schemas/to'
         from:
@@ -241,6 +262,8 @@ components:
           $ref: '#/components/schemas/delay'
         vcard_update:
           $ref: '#/components/schemas/vcard_update'
+        idle_since:
+          $ref: '#/components/schemas/idle_since'
 
         join:
           $ref: '#/components/schemas/join'
@@ -263,6 +286,8 @@ components:
           - set
           - result
           - error
+          xml:
+            attribute: true
         to:
           $ref: '#/components/schemas/to'
         from:
@@ -289,6 +314,12 @@ components:
           $ref: '#/components/schemas/stats'
         payload:
           $ref: '#/components/schemas/payload'
+        gateway:
+          $ref: '#/components/schemas/gateway'
+        register:
+          $ref: '#/components/schemas/register'
+        extdisco:
+          $ref: '#/components/schemas/extdisco'
 
         error:
           $ref: '#/components/schemas/error'
@@ -346,24 +377,35 @@ components:
       - subscribed
       - unsubscribe
       - unsubscribed
+      xml:
+        attribute: true
 
     to:
       description: recipient
       example: alice@example.com
       type: string
+      xml:
+        attribute: true
 
     from:
       description: the sender
       example: bob@localhost.example
       type: string
+      xml:
+        attribute: true
 
     id:
       description: Reasonably unique id. mod_rest generates one if left out.
       type: string
+      xml:
+        attribute: true
 
     lang:
       description: Language code
       example: en
+      xml:
+        prefix: xml
+        attribute: true
       type: string
 
     body:
@@ -785,6 +827,240 @@ components:
         photo:
           type: string
           example: adc83b19e793491b1c6ea0fd8b46cd9f32e592fc
+
+    reactions:
+      type: object
+      xml:
+        namespace: urn:xmpp:reactions:0
+      properties:
+        id:
+          type: string
+          xml:
+            attribute: true
+        reactions:
+          type: array
+          items:
+            xml:
+              name: reaction
+            type: string
+          xml:
+            wrapped: false
+            name: reactions
+
+    occupant_id:
+      type: string
+      xml:
+        namespace: urn:xmpp:occupant-id:0
+        x_single_attribute: id
+        name: occupant-id
+
+    attach_to:
+      type: string
+      xml:
+        namespace: urn:xmpp:message-attaching:1
+        x_single_attribute: id
+        name: attach-to
+
+    fallback:
+      type: boolean
+      xml:
+        namespace: urn:xmpp:fallback:0
+        x_name_is_value: true
+        name: fallback
+
+    stanza_ids:
+      type: array
+      items:
+        type: object
+        required:
+        - id
+        - by
+        xml:
+          namespace: urn:xmpp:sid:0
+          name: stanza-id
+        properties:
+          id:
+            xml:
+              attribute: true
+            type: string
+          by:
+            xml:
+              attribute: true
+            format: xmpp-jid
+            type: string
+
+    reference:
+      type: object
+      xml:
+        namespace: urn:xmpp:reference:0
+      properties:
+        end:
+          minimum: 0
+          xml:
+            attribute: true
+          type: integer
+        uri:
+          xml:
+            attribute: true
+          format: uri
+          type: string
+        begin:
+          minimum: 0
+          xml:
+            attribute: true
+          type: integer
+        type:
+          xml:
+            attribute: true
+          type: string
+      required:
+      - type
+      - uri
+
+    markable:
+      type: boolean
+      xml:
+        namespace: urn:xmpp:chat-markers:0
+        x_name_is_value: true
+
+    displayed:
+      type: string
+      description: Message ID of a message that has been displayed
+      xml:
+        namespace: urn:xmpp:chat-markers:0
+
+    idle_since:
+      type: string
+      xml:
+        namespace: urn:xmpp:idle:1
+        x_single_attribute: since
+        name: idle
+      format: date-time
+
+    gateway:
+      type: object
+      xml:
+        namespace: jabber:iq:gateway
+        name: query
+      properties:
+        desc:
+          type: text
+        prompt:
+          type: string
+        jid:
+          type: string
+
+    extdisco:
+      type: object
+      xml:
+        namespace: urn:xmpp:extdisco:2
+        name: services
+      properties:
+        type:
+          xml:
+            attribute: true
+          type: string
+        services:
+          items:
+            type: object
+            xml:
+              name: service
+            properties:
+              transport:
+                xml:
+                  attribute: true
+                type: string
+              type:
+                required: true
+                xml:
+                  attribute: true
+                type: string
+              port:
+                xml:
+                  attribute: true
+                type: integer
+              host:
+                required: true
+                xml:
+                  attribute: true
+                type: string
+              expires:
+                xml:
+                  attribute: true
+                format: datetime
+                type: string
+              username:
+                xml:
+                  attribute: true
+                type: string
+              password:
+                xml:
+                  attribute: true
+                type: string
+              restricted:
+                xml:
+                  attribute: true
+                type: boolean
+              name:
+                xml:
+                  attribute: true
+                type: string
+          type: array
+
+    register:
+      type: object
+      description: Register with a service
+      xml:
+        namespace: jabber:iq:register
+        name: query
+      properties:
+        nick:
+          type: string
+        misc:
+          type: string
+        password:
+          type: string
+        date:
+          type: string
+        address:
+          type: string
+        key:
+          type: string
+        text:
+          type: string
+        url:
+          type: string
+        zip:
+          type: string
+        phone:
+          type: string
+        last:
+          type: string
+        email:
+          type: string
+        remove:
+          xml:
+            x_name_is_value: true
+          type: boolean
+        city:
+          type: string
+        registered:
+          xml:
+            x_name_is_value: true
+          type: boolean
+        first:
+          type: string
+        state:
+          type: string
+        instructions:
+          type: string
+        username:
+          type: string
+        name:
+          type: string
+      required:
+      - username
+      - password
 
     error:
       description: Description of something gone wrong. See the Stanza Errors section in RFC 6120.
