@@ -253,6 +253,16 @@ local function push_disable(event)
 end
 module:hook("iq-set/self/"..xmlns_push..":disable", push_disable);
 
+-- urgent stanzas should be delivered without delay
+local function is_urgent(stanza)
+	-- TODO
+	if stanza.name == "message" then
+		if stanza:get_child("propose", "urn:xmpp:jingle-message:0") then
+			return true, "jingle call";
+		end
+	end
+end
+
 -- is this push a high priority one (this is needed for ios apps not using voip pushes)
 local function is_important(stanza)
 	local st_name = stanza and stanza.name or nil;
@@ -528,20 +538,31 @@ local function archive_message_added(event)
 	if event.for_user == to then
 		local user_push_services = push_store:get(to);
 
-		-- only notify nodes with no active sessions (smacks is counted as active and handled separate)
-		local notify_push_services = {};
-		for identifier, push_info in pairs(user_push_services) do
-			local identifier_found = nil;
-			for _, session in pairs(user_session) do
-				if session.push_identifier == identifier then
-					identifier_found = session;
-					break;
+		-- Urgent stanzas are time-sensitive (e.g. calls) and should
+		-- be pushed immediately to avoid getting stuck in the smacks
+		-- queue in case of dead connections, for example
+		local is_urgent_stanza, urgent_reason = is_urgent(event.stanza);
+
+		local notify_push_services;
+		if is_urgent_stanza then
+			module:log("debug", "Urgent push for %s (%s)", to, urgent_reason);
+			notify_push_services = user_push_services;
+		else
+			-- only notify nodes with no active sessions (smacks is counted as active and handled separate)
+			notify_push_services = {};
+			for identifier, push_info in pairs(user_push_services) do
+				local identifier_found = nil;
+				for _, session in pairs(user_session) do
+					if session.push_identifier == identifier then
+						identifier_found = session;
+						break;
+					end
 				end
-			end
-			if identifier_found then
-				identifier_found.log("debug", "Not cloud notifying '%s' of new MAM stanza (session still alive)", identifier);
-			else
-				notify_push_services[identifier] = push_info;
+				if identifier_found then
+					identifier_found.log("debug", "Not cloud notifying '%s' of new MAM stanza (session still alive)", identifier);
+				else
+					notify_push_services[identifier] = push_info;
+				end
 			end
 		end
 
