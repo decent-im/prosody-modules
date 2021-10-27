@@ -16,6 +16,7 @@ local schema do
 				copyto.properties[key] = prop;
 			end
 		end
+		schema.properties.message.properties.archive.properties.forward = schema.properties.message.properties.forwarded;
 		schema.properties.message.properties.forwarded.properties.delay = schema._common.delay;
 		schema.properties.message.properties.forwarded.properties.message.properties = schema.properties.message.properties;
 		schema._common = nil;

@@ -370,6 +370,24 @@
       },
       "message" : {
          "properties" : {
+            "archive" : {
+               "properties" : {
+                  "forward" : {
+                     "$ref" : "#forwarded"
+                  },
+                  "queryid" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "type" : "object",
+               "xml" : {
+                  "name" : "result",
+                  "namespace" : "urn:xmpp:mam:2"
+               }
+            },
             "attach_to" : {
                "title" : "XEP-0367: Message Attaching",
                "type" : "string",
