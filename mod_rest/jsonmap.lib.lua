@@ -406,6 +406,13 @@ local kind_by_type = {
 }
 
 local function st2json(s)
+	if s.name == "xmpp" then
+		local result = array();
+		for child in s:childtags() do
+			result:push(st2json(child));
+		end
+		return { xmpp = result };
+	end
 	local t = map.parse(schema.properties[s.name], s);
 
 	t.kind = s.name;
