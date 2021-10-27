@@ -402,6 +402,17 @@
                }
             },
             "forwarded" : {
+               "properties" : {
+                  "delay" : {
+                     "$ref" : "#_common/delay"
+                  },
+                  "message" : {
+                     "type" : "object",
+                     "xml" : {
+                        "namespace" : "jabber:client"
+                     }
+                  }
+               },
                "title" : "XEP-0297: Stanza Forwarding",
                "type" : "object",
                "xml" : {
