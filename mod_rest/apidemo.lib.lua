@@ -11,7 +11,7 @@ _M.resources = http_files.serve({
 	});
 
 local index do
-	local f = assert(io.open(api_demo.."/index.html"), "'api_demo_resources' should point to the 'dist' directory");
+	local f = assert(io.open(api_demo.."/index.html"), "'rest_demo_resources' should point to the 'dist' directory");
 	index = f:read("*a");
 	f:close();
 
