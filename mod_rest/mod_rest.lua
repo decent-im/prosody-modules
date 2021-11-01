@@ -58,6 +58,16 @@ local function check_credentials(request)
 	return nil;
 end
 
+if module:get_option_string("authentication") == "anonymous" and module:get_option_boolean("anonymous_rest") then
+	www_authenticate_header = nil;
+	function check_credentials(request) -- luacheck: ignore 212/request
+		return {
+			username = id.medium():lower();
+			host = module.host;
+		}
+	end
+end
+
 -- (table, string) -> table
 local function amend_from_path(data, path)
 	local st_kind, st_type, st_to = path:match("^([mpi]%w+)/(%w+)/(.*)$");
@@ -233,7 +243,7 @@ local function handle_request(event, path)
 	local echo = path == "echo";
 	if echo then path = nil; end
 
-	if not request.headers.authorization then
+	if not request.headers.authorization and www_authenticate_header then
 		response.headers.www_authenticate = www_authenticate_header;
 		return post_errors.new("noauthz");
 	else
