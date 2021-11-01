@@ -68,6 +68,41 @@ if module:get_option_string("authentication") == "anonymous" and module:get_opti
 	end
 end
 
+-- TODO This ought to be handled some way other than duplicating this
+-- core.stanza_router code here.
+local function compat_preevents(origin, stanza) --> boolean : handled
+	local to = stanza.attr.to;
+	local node, host, resource = jid.split(to);
+	local to_bare = node and (node .. "@" .. host) or host; -- bare JID
+
+	local to_type, to_self;
+	if node then
+		if resource then
+			to_type = '/full';
+		else
+			to_type = '/bare';
+			if node == origin.username and host == origin.host then
+				stanza.attr.to = nil;
+				to_self = true;
+			end
+		end
+	else
+		if host then
+			to_type = '/host';
+		else
+			to_type = '/bare';
+			to_self = true;
+		end
+	end
+
+	local event_data = { origin = origin; stanza = stanza; to_self = to_self };
+
+	local result = module:fire_event("pre-stanza", event_data);
+	if result ~= nil then return true end
+	if module:fire_event('pre-' .. stanza.name .. to_type, event_data) then return true; end -- do preprocessing
+	return false
+end
+
 -- (table, string) -> table
 local function amend_from_path(data, path)
 	local st_kind, st_type, st_to = path:match("^([mpi]%w+)/(%w+)/(.*)$");
@@ -308,6 +343,7 @@ local function handle_request(event, path)
 		function origin.send(stanza)
 			responses:add_direct_child(stanza);
 		end
+		if compat_preevents(origin, payload) then return 202; end
 
 		if payload.attr.type ~= "get" and payload.attr.type ~= "set" then
 			return post_errors.new("iq_type");
@@ -343,6 +379,7 @@ local function handle_request(event, path)
 			response:send(encode(send_type, stanza));
 			return true;
 		end
+		if compat_preevents(origin, payload) then return 202; end
 
 		module:send(payload, origin);
 		return 202;
