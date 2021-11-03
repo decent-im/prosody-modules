@@ -89,10 +89,10 @@ local function compare_bookmark2(a, b)
 	end
 	local a_conference = a:get_child("conference", namespace);
 	local b_conference = b:get_child("conference", namespace);
-	local a_nick = a:get_child_text("nick", namespace);
-	local b_nick = b:get_child_text("nick", namespace);
-	local a_password = a:get_child_text("password", namespace);
-	local b_password = b:get_child_text("password", namespace);
+	local a_nick = a_conference:get_child_text("nick");
+	local b_nick = b_conference:get_child_text("nick");
+	local a_password = a_conference:get_child_text("password");
+	local b_password = b_conference:get_child_text("password");
 	return (a.attr.id == b.attr.id and
 	        a_conference.attr.name == b_conference.attr.name and
 	        a_conference.attr.autojoin == b_conference.attr.autojoin and
