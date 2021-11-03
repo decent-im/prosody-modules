@@ -1,7 +1,7 @@
 ---
 labels:
 - 'Stage-alpha'
-summary: Enable ProtoXEP: Reminders support'
+summary: 'Enable ProtoXEP: Reminders support'
 ...
 
 
