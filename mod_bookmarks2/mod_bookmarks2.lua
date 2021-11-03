@@ -67,11 +67,11 @@ local function on_retrieve_private_xml(event)
 		local bookmark = item:get_child("conference", namespace);
 		conference.attr.name = bookmark.attr.name;
 		conference.attr.autojoin = bookmark.attr.autojoin;
-		local nick = bookmark:get_child_text("nick", namespace);
+		local nick = bookmark:get_child_text("nick");
 		if nick ~= nil then
 			conference:text_tag("nick", nick, { xmlns = "storage:bookmarks" }):up();
 		end
-		local password = bookmark:get_child_text("password", namespace);
+		local password = bookmark:get_child_text("password");
 		if password ~= nil then
 			conference:text_tag("password", password):up();
 		end
