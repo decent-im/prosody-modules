@@ -73,7 +73,6 @@ end
 local function compat_preevents(origin, stanza) --> boolean : handled
 	local to = stanza.attr.to;
 	local node, host, resource = jid.split(to);
-	local to_bare = node and (node .. "@" .. host) or host; -- bare JID
 
 	local to_type, to_self;
 	if node then
