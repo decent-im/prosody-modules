@@ -478,6 +478,7 @@ local function json2st(t)
 		for k, implied in pairs(implied_types) do
 			if t[k] then
 				t_type = implied;
+				break;
 			end
 		end
 	end
