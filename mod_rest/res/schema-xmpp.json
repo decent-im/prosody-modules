@@ -149,6 +149,37 @@
             "namespace" : "http://jabber.org/protocol/nick"
          }
       },
+      "rsm" : {
+         "properties" : {
+            "after" : {
+               "type" : "string"
+            },
+            "before" : {
+               "type" : "string"
+            },
+            "count" : {
+               "type" : "integer"
+            },
+            "first" : {
+               "type" : "string"
+            },
+            "index" : {
+               "type" : "integer"
+            },
+            "last" : {
+               "type" : "string"
+            },
+            "max" : {
+               "type" : "integer"
+            }
+         },
+         "title" : "XEP-0059: Result Set Management",
+         "type" : "object",
+         "xml" : {
+            "name" : "set",
+            "namespace" : "http://jabber.org/protocol/rsm"
+         }
+      },
       "to" : {
          "description" : "the intended recipient for the stanza",
          "example" : "alice@another.example",
