@@ -1,5 +1,112 @@
 {
    "_common" : {
+      "dataform" : {
+         "properties" : {
+            "fields" : {
+               "items" : {
+                  "properties" : {
+                     "desc" : {
+                        "type" : "string"
+                     },
+                     "label" : {
+                        "type" : "string",
+                        "xml" : {
+                           "attribute" : true
+                        }
+                     },
+                     "options" : {
+                        "items" : {
+                           "properties" : {
+                              "label" : {
+                                 "type" : "string",
+                                 "xml" : {
+                                    "attribute" : true
+                                 }
+                              },
+                              "value" : {
+                                 "type" : "string"
+                              }
+                           },
+                           "type" : "object",
+                           "xml" : {
+                              "name" : "option"
+                           }
+                        },
+                        "type" : "array"
+                     },
+                     "required" : {
+                        "type" : "boolean",
+                        "xml" : {
+                           "x_name_is_value" : true
+                        }
+                     },
+                     "type" : {
+                        "enum" : [
+                           "boolean",
+                           "fixed",
+                           "hidden",
+                           "jid-multi",
+                           "jid-single",
+                           "list-multi",
+                           "list-single",
+                           "text-multi",
+                           "text-private",
+                           "text-single"
+                        ],
+                        "type" : "string",
+                        "xml" : {
+                           "attribute" : true
+                        }
+                     },
+                     "values" : {
+                        "items" : {
+                           "type" : "string",
+                           "xml" : {
+                              "name" : "value"
+                           }
+                        },
+                        "type" : "array"
+                     },
+                     "var" : {
+                        "type" : "string",
+                        "xml" : {
+                           "attribute" : true
+                        }
+                     }
+                  },
+                  "type" : "object",
+                  "xml" : {
+                     "name" : "field"
+                  }
+               },
+               "type" : "array"
+            },
+            "instructions" : {
+               "type" : "string"
+            },
+            "title" : {
+               "type" : "string"
+            },
+            "type" : {
+               "enum" : [
+                  "cancel",
+                  "form",
+                  "result",
+                  "submit"
+               ],
+               "type" : "string",
+               "xml" : {
+                  "attribute" : true
+               }
+            }
+         },
+         "title" : "XEP-0004: Data Forms",
+         "type" : "object",
+         "xml" : {
+            "name" : "x",
+            "namespace" : "jabber:x:data"
+         }
+      },
       "delay" : {
          "format" : "date-time",
          "title" : "XEP-0203: Delayed Delivery",
