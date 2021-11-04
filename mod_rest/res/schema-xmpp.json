@@ -544,7 +544,7 @@
             "archive" : {
                "properties" : {
                   "forward" : {
-                     "$ref" : "#forwarded"
+                     "$ref" : "#_common/forwarded"
                   },
                   "queryid" : {
                      "type" : "string",
