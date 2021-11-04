@@ -200,6 +200,27 @@
    "properties" : {
       "iq" : {
          "properties" : {
+            "archive" : {
+               "properties" : {
+                  "form" : {
+                     "$ref" : "#_common/dataform"
+                  },
+                  "page" : {
+                     "$ref" : "#_common/rsm"
+                  },
+                  "queryid" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "type" : "object",
+               "xml" : {
+                  "name" : "query",
+                  "namespace" : "urn:xmpp:mam:2"
+               }
+            },
             "extdisco" : {
                "properties" : {
                   "services" : {
