@@ -458,6 +458,18 @@
                   "namespace" : "jabber:iq:register"
                }
             },
+            "result" : {
+               "properties" : {
+                  "page" : {
+                     "$ref" : "#_common/rsm"
+                  }
+               },
+               "type" : "object",
+               "xml" : {
+                  "name" : "fin",
+                  "namespace" : "urn:xmpp:mam:2"
+               }
+            },
             "stats" : {
                "description" : "Simple statistics gathering, array of (name, unit, value) tuples.",
                "items" : {

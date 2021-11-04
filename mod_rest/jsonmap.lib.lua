@@ -21,6 +21,7 @@ local schema do
 		schema.properties.message.properties.forwarded.properties.message.properties = schema.properties.message.properties;
 		schema.properties.iq.properties.archive.properties.form = schema._common.dataform;
 		schema.properties.iq.properties.archive.properties.page = schema._common.rsm;
+		schema.properties.iq.properties.result.properties.page = schema._common.rsm;
 		schema._common = nil;
 	end
 end
