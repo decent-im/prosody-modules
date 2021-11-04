@@ -384,6 +384,7 @@ local implied_kinds = {
 	ping = "iq",
 	version = "iq",
 	command = "iq",
+	archive = "iq",
 
 	body = "message",
 	html = "message",
@@ -494,6 +495,39 @@ local function json2st(t)
 		t_type = nil;
 	elseif kind == "iq" and not t_type then
 		t_type = "get";
+	end
+
+	-- XEP-0313 conveninece mapping
+	if kind == "iq" and t_type == "set" and type(t.archive) == "table" and not t.archive.form then
+		local archive = t.archive;
+		if archive["with"] or archive["start"] or archive["end"] or archive["before-id"] or archive["after-id"]
+			or archive["ids"] then
+			archive.form = {
+				type = "submit";
+				fields = {
+					{ var = "FORM_TYPE"; values = { "urn:xmpp:mam:2" } };
+					{ var = "with"; values = { archive["with"] } };
+					{ var = "start"; values = { archive["start"] } };
+					{ var = "end"; values = { archive["end"] } };
+					{ var = "before-id"; values = { archive["before-id"] } };
+					{ var = "after-id"; values = { archive["after-id"] } };
+					{ var = "ids"; values = archive["ids"] };
+				};
+			};
+			archive["with"] = nil;
+			archive["start"] = nil;
+			archive["end"] = nil;
+			archive["before-id"] = nil;
+			archive["after-id"] = nil;
+			archive["ids"] = nil;
+		end
+
+		if archive["after"] or archive["before"] or archive["max"] then
+			archive.page = { after = archive["after"]; before = archive["before"]; max = tonumber(archive["max"]) }
+			archive["after"] = nil;
+			archive["before"] = nil;
+			archive["max"] = nil;
+		end
 	end
 
 	local s = map.unparse(schema.properties[kind or "message"], t);
