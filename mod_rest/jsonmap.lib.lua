@@ -401,6 +401,7 @@ local implied_kinds = {
 
 local implied_types = {
 	command = "set",
+	archive = "set",
 }
 
 local kind_by_type = {
