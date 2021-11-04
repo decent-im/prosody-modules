@@ -110,7 +110,6 @@ local function amend_from_path(data, path)
 		-- GET /iq/disco/jid
 		data = {
 			kind = "iq";
-			type = "get";
 			[st_type] = st_type == "ping" or data or {};
 		};
 	else
