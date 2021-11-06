@@ -30,3 +30,10 @@ modules_enabled = {
 
 -   Tested with [Converse.js](https://conversejs.org/)
     [v6.0.1](https://github.com/conversejs/converse.js/releases/tag/v6.0.1)
+
+### Feature requests
+
+- [Conversations](https://github.com/iNPUTmice/Conversations/issues/4227)
+- [Dino](https://github.com/dino/dino/issues/1133)
+- [Gajim](https://dev.gajim.org/gajim/gajim/-/issues/10107)
+- [Poezio](https://lab.louiz.org/poezio/poezio/-/issues/3543)
