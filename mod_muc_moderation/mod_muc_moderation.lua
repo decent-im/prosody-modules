@@ -1,6 +1,6 @@
 -- mod_muc_moderation
 --
--- Copyright (C) 2015-2020 Kim Alvefur
+-- Copyright (C) 2015-2021 Kim Alvefur
 --
 -- This file is MIT licensed.
 --
