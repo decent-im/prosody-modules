@@ -55,6 +55,8 @@ module:hook("iq-set/bare/" .. xmlns_fasten .. ":apply-to", function (event)
 	local actor = stanza.attr.from;
 	local actor_nick = room:get_occupant_jid(actor);
 	local affiliation = room:get_affiliation(actor);
+	-- Retrieve their current role, iff they are in the room, otherwise what they
+	-- would have based on affiliation.
 	local role = room:get_role(actor_nick) or room:get_default_role(affiliation);
 	if valid_roles[role or "none"] < valid_roles.moderator then
 		origin.send(st.error_reply(stanza, "auth", "forbidden", "You need a role of at least 'moderator'"));
