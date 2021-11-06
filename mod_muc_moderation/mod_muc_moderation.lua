@@ -63,6 +63,13 @@ module:hook("iq-set/bare/" .. xmlns_fasten .. ":apply-to", function (event)
 		return true;
 	end
 
+	if not actor_nick then
+		local reserved_nickname = room:get_affiliation_data(jid.bare(actor), "reserved_nickname");
+		if reserved_nickname then
+			actor_nick = jid.join(room.jid, reserved_nickname);
+		end
+	end
+
 	-- Original stanza to base tombstone on
 	local original, err;
 	if muc_log_archive.get then
