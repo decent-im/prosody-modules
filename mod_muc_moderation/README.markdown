@@ -33,7 +33,8 @@ modules_enabled = {
 
 ### Feature requests
 
-- [Conversations](https://github.com/iNPUTmice/Conversations/issues/4227)
+- [Conv](https://github.com/iNPUTmice/Conversations/issues/3722)[ersa](https://github.com/iNPUTmice/Conversations/issues/3920)[tions](https://github.com/iNPUTmice/Conversations/issues/4227)
 - [Dino](https://github.com/dino/dino/issues/1133)
 - [Gajim](https://dev.gajim.org/gajim/gajim/-/issues/10107)
 - [Poezio](https://lab.louiz.org/poezio/poezio/-/issues/3543)
+- [Profanity](https://github.com/profanity-im/profanity/issues/1336)
