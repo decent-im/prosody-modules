@@ -54,6 +54,7 @@ read_globals = {
 	"module.measure_event",
 	"module.measure_global_event",
 	"module.measure_object_event",
+	"module.metric",
 	"module.open_store",
 	"module.provides",
 	"module.remove_item",
