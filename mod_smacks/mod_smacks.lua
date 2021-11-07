@@ -387,6 +387,8 @@ function handle_a(origin, stanza)
 		for i=1,#queue do
 			origin.log("debug", "Q item %d: %s", i, tostring(queue[i]));
 		end
+        origin:close{ condition = "undefined-condition"; text = "Client acknowledged more stanzas than sent by server"; };
+        return;
 	end
 
 	for i=1,math_min(handled_stanza_count,#queue) do
