@@ -28,7 +28,7 @@ Installation
 1.  Copy the admin\_web directory into a directory Prosody will check
     for plugins. (cf. [Installing
     modules](http://prosody.im/doc/installing_modules))
-2.  Execute the contained get\_deps.sh script from within the admin\_web
+2.  Execute the contained `get_deps.sh` script from within the admin\_web
     directory. (Requires wget, tar, and a basic shell)
 
 Configuration Details

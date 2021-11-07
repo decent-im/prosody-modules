@@ -25,7 +25,7 @@ local returnable = metric(
 ):with_labels();
 
 module:hook("stats-update", function ()
-	meminfo = pposix.meminfo();
+	local meminfo = pposix.meminfo();
 	if meminfo.allocated then
 		allocated:with_labels("sbrk"):set(meminfo.allocated);
 	end
