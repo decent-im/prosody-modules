@@ -5,7 +5,6 @@ codes = true
 ignore = { "411/err", "421/err", "411/ok", "421/ok", "211/_ENV" };
 read_globals = {
 	"prosody",
-	"hosts",
 	"import",
 
 	-- Module instance
