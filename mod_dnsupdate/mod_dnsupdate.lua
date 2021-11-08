@@ -104,6 +104,9 @@ function module.command(arg)
 			for _, rr in ipairs(records) do
 				if ports:contains(rr.srv.port) and target == nameprep(rr.srv.target):gsub("%.$", "") then
 					ports:remove(rr.srv.port)
+				elseif not opts.each then
+					print(("del _%s._tcp.%s IN SRV"):format(service, ihost));
+					break
 				else
 					print(("del _%s._tcp.%s IN SRV %s"):format(service, ihost, rr));
 				end
