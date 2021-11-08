@@ -75,9 +75,9 @@ function module.command(arg)
 
 	local configured_ports = {
 		["xmpp-client"] = module:get_option_array("c2s_ports", { 5222 });
-		["xmpp-server"] = module:get_option_array("c2s_ports", { 5269 });
+		["xmpp-server"] = module:get_option_array("s2s_ports", { 5269 });
 		["xmpps-client"] = module:get_option_array("c2s_direct_tls_ports", {});
-		["xmpps-server"] = module:get_option_array("c2s_ports", {});
+		["xmpps-server"] = module:get_option_array("s2s_direct_tls_ports", {});
 	};
 
 	if opts.multiplex then
