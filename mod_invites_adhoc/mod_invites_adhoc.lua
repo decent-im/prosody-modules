@@ -14,6 +14,7 @@ local allow_user_invites = module:get_option_boolean("allow_user_invites", false
 local allow_contact_invites = module:get_option_boolean("allow_contact_invites", true);
 
 local allow_user_invite_roles = module:get_option_set("allow_user_invites_by_roles");
+local deny_user_invite_roles = module:get_option_set("deny_user_invites_by_roles");
 
 local invites;
 if prosody.shutdown then -- COMPAT hack to detect prosodyctl
@@ -51,6 +52,12 @@ local function may_invite_new_users(jid)
 		if not user_roles then return; end
 		if user_roles["prosody:admin"] then
 			return true;
+		elseif deny_user_invite_roles then
+			for denied_role in deny_user_invite_roles do
+				if user_roles[denied_role] then
+					return false;
+				end
+			end
 		elseif allow_user_invite_roles then
 			for allowed_role in allow_user_invite_roles do
 				if user_roles[allowed_role] then
