@@ -40,35 +40,34 @@ local invite_result_form = dataforms.new({
 		},
 	});
 
--- This is for checking if username (on the current host)
--- may create invites that allow people to register accounts
--- on this host.
+-- This is for checking if the specified JID may create invites
+-- that allow people to register accounts on this host.
 local function may_invite_new_users(jid)
-	if allow_user_invites then
-		return true;
-	end
 	if usermanager.get_roles then
 		local user_roles = usermanager.get_roles(jid, module.host);
 		if not user_roles then return; end
 		if user_roles["prosody:admin"] then
 			return true;
-		elseif deny_user_invite_roles then
-			for denied_role in deny_user_invite_roles do
-				if user_roles[denied_role] then
-					return false;
-				end
-			end
-		elseif allow_user_invite_roles then
+		end
+		if allow_user_invite_roles then
 			for allowed_role in allow_user_invite_roles do
 				if user_roles[allowed_role] then
 					return true;
 				end
 			end
 		end
-	elseif usermanager.is_admin(jid, module.host) then
-		return true;
+		if deny_user_invite_roles then
+			for denied_role in deny_user_invite_roles do
+				if user_roles[denied_role] then
+					return false;
+				end
+			end
+		end
+	elseif usermanager.is_admin(jid, module.host) then -- COMPAT w/0.11
+		return true; -- Admins may always create invitations
 	end
-	return false;
+	-- No role matches, so whatever the default is
+	return allow_user_invites;
 end
 
 module:depends("adhoc");
