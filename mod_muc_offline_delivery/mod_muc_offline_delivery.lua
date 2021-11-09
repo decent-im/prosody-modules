@@ -18,10 +18,10 @@ module:hook("muc-add-history", function (event)
 	local room = event.room;
 	for jid, affiliation, data in room:each_affiliation() do --luacheck: ignore 213/affiliation
 		local reserved_nickname = data and data.reserved_nickname;
-		module:log("debug", "Affiliated: %s, %s: %s", jid, reserved_nickname, data and data.offline_delivery);
 		if reserved_nickname and data.offline_delivery then
 			local is_absent = not room:get_occupant_by_nick(room.jid.."/"..reserved_nickname);
 			if is_absent then
+				module:log("debug", "Forwarding message to offline member <%s>", jid);
 				local msg = st.clone(event.stanza);
 				msg.attr.to = jid;
 				module:send(msg);
