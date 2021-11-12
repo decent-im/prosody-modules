@@ -37,7 +37,7 @@ integrations to post to prosody MUCs:
 
 ``` {.lua}
 incoming_webhook_path = "/msg/DFSDF56587658765NBDSA"
-default_from_nick = "Bot" -- Unless otherwise specified, posts as "Bot"
+incoming_webhook_default_nick = "Bot" -- Unless otherwise specified, posts as "Bot"
 ```
 
 This allows Slack-style JSON messages posted to http://conference.example.org/msg/DFSDF56587658765NBDSA/chat to appear in the MUC chat@conference.example.org. A username field in the message is honored as the nick attached to the message; if no username is specified, the message will use the value of default_from_nick.
@@ -80,7 +80,7 @@ Compatibility
 =============
 
   ------- -----------------
-  trunk   Untested
+  trunk   Works
   0.10    Works
   0.9     Works
   ------- -----------------
