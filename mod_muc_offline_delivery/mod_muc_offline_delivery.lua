@@ -1,14 +1,15 @@
 local st = require "util.stanza";
 
 module:add_item("muc-registration-field", {
-	name = "{http://tigase.org/protocol/muc}offline";
+	name = "offline_delivery";
+	var = "{http://tigase.org/protocol/muc}offline";
 	type = "boolean";
 	label = "Receive messages while not connected to the room";
 	value = false;
 });
 
 module:hook("muc-registration-submitted", function (event)
-	local deliver_offline = event.submitted_data["{http://tigase.org/protocol/muc}offline"] or nil;
+	local deliver_offline = event.submitted_data.offline_delivery or nil;
 	event.affiliation_data.offline_delivery = deliver_offline;
 end);
 
