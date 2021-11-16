@@ -650,9 +650,14 @@ module:hook("csi-client-active", function (event)
 	end
 end);
 
-module:hook("csi-flushing", function (event)
-	if event.session.smacks then
-		request_ack_if_needed(event.session, true, "csi-active", nil);
+module:hook("csi-flushing", function(event)
+	local session = event.session;
+	if session.smacks then
+		if not session.awaiting_ack and not session.hibernating and not session.destroyed then
+			session.log("debug", "Sending <r> (csi-flushing)");
+			session.awaiting_ack = true; -- The send() call may invoke this event again, so set this first
+			(session.sends2s or session.send)(st.stanza("r", { xmlns = session.smacks }))
+		end
 	end
 end);
 
