@@ -17,6 +17,8 @@ local push_errors = module:shared("cloud_notify/push_errors");
 
 local site_name = module:get_option_string("site_name", module.host);
 
+local manual_stats_collection = module:context("*"):get_option("statistics_interval") == "manual";
+
 local json_content_type = "application/json";
 
 local www_authenticate_header = ("Bearer realm=%q"):format(module.host.."/"..module.name);
@@ -612,6 +614,9 @@ end
 local function get_server_metrics(event)
 	event.response.headers["Content-Type"] = json_content_type;
 	local result = {};
+	if manual_stats_collection then
+		statsmanager.collect();
+	end
 	local families = statsmanager.get_metric_registry():get_metric_families();
 	result.memory = maybe_export_plain_gauge(families.process_resident_memory_bytes);
 	result.cpu = maybe_export_plain_counter(families.process_cpu_seconds);
