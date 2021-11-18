@@ -21,7 +21,7 @@ module:hook("muc-add-history", function (event)
 	local room = event.room;
 	for jid, affiliation, data in room:each_affiliation() do --luacheck: ignore 213/affiliation
 		local reserved_nickname = data and data.reserved_nickname;
-		local user_setting = data.offline_delivery;
+		local user_setting = data and data.offline_delivery or nil;
 		if reserved_nickname and user_setting or (user_setting == nil and default_enable) then
 			local is_absent = not room:get_occupant_by_nick(room.jid.."/"..reserved_nickname);
 			if is_absent then
