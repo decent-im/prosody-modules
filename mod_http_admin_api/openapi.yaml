@@ -788,6 +788,9 @@ components:
         c2s:
           type: integer
           description: Number of active c2s sessions
+				uploads:
+					type: integer
+					description: Disk space used by uploaded files
     Announcement:
       type: object
       description: An announcemen to post to users on the server

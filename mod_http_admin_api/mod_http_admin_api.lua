@@ -621,6 +621,7 @@ local function get_server_metrics(event)
 	result.memory = maybe_export_plain_gauge(families.process_resident_memory_bytes);
 	result.cpu = maybe_export_plain_counter(families.process_cpu_seconds);
 	result.c2s = maybe_export_summed_gauge(families["prosody_mod_c2s/connections"])
+	result.uploads = maybe_export_summed_gauge(families["prosody_mod_http_file_share/total_storage_bytes"]);
 	return json.encode(result);
 end
 
