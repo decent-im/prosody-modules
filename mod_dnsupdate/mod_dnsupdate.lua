@@ -8,7 +8,8 @@ local set = require "util.set";
 local nameprep = require"util.encodings".stringprep.nameprep;
 local idna_to_ascii = require"util.encodings".idna.to_ascii;
 
-local services = { "xmpp-client"; "xmpps-client"; "xmpp-server"; "xmpps-server" }
+local virtualhost_services = { "xmpp-client"; "xmpps-client"; "xmpp-server"; "xmpps-server" }
+local component_services = { "xmpp-server"; "xmpps-server" }
 
 local function validate_dnsname_option(options, option_name, default)
 	local host = options[option_name];
@@ -54,10 +55,14 @@ function module.command(arg)
 		module:log("error", "Host %q falis IDNA", vhost);
 		return 1;
 	end
-	if not config.get(vhost, "defined") then
+	local is_component = config.get(vhost, "component_module");
+	if not is_component and not config.get(vhost, "defined") then
 		module:log("error", "Host %q is not defined in the config", vhost);
 		return 1;
 	end
+
+	local services = virtualhost_services;
+	if is_component then services = component_services; end
 
 	local domain = validate_dnsname_option(opts, "domain");
 	if not domain then
