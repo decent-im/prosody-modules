@@ -330,6 +330,21 @@ local function logs_page(event, path)
 		local nick = select(3, jid_split(item.attr.from));
 		local oob = use_oob and item:get_child("x", "jabber:x:oob");
 
+		local moderated = item:get_child("moderated", "urn:xmpp:message-moderate:0");
+		if moderated then
+			local actor = moderated.attr.by;
+			if actor then actor = select(3, jid_split(actor)); end
+			verb = "removed by " .. (actor or "moderator");
+			body = moderated:get_child_text("reason") or "";
+		end
+
+		local moderation = item:find("{urn:xmpp:fasten:0}apply-to/{urn:xmpp:message-moderate:0}moderated");
+		if moderation then
+			nick = nick or "a moderator";
+			verb = "removed a message";
+			body = moderation:get_child_text("reason") or "";
+		end
+
 		local edit = item:find("{urn:xmpp:message-correct:0}replace/@id");
 		if edit then
 			local found = false;
