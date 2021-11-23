@@ -6,6 +6,10 @@ display them as links instead.
 This can be useful in public channels where content posted by users should not
 be shown by default.
 
+**Note:** You could consider the more useful [mod_muc_restrict_media] instead,
+which allows affiliated users (e.g. members, admins, owners) to still send
+inline media.
+
 # Configuring
 
 ## Enabling
