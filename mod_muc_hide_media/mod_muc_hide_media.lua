@@ -43,6 +43,7 @@ module:hook("muc-disco#info", function (event)
 	local display_media = not should_hide_media(room);
 	table.insert(form, {
 		name = "{xmpp:prosody.im}muc#roomconfig_display_media",
+		type = "boolean",
 	});
 	formdata["{xmpp:prosody.im}muc#roomconfig_display_media"] = display_media;
 end);
