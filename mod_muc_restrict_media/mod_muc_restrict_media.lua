@@ -43,6 +43,7 @@ module:hook("muc-disco#info", function (event)
 	local allow_unaffiliated_media = not should_restrict_media(room);
 	table.insert(form, {
 		name = "{xmpp:prosody.im}muc#roomconfig_unaffiliated_media",
+		type = "boolean",
 	});
 	formdata["{xmpp:prosody.im}muc#roomconfig_unaffiliated_media"] = allow_unaffiliated_media;
 end);
