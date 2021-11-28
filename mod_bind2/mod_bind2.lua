@@ -27,7 +27,7 @@ module:hook("sasl2/c2s/success", function (event)
 
 	-- Clear the offline messages for this user, if any, without sending them (as
 	-- they will be provided by MAM).
-	if mm.is_loaded(module.host, "offline") then
+	if mm.is_loaded(module.host, "offline") then -- luacheck: ignore 542
 		-- TODO
 	end
 
