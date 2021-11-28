@@ -23,10 +23,6 @@ local disabled_mechanisms = module:get_option_set("disable_sasl_mechanisms", { "
 
 local host = module.host;
 
-local function tls_unique(self)
-	return self.userdata["tls-unique"]:getpeerfinished();
-end
-
 module:hook("stream-features", function(event)
 	local origin, features = event.origin, event.features;
 	local log = origin.log or module._log;
@@ -40,13 +36,7 @@ module:hook("stream-features", function(event)
 	origin.sasl_handler = sasl_handler;
 
 	if sasl_handler.add_cb_handler then
-		local socket = origin.conn:socket();
-		if socket.getpeerfinished then
-			sasl_handler:add_cb_handler("tls-unique", tls_unique);
-		end
-		sasl_handler["userdata"] = {
-			["tls-unique"] = socket;
-		};
+		-- FIXME bring back channel binding
 	end
 
 	local mechanisms = st.stanza("mechanisms", { xmlns = xmlns_sasl2 });
