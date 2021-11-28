@@ -965,13 +965,15 @@ components:
             type: object
             xml:
               name: service
+            required:
+            - type
+            - host
             properties:
               transport:
                 xml:
                   attribute: true
                 type: string
               type:
-                required: true
                 xml:
                   attribute: true
                 type: string
@@ -980,7 +982,6 @@ components:
                   attribute: true
                 type: integer
               host:
-                required: true
                 xml:
                   attribute: true
                 type: string

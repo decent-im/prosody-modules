@@ -234,7 +234,6 @@
                               }
                            },
                            "host" : {
-                              "required" : true,
                               "type" : "string",
                               "xml" : {
                                  "attribute" : true
@@ -271,7 +270,6 @@
                               }
                            },
                            "type" : {
-                              "required" : true,
                               "type" : "string",
                               "xml" : {
                                  "attribute" : true
@@ -284,6 +282,10 @@
                               }
                            }
                         },
+                        "required" : [
+                           "type",
+                           "host"
+                        ],
                         "type" : "object",
                         "xml" : {
                            "name" : "service"
