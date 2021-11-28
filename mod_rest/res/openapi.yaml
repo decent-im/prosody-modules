@@ -240,7 +240,6 @@ components:
       type: object
       properties:
         kind:
-          kind:
           description: Which kind of stanza
           type: string
           enum:
@@ -963,7 +962,7 @@ components:
         name: query
       properties:
         desc:
-          type: text
+          type: string
         prompt:
           type: string
         jid:
