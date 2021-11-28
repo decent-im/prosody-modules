@@ -35,7 +35,7 @@ module:hook("stream-features", function(event)
 	local sasl_handler = usermanager_get_sasl_handler(host, origin)
 	origin.sasl_handler = sasl_handler;
 
-	if sasl_handler.add_cb_handler then
+	if sasl_handler.add_cb_handler then -- luacheck: ignore 542
 		-- FIXME bring back channel binding
 	end
 
