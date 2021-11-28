@@ -1,6 +1,7 @@
 local mm = require "core.modulemanager";
 local sm = require "core.sessionmanager";
 
+local xmlns_sasl2 --[[<const>]] = "urn:xmpp:sasl:1";
 local xmlns_bind2 --[[<const>]] = "urn:xmpp:bind2:0";
 local xmlns_carbons --[[<const>]] = "urn:xmpp:carbons:2";
 
