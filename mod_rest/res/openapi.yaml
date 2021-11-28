@@ -132,6 +132,25 @@ paths:
         '200':
           $ref: '#/components/responses/success'
 
+  /rest/extdisco/{to}:
+    get:
+      tags:
+      - query
+      summary: Query a message archive
+      security:
+      - basic: []
+      - token: []
+      parameters:
+      - $ref: '#/components/parameters/to'
+      - name: type
+        in: query
+        schema:
+          type: string
+          example: stun
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
 components:
   schemas:
     stanza:
