@@ -7,6 +7,12 @@ local xmlns_carbons --[[<const>]] = "urn:xmpp:carbons:2";
 module:depends("sasl2");
 module:depends("carbons");
 
+module:hook("stream-features", function(event)
+	local origin, features = event.origin, event.features;
+	if origin.type ~= "c2s_unauthed" then return end
+	features:tag("bind", xmlns_bind2):up();
+end);
+
 module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 	session.bind2 = auth:get_child("bind", xmlns_bind2);
 end, 1);
