@@ -499,6 +499,9 @@ local function json2st(t)
 	elseif kind == "iq" and not t_type then
 		t_type = "get";
 	end
+	if not schema.properties[kind or "message"] then
+		return nil, "unknown-kind";
+	end
 
 	-- XEP-0313 conveninece mapping
 	if kind == "iq" and t_type == "set" and type(t.archive) == "table" and not t.archive.form then
