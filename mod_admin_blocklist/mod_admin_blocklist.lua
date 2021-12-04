@@ -2,7 +2,7 @@
 --
 -- If a local admin has blocked a domain, don't allow s2s to that domain
 --
--- Copyright (C) 2015 Kim Alvefur
+-- Copyright (C) 2015-2021 Kim Alvefur
 --
 -- This file is MIT/X11 licensed.
 --
@@ -12,7 +12,16 @@ module:depends("blocklist");
 local st = require"util.stanza";
 local jid_split = require"util.jid".split;
 
-local admins = module:get_option_inherited_set("admins", {}) /
+local usermanager = require "core.usermanager";
+
+local admins;
+if usermanager.get_jids_with_role then
+	local set = require "util.set";
+	admins = set.new(usermanager.get_jids_with_role("prosody:admin"), module.host);
+else -- COMPAT w/pre-0.12
+	admins = module:get_option_inherited_set("admins", {});
+end
+admins = admins /
 	function (admin) -- Filter out non-local admins
 		local user, host = jid_split(admin);
 		if host == module.host then return user; end
