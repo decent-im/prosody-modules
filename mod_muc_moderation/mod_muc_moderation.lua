@@ -66,7 +66,7 @@ module:hook("iq-set/bare/" .. xmlns_fasten .. ":apply-to", function (event)
 	if not actor_nick then
 		local reserved_nickname = room:get_affiliation_data(jid.bare(actor), "reserved_nickname");
 		if reserved_nickname then
-			actor_nick = jid.join(room.jid, reserved_nickname);
+			actor_nick = room.jid .. "/" .. reserved_nickname;
 		end
 	end
 
