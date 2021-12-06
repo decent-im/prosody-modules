@@ -95,7 +95,7 @@ module:hook("muc-occupant-pre-join", function (event)
 	local from_bare = jid.bare(event.stanza.attr.from);
 
 	local affiliation = event.room:get_affiliation(from_bare);
-	if affiliation and affilition ~= "none" then
+	if affiliation and affiliation ~= "none" then
 		-- Skip check for affiliated users
 		return;
 	end
