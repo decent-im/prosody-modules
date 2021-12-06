@@ -92,6 +92,8 @@ end
 module:hook("iq-result/host/rtbl-request", update_list);
 
 module:hook("muc-occupant-pre-join", function (event)
+	if next(banned_hashes) == nil then return end
+
 	local from_bare = jid.bare(event.stanza.attr.from);
 
 	local affiliation = event.room:get_affiliation(from_bare);
