@@ -93,6 +93,13 @@ module:hook("iq-result/host/rtbl-request", update_list);
 
 module:hook("muc-occupant-pre-join", function (event)
 	local from_bare = jid.bare(event.stanza.attr.from);
+
+	local affiliation = event.room:get_affiliation(from_bare);
+	if affiliation and affilition ~= "none" then
+		-- Skip check for affiliated users
+		return;
+	end
+
 	local hash = sha256(jid.bare(event.stanza.attr.from), true);
 	if banned_hashes[hash] then
 		module:log("info", "Blocked user <%s> from room <%s> due to RTBL match", from_bare, event.stanza.attr.to);
