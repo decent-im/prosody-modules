@@ -105,5 +105,7 @@ end);
 if prosody.start_time then
 	request_list();
 else
-	module:hook("server-started", request_list);
+	module:hook_global("server-started", function ()
+		request_list();
+	end);
 end
