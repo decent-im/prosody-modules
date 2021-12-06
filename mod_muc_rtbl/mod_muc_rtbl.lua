@@ -100,8 +100,9 @@ module:hook("muc-occupant-pre-join", function (event)
 		return;
 	end
 
-	local hash = sha256(jid.bare(event.stanza.attr.from), true);
-	if banned_hashes[hash] then
+	local bare_hash = sha256(jid.bare(event.stanza.attr.from), true);
+	local host_hash = sha256(jid.host(event.stanza.attr.from), true);
+	if banned_hashes[bare_hash] or banned_hashes[host_hash] then
 		module:log("info", "Blocked user <%s> from room <%s> due to RTBL match", from_bare, event.stanza.attr.to);
 		local error_reply = st.error_reply(event.stanza, "cancel", "forbidden", "You are banned from this service", event.room.jid);
 		event.origin.send(error_reply);
