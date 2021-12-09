@@ -61,7 +61,7 @@ function module.command(arg)
 			-- Normalize top level attributes
 			clean.attr.type = item.attr.type;
 			if clean.attr.type == nil and clean.name == "message" then clean.attr.type = "normal"; end
-			clean.attr.id = string.rep("x", #(item.attr.id or "")); -- worth rounding to nearest power of two or so?
+			clean.attr.id = string.rep("x", math.floor(math.log(1+#(item.attr.id or ""), 2)));
 			clean.attr.from = classify_jid(item.attr.from);
 			clean.attr.to = classify_jid(item.attr.to);
 			print(clean);

@@ -35,7 +35,8 @@ child tags sorted.
 Top level attributes are given special treatment since they carry
 protocol semantics. Notably the `@to` and `@from` JIDs are replaced by
 symbolic labels to convey what form (bare, full or host) they had. The
-`@id` attribute is replaced with a string of the same length.
+`@id` attribute is replaced with a string with the length based on log2
+of the original length.
 
 ## Example
 
