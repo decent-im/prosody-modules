@@ -1,0 +1,41 @@
+---
+summary: Export message archives in sanitized minimal form for analysis
+---
+
+Exports message archives in a format stripped from private information
+and message content.
+
+# Usage
+
+    prosodyctl mod_export_skeletons [options] user@host*
+
+Multiple user JIDs can be given.
+
+Some storage drivers such as [SQL][doc:modules:mod_storage_sql] allows
+exporting all users at once by giving the special username `*`, i.e.
+`prosodyctl mod_export_skeletons \*@example.com`.
+
+`--start=timestamp`
+:	Start of time span to export in [XEP-0082] format
+
+`--end=timestamp`
+:	End of time span to export in [XEP-0082] format
+
+# Output
+
+All content is stripped, leaving only the basic XML structure, with
+child tags sorted.
+
+Top level attributes are given special treatment since they carry
+protocol semantics. Notably the `@to` and `@from` JIDs are replaced by
+symbolic labels to convey what form (bare, full or host) they had. The
+`@id` attribute is replaced with a string of the same length.
+
+## Example
+
+```xml
+<message from='full' id='xxxxxxxxxxxxxxxx' type='chat' to='bare'><body/><x xmlns='jabber:x:oob'><url/></x></message>
+<message from='bare' id='xxxxxxxxxxxxxxxx' type='error' to='full'><error><remote-server-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></message>
+<message from='full' id='xxxxxxxxxxxxxxxx' type='chat' to='bare'><body/><x xmlns='jabber:x:oob'><url/></x></message>
+<message from='full' id='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' type='normal' to='bare'><x xmlns='jabber:x:conference'/></message>
+```
