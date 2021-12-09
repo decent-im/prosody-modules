@@ -40,9 +40,9 @@ of the original length.
 
 ## Example
 
-```xml
-<message from='full' id='xxxxxxxxxxxxxxxx' type='chat' to='bare'><body/><x xmlns='jabber:x:oob'><url/></x></message>
-<message from='bare' id='xxxxxxxxxxxxxxxx' type='error' to='full'><error><remote-server-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></message>
-<message from='full' id='xxxxxxxxxxxxxxxx' type='chat' to='bare'><body/><x xmlns='jabber:x:oob'><url/></x></message>
-<message from='full' id='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' type='normal' to='bare'><x xmlns='jabber:x:conference'/></message>
+``` xml
+<message from='full' id='xxxxx' type='chat' to='bare'><body/><x xmlns='jabber:x:oob'><url/></x></message>
+<message from='bare' id='xxxxx' type='error' to='full'><error><remote-server-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></message>
+<message from='full' id='xxxxx' type='chat' to='bare'><body/><x xmlns='jabber:x:oob'><url/></x></message>
+<message from='full' id='xxxxxx' type='normal' to='bare'><x xmlns='jabber:x:conference'/></message>
 ```
