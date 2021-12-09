@@ -15,6 +15,12 @@ Some storage drivers such as [SQL][doc:modules:mod_storage_sql] allows
 exporting all users at once by giving the special username `*`, i.e.
 `prosodyctl mod_export_skeletons \*@example.com`.
 
+## Options
+
+`--archive=archive`
+:   For overriding the store name, e.g. for compat with "archive2" or
+    querying MUC archives with `muc_log`
+
 `--start=timestamp`
 :	Start of time span to export in [XEP-0082] format
 
