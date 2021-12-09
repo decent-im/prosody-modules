@@ -17,8 +17,8 @@ exporting all users at once by giving the special username `*`, i.e.
 
 ## Options
 
-`--archive=archive`
-:   For overriding the store name, e.g. for compat with "archive2" or
+`--store=archive`
+:   For overriding the store name, e.g. for compat with `archive2` or
     querying MUC archives with `muc_log`
 
 `--start=timestamp`
