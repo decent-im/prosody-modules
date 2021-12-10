@@ -53,7 +53,7 @@ function module.command(arg)
 		end
 
 		local archive = module:context(host):open_store(store, "archive");
-		local iter, total = assert(archive:find(username == "*" or username, query))
+		local iter, total = assert(archive:find(username, query))
 		if total then io.stderr:write(string.format("Processing %d entries\n", total)); end
 		for _, item in iter do
 			local clean = skeleton(item);

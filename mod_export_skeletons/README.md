@@ -11,10 +11,6 @@ and message content.
 
 Multiple user JIDs can be given.
 
-Some storage drivers such as [SQL][doc:modules:mod_storage_sql] allows
-exporting all users at once by giving the special username `*`, i.e.
-`prosodyctl mod_export_skeletons \*@example.com`.
-
 ## Options
 
 `--store=archive`
