@@ -24,7 +24,7 @@ module:hook("muc-occupant-groupchat", function(event)
 			return true;
 		end
 
-		local occupant = room:new_occupant(module.host, virtual_occupant_jid);
+		local occupant = room:new_occupant(jid.bare(event.from), virtual_occupant_jid);
 		local join = st.presence({from = event.from; to = virtual_occupant_jid});
 		local dest_x = st.stanza("x", {xmlns = "http://jabber.org/protocol/muc#user"});
 		occupant:set_session(event.from, join, true);
