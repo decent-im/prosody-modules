@@ -74,7 +74,7 @@ local handle_push_success, handle_push_error;
 
 function handle_push_error(event)
 	local stanza = event.stanza;
-	local error_type, condition = stanza:get_error();
+	local error_type, condition, error_text = stanza:get_error();
 	local node = id2node[stanza.attr.id];
 	local identifier = id2identifier[stanza.attr.id];
 	if node == nil then return false; end		-- unknown stanza? Ignore for now!
@@ -86,8 +86,8 @@ function handle_push_error(event)
 		if push_identifier == identifier then
 			if user_push_services[push_identifier] and user_push_services[push_identifier].jid == from and error_type ~= "wait" then
 				push_errors[push_identifier] = push_errors[push_identifier] + 1;
-				module:log("info", "Got error of type '%s' (%s) for identifier '%s': "
-					.."error count for this identifier is now at %s", error_type, condition, push_identifier,
+				module:log("info", "Got error <%s:%s:%s> for identifier '%s': "
+					.."error count for this identifier is now at %s", error_type, condition, error_text or "", push_identifier,
 					tostring(push_errors[push_identifier]));
 				if push_errors[push_identifier] >= max_push_errors then
 					module:log("warn", "Disabling push notifications for identifier '%s'", push_identifier);
@@ -112,8 +112,8 @@ function handle_push_error(event)
 					id2identifier[stanza.attr.id] = nil;
 				end
 			elseif user_push_services[push_identifier] and user_push_services[push_identifier].jid == from and error_type == "wait" then
-				module:log("debug", "Got error of type '%s' (%s) for identifier '%s': "
-					.."NOT increasing error count for this identifier", error_type, condition, push_identifier);
+				module:log("debug", "Got error <%s:%s:%s> for identifier '%s': "
+					.."NOT increasing error count for this identifier", error_type, condition, error_text or "", push_identifier);
 			end
 		end
 	end
