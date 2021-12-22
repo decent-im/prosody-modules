@@ -16,6 +16,7 @@ local render_url = require "util.interpolation".new("%b{}", url_escape, {
 });
 
 module:depends("register_apps");
+local mod_password_policy = module:depends("password_policy");
 
 local site_name = module:get_option_string("site_name", module.host);
 local site_apps = module:shared("register_apps/apps");
@@ -59,6 +60,7 @@ function serve_register_page(event)
 		jid = invite.jid;
 		inviter = invite.inviter;
 		app = query_params.c and site_apps[query_params.c];
+		password_policy = mod_password_policy.get_policy();
 	});
 	return invite_page;
 end
@@ -92,6 +94,7 @@ function handle_register_form(event)
 			uri = invite.uri;
 			type = invite.type;
 			jid = invite.jid;
+			password_policy = mod_password_policy.get_policy();
 
 			msg_class = "alert-warning";
 			message = "Please fill in all fields.";
@@ -109,6 +112,7 @@ function handle_register_form(event)
 			uri = invite.uri;
 			type = invite.type;
 			jid = invite.jid;
+			password_policy = mod_password_policy.get_policy();
 
 			msg_class = "alert-warning";
 			message = "This username contains invalid characters.";
@@ -123,9 +127,28 @@ function handle_register_form(event)
 			uri = invite.uri;
 			type = invite.type;
 			jid = invite.jid;
+			password_policy = mod_password_policy.get_policy();
 
 			msg_class = "alert-warning";
 			message = "This username is already in use.";
+		});
+	end
+
+	local pw_ok, pw_error = mod_password_policy.check_password(password, {
+		username = prepped_username;
+	});
+	if not pw_ok then
+		return render_html_template(register_page_template, {
+			site_name = site_name;
+			token = invite.token;
+			domain = module.host;
+			uri = invite.uri;
+			type = invite.type;
+			jid = invite.jid;
+			password_policy = mod_password_policy.get_policy();
+
+			msg_class = "alert-warning";
+			message = pw_error;
 		});
 	end
 

@@ -6,6 +6,7 @@ rockspec:
   dependencies:
   - mod_invites
   - mod_invites_page
+  - mod_password_policy
   - mod_register_apps
   build:
     copy_directories:
@@ -44,3 +45,8 @@ on the current host, it will default to the URL of that module.
 This module depends on mod_invites_page solely for the case where an invalid
 invite token is received - it will redirect to mod_invites_page so that an
 appropriate error can be served to the user.
+
+The module also depends on [mod_password_policy] (which will be automatically
+loaded). As a consequence of this module being loaded, the default password
+policies will be enforced for all registrations on the server if not
+explicitly loaded or configured.
