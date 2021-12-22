@@ -13,12 +13,22 @@ local options = module:get_option("password_policy");
 
 options = options or {};
 options.length = options.length or 8;
+if options.exclude_username == nil then
+	options.exclude_username = true;
+end
 
 local st = require "util.stanza";
 
-function check_password(password)
+function check_password(password, additional_info)
 	if #password < options.length then
 		return nil, ("Password is too short (minimum %d characters)"):format(options.length), "length";
+	end
+
+	if additional_info then
+		local username = additional_info.username;
+		if username and password:lower():find(username:lower(), 1, true) then
+			return nil, "Password must not include your username", "username";
+		end
 	end
 	return true;
 end
@@ -46,9 +56,13 @@ function handler(event)
 
 		table.insert(passwords, query:get_child_text("password"));
 
+		local additional_info = {
+			username = origin.username;
+		};
+
 		for _,password in ipairs(passwords) do
 			if password then
-				local pw_ok, pw_err, pw_failed_policy = check_password(password);
+				local pw_ok, pw_err, pw_failed_policy = check_password(password, additional_info);
 				if not pw_ok then
 					module:log("debug", "Password failed check against '%s' policy", pw_failed_policy);
 					origin.send(st.error_reply(stanza, "cancel", "not-acceptable", pw_err));
