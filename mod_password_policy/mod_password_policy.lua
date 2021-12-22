@@ -20,6 +20,10 @@ end
 local st = require "util.stanza";
 
 function check_password(password, additional_info)
+	if not password or password == "" then
+		return nil, "No password provided", "no-password";
+	end
+
 	if #password < options.length then
 		return nil, ("Password is too short (minimum %d characters)"):format(options.length), "length";
 	end
