@@ -18,7 +18,7 @@ local st = require "util.stanza";
 
 function check_password(password)
 	if #password < options.length then
-		return nil, ("Password is too short (minimum %d characters)"):format(options.length);
+		return nil, ("Password is too short (minimum %d characters)"):format(options.length), "length";
 	end
 	return true;
 end
@@ -47,9 +47,13 @@ function handler(event)
 		table.insert(passwords, query:get_child_text("password"));
 
 		for _,password in ipairs(passwords) do
-			if password and not check_password(password) then
-				origin.send(st.error_reply(stanza, "cancel", "not-acceptable", "Please use a longer password."));
-				return true;
+			if password then
+				local pw_ok, pw_err, pw_failed_policy = check_password(password);
+				if not pw_ok then
+					module:log("debug", "Password failed check against '%s' policy", pw_failed_policy);
+					origin.send(st.error_reply(stanza, "cancel", "not-acceptable", pw_err));
+					return true;
+				end
 			end
 		end
 	end
