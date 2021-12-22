@@ -9,6 +9,10 @@
 --    }
 
 
+local it = require "util.iterators";
+local set = require "util.set";
+local st = require "util.stanza";
+
 local options = module:get_option("password_policy");
 
 options = options or {};
@@ -17,7 +21,21 @@ if options.exclude_username == nil then
 	options.exclude_username = true;
 end
 
-local st = require "util.stanza";
+local builtin_policies = set.new({ "length", "exclude_username" });
+local extra_policies = set.new(it.to_array(it.keys(options))) - builtin_policies;
+
+local extra_policy_handlers = {};
+
+module:handle_items("password-policy-provider", function (event)
+	-- Password policy handler added
+	local item = event.item;
+	module:log("error", "Adding password policy handler '%s'", item.name);
+	extra_policy_handlers[item.name] = item.check_password;
+end, function (event)
+	-- Password policy handler removed
+	local item = event.item;
+	extra_policy_handlers[item.name] = nil;
+end);
 
 function check_password(password, additional_info)
 	if not password or password == "" then
@@ -34,6 +52,19 @@ function check_password(password, additional_info)
 			return nil, "Password must not include your username", "username";
 		end
 	end
+
+	for policy in extra_policies do
+		local handler = extra_policy_handlers[policy];
+		if not handler then
+			module:log("error", "No policy handler found for '%s' (typo, or module not loaded?)", policy);
+			return nil, "Internal error while verifying password", "internal";
+		end
+		local ok, reason_text, reason_name = handler(password, options[policy], additional_info);
+		if ok ~= true then
+			return nil, reason_text or ("Password failed %s check"):format(policy), reason_name or policy;
+		end
+	end
+
 	return true;
 end
 
