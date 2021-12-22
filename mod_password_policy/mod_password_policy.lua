@@ -37,7 +37,7 @@ function check_password(password, additional_info)
 	return true;
 end
 
-function get_policy()
+function get_policy() --luacheck: ignore 131/get_policy
 	return options;
 end
 
