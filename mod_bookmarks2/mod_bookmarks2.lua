@@ -30,6 +30,72 @@ module:hook("account-disco-info", function (event)
 	event.reply:tag("feature", { var = namespace.."#compat" }):up();
 end);
 
+local function generate_legacy_storage(items)
+	local storage = st.stanza("storage", { xmlns = "storage:bookmarks" });
+	for _, item_id in ipairs(items) do
+		local item = items[item_id];
+		local conference = st.stanza("conference");
+		conference.attr.jid = item.attr.id;
+		local bookmark = item:get_child("conference", namespace);
+		conference.attr.name = bookmark.attr.name;
+		conference.attr.autojoin = bookmark.attr.autojoin;
+		local nick = bookmark:get_child_text("nick");
+		if nick ~= nil then
+			conference:text_tag("nick", nick, { xmlns = "storage:bookmarks" }):up();
+		end
+		local password = bookmark:get_child_text("password");
+		if password ~= nil then
+			conference:text_tag("password", password):up();
+		end
+		storage:add_child(conference);
+	end
+
+	return storage;
+end
+
+local function on_retrieve_legacy_pep(event)
+	local stanza, session = event.stanza, event.origin;
+	local pubsub = stanza:get_child("pubsub", "http://jabber.org/protocol/pubsub");
+	if pubsub == nil then
+		return;
+	end
+
+	local items = pubsub:get_child("items");
+	if items == nil then
+		return;
+	end
+
+	local node = items.attr.node;
+	if node ~= "storage:bookmarks" then
+		return;
+	end
+
+	local username = session.username;
+	local jid = username.."@"..session.host;
+	local service = mod_pep.get_pep_service(username);
+	local ok, ret = service:get_items(namespace, session.full_jid);
+	if not ok then
+		if ret == "item-not-found" then
+			module:log("debug", "Got no PEP bookmarks item for %s, returning empty legacy PEP bookmarks", jid);
+			session.send(st.reply(stanza):add_child(query));
+		else
+			module:log("error", "Failed to retrieve PEP bookmarks of %s: %s", jid, ret);
+			session.send(st.error_reply(stanza, "cancel", ret, "Failed to retrive bookmarks from PEP"));
+		end
+		return true;
+	end
+
+	local storage = generate_legacy_storage(ret);
+
+	module:log("debug", "Sending back legacy PEP for %s: %s", jid, storage);
+	session.send(st.reply(stanza)
+		:tag("pubsub", {xmlns = "http://jabber.org/protocol/pubsub"})
+			:tag("items", {node = "storage:bookmarks"})
+				:tag("item", {id = "current"})
+					:add_child(storage));
+	return true;
+end
+
 local function on_retrieve_private_xml(event)
 	local stanza, session = event.stanza, event.origin;
 	local query = stanza:get_child("query", "jabber:iq:private");
@@ -59,24 +125,7 @@ local function on_retrieve_private_xml(event)
 		return true;
 	end
 
-	local storage = st.stanza("storage", { xmlns = "storage:bookmarks" });
-	for _, item_id in ipairs(ret) do
-		local item = ret[item_id];
-		local conference = st.stanza("conference");
-		conference.attr.jid = item.attr.id;
-		local bookmark = item:get_child("conference", namespace);
-		conference.attr.name = bookmark.attr.name;
-		conference.attr.autojoin = bookmark.attr.autojoin;
-		local nick = bookmark:get_child_text("nick");
-		if nick ~= nil then
-			conference:text_tag("nick", nick, { xmlns = "storage:bookmarks" }):up();
-		end
-		local password = bookmark:get_child_text("password");
-		if password ~= nil then
-			conference:text_tag("password", password):up();
-		end
-		storage:add_child(conference);
-	end
+	local storage = generate_legacy_storage(ret);
 
 	module:log("debug", "Sending back private for %s: %s", jid, storage);
 	session.send(st.reply(stanza):query("jabber:iq:private"):add_child(storage));
@@ -190,6 +239,46 @@ local function publish_to_pep(jid, bookmarks, synchronise)
 	return true;
 end
 
+-- Synchronise legacy PEP to PEP.
+local function on_publish_legacy_pep(event)
+	local stanza, session = event.stanza, event.origin;
+	local pubsub = stanza:get_child("pubsub", "http://jabber.org/protocol/pubsub");
+	if pubsub == nil then
+		return;
+	end
+
+	local publish = pubsub:get_child("publish");
+	if publish == nil or publish.attr.node ~= "storage:bookmarks" then
+		return;
+	end
+
+	local item = publish:get_child("item");
+	if item == nil then
+		return;
+	end
+
+	-- Here we ignore the item id, it’ll be generated as 'current' anyway.
+
+	local bookmarks = item:get_child("storage", "storage:bookmarks");
+	if bookmarks == nil then
+		return;
+	end
+
+	-- We also ignore the publish-options.
+
+	module:log("debug", "Legacy PEP bookmarks set by client, publishing to PEP.");
+
+	local ok, err = publish_to_pep(session.full_jid, bookmarks, true);
+	if not ok then
+		module:log("error", "Failed to publish to PEP bookmarks for %s@%s: %s", session.username, session.host, err);
+		session.send(st.error_reply(stanza, "cancel", "internal-server-error", "Failed to store bookmarks to PEP"));
+		return true;
+	end
+
+	session.send(st.reply(stanza));
+	return true;
+end
+
 -- Synchronise Private XML to PEP.
 local function on_publish_private_xml(event)
 	local stanza, session = event.stanza, event.origin;
@@ -203,7 +292,7 @@ local function on_publish_private_xml(event)
 		return;
 	end
 
-	module:log("debug", "Private bookmarks set by client, publishing to pep.");
+	module:log("debug", "Private bookmarks set by client, publishing to PEP.");
 
 	local ok, err = publish_to_pep(session.full_jid, bookmarks, true);
 	if not ok then
@@ -298,6 +387,13 @@ module:hook("iq/bare/jabber:iq:private:query", function (event)
 		return on_retrieve_private_xml(event);
 	else
 		return on_publish_private_xml(event);
+	end
+end, 1);
+module:hook("iq/bare/http://jabber.org/protocol/pubsub:pubsub", function (event)
+	if event.stanza.attr.type == "get" then
+		return on_retrieve_legacy_pep(event);
+	else
+		return on_publish_legacy_pep(event);
 	end
 end, 1);
 module:hook("resource-bind", migrate_legacy_bookmarks);
