@@ -28,6 +28,7 @@ end
 module:hook("account-disco-info", function (event)
 	-- This Time it’s Serious!
 	event.reply:tag("feature", { var = namespace.."#compat" }):up();
+	event.reply:tag("feature", { var = namespace.."#compat-pep" }):up();
 end);
 
 local function generate_legacy_storage(items)
