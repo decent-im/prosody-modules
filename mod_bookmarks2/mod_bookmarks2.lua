@@ -10,6 +10,8 @@ local mod_pep = module:depends "pep";
 local private_storage = module:open_store("private", "map");
 
 local namespace = "urn:xmpp:bookmarks:1";
+local namespace_private = "jabber:iq:private";
+local namespace_legacy = "storage:bookmarks";
 
 local default_options = {
 	["persist_items"] = true;
@@ -32,17 +34,18 @@ module:hook("account-disco-info", function (event)
 end);
 
 local function generate_legacy_storage(items)
-	local storage = st.stanza("storage", { xmlns = "storage:bookmarks" });
+	local storage = st.stanza("storage", { xmlns = namespace_legacy });
 	for _, item_id in ipairs(items) do
 		local item = items[item_id];
-		local conference = st.stanza("conference");
-		conference.attr.jid = item.attr.id;
 		local bookmark = item:get_child("conference", namespace);
-		conference.attr.name = bookmark.attr.name;
-		conference.attr.autojoin = bookmark.attr.autojoin;
+		local conference = st.stanza("conference", {
+			jid = item.attr.id,
+			name = bookmark.attr.name,
+			autojoin = bookmark.attr.autojoin,
+		});
 		local nick = bookmark:get_child_text("nick");
 		if nick ~= nil then
-			conference:text_tag("nick", nick, { xmlns = "storage:bookmarks" }):up();
+			conference:text_tag("nick", nick):up();
 		end
 		local password = bookmark:get_child_text("password");
 		if password ~= nil then
@@ -67,7 +70,7 @@ local function on_retrieve_legacy_pep(event)
 	end
 
 	local node = items.attr.node;
-	if node ~= "storage:bookmarks" then
+	if node ~= namespace_legacy then
 		return;
 	end
 
@@ -91,7 +94,7 @@ local function on_retrieve_legacy_pep(event)
 	module:log("debug", "Sending back legacy PEP for %s: %s", jid, storage);
 	session.send(st.reply(stanza)
 		:tag("pubsub", {xmlns = "http://jabber.org/protocol/pubsub"})
-			:tag("items", {node = "storage:bookmarks"})
+			:tag("items", {node = namespace_legacy})
 				:tag("item", {id = "current"})
 					:add_child(storage));
 	return true;
@@ -99,12 +102,12 @@ end
 
 local function on_retrieve_private_xml(event)
 	local stanza, session = event.stanza, event.origin;
-	local query = stanza:get_child("query", "jabber:iq:private");
+	local query = stanza:get_child("query", namespace_private);
 	if query == nil then
 		return;
 	end
 
-	local bookmarks = query:get_child("storage", "storage:bookmarks");
+	local bookmarks = query:get_child("storage", namespace_legacy);
 	if bookmarks == nil then
 		return;
 	end
@@ -129,7 +132,7 @@ local function on_retrieve_private_xml(event)
 	local storage = generate_legacy_storage(ret);
 
 	module:log("debug", "Sending back private for %s: %s", jid, storage);
-	session.send(st.reply(stanza):query("jabber:iq:private"):add_child(storage));
+	session.send(st.reply(stanza):query(namespace_private):add_child(storage));
 	return true;
 end
 
@@ -189,16 +192,18 @@ local function publish_to_pep(jid, bookmarks, synchronise)
 		to_remove[bookmarks2[i]] = true;
 	end
 
-	for bookmark in bookmarks:childtags("conference", "storage:bookmarks") do
+	for bookmark in bookmarks:childtags("conference", namespace_legacy) do
 		-- Create the new conference element by copying everything from the legacy one.
-		local conference = st.stanza("conference", { xmlns = namespace });
-		conference.attr.name = bookmark.attr.name;
-		conference.attr.autojoin = bookmark.attr.autojoin;
-		local nick = bookmark:get_child_text("nick", "storage:bookmarks");
+		local conference = st.stanza("conference", {
+			xmlns = namespace,
+			name = bookmark.attr.name,
+			autojoin = bookmark.attr.autojoin,
+		});
+		local nick = bookmark:get_child_text("nick");
 		if nick ~= nil then
 			conference:text_tag("nick", nick):up();
 		end
-		local password = bookmark:get_child_text("password", "storage:bookmarks");
+		local password = bookmark:get_child_text("password");
 		if password ~= nil then
 			conference:text_tag("password", password):up();
 		end
@@ -249,7 +254,7 @@ local function on_publish_legacy_pep(event)
 	end
 
 	local publish = pubsub:get_child("publish");
-	if publish == nil or publish.attr.node ~= "storage:bookmarks" then
+	if publish == nil or publish.attr.node ~= namespace_legacy then
 		return;
 	end
 
@@ -260,7 +265,7 @@ local function on_publish_legacy_pep(event)
 
 	-- Here we ignore the item id, it’ll be generated as 'current' anyway.
 
-	local bookmarks = item:get_child("storage", "storage:bookmarks");
+	local bookmarks = item:get_child("storage", namespace_legacy);
 	if bookmarks == nil then
 		return;
 	end
@@ -283,12 +288,12 @@ end
 -- Synchronise Private XML to PEP.
 local function on_publish_private_xml(event)
 	local stanza, session = event.stanza, event.origin;
-	local query = stanza:get_child("query", "jabber:iq:private");
+	local query = stanza:get_child("query", namespace_private);
 	if query == nil then
 		return;
 	end
 
-	local bookmarks = query:get_child("storage", "storage:bookmarks");
+	local bookmarks = query:get_child("storage", namespace_legacy);
 	if bookmarks == nil then
 		return;
 	end
@@ -312,7 +317,7 @@ local function migrate_legacy_bookmarks(event)
 	local service = mod_pep.get_pep_service(username);
 	local jid = username.."@"..session.host;
 
-	local ok, ret = service:get_items("storage:bookmarks", session.full_jid);
+	local ok, ret = service:get_items(namespace_legacy, session.full_jid);
 	if ok then
 		module:log("debug", "Legacy PEP bookmarks found for %s, migrating.", jid);
 		local failed = false;
@@ -321,7 +326,7 @@ local function migrate_legacy_bookmarks(event)
 			if item.attr.id ~= "current" then
 				module:log("warn", "Legacy PEP bookmarks for %s isn’t using 'current' as its id: %s", jid, item.attr.id);
 			end
-			local bookmarks = item:get_child("storage", "storage:bookmarks");
+			local bookmarks = item:get_child("storage", namespace_legacy);
 			module:log("debug", "Got legacy PEP bookmarks of %s: %s", jid, bookmarks);
 
 			local ok, err = publish_to_pep(session.full_jid, bookmarks, false);
@@ -333,7 +338,7 @@ local function migrate_legacy_bookmarks(event)
 		end
 		if not failed then
 			module:log("debug", "Successfully migrated legacy PEP bookmarks of %s to bookmarks 2, attempting deletion of the node.", jid);
-			local ok, err = service:delete("storage:bookmarks", jid);
+			local ok, err = service:delete(namespace_legacy, jid);
 			if not ok then
 				module:log("error", "Failed to delete legacy PEP bookmarks for %s: %s", jid, err);
 			end
@@ -371,12 +376,12 @@ end
 
 local function on_node_created(event)
 	local service, node, actor = event.service, event.node, event.actor;
-	if node ~= "storage:bookmarks" then
+	if node ~= namespace_legacy then
 		return;
 	end
 
 	module:log("debug", "Something tried to create legacy PEP bookmarks for %s.", actor);
-	local ok, err = service:delete("storage:bookmarks", actor);
+	local ok, err = service:delete(namespace_legacy, actor);
 	if not ok then
 		module:log("error", "Failed to delete legacy PEP bookmarks for %s: %s", actor, err);
 	end
