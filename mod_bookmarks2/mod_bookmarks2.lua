@@ -33,6 +33,10 @@ module:hook("account-disco-info", function (event)
 	event.reply:tag("feature", { var = namespace.."#compat-pep" }):up();
 end);
 
+-- This must be declared on the domain JID, not the account JID.  Note that
+-- this isn’t defined in the XEP.
+module:add_feature(namespace_private);
+
 local function generate_legacy_storage(items)
 	local storage = st.stanza("storage", { xmlns = namespace_legacy });
 	for _, item_id in ipairs(items) do
