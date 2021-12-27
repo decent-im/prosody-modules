@@ -15,7 +15,6 @@ local namespace_legacy = "storage:bookmarks";
 
 local default_options = {
 	["persist_items"] = true;
-	-- This should be much higher, the XEP recommends 10000 but mod_pep rejects that.
 	["max_items"] = "max";
 	["send_last_published_item"] = "never";
 	["access_model"] = "whitelist";
