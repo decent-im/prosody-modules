@@ -106,3 +106,54 @@ local pubsub = mod_pubsub.service;
 pubsub:create("princely_musings", true);
 pubsub:set_affiliation("princely_musings", true, "127.0.0.1", "publisher");
 ```
+
+## Data mappings
+
+The datamapper library added in trunk allows posting JSON and having it
+converted to XML based on a special JSON Schema.
+
+``` json
+{
+   "properties" : {
+      "content" : {
+         "type" : "string"
+      },
+      "title" : {
+         "type" : "string"
+      }
+   },
+   "type" : "object",
+   "xml" : {
+      "name" : "musings",
+      "namespace" : "urn:example:princely"
+   }
+}
+```
+
+And in the Prosody config file:
+
+``` lua
+pubsub_post_mappings = {
+    princely_musings = "musings.json";
+}
+```
+
+Then, POSTing a JSON payload like
+
+``` json
+{
+   "content" : "To be, or not to be: that is the question",
+   "title" : "Soliloquy"
+}
+```
+
+results in a payload like
+
+``` xml
+<musings xmlns="urn:example:princely">
+  <title>Soliloquy</title>
+  <content>To be, or not to be: that is the question</content>
+</musings>
+```
+
+being published to the node.
