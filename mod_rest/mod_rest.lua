@@ -297,7 +297,7 @@ local function handle_request(event, path)
 		return post_errors.new("parse", ctx);
 	end
 
-	if payload.attr.xmlns then
+	if (payload.attr.xmlns or "jabber:client") ~= "jabber:client" then
 		return post_errors.new("xmlns");
 	elseif payload.name ~= "message" and payload.name ~= "presence" and payload.name ~= "iq" then
 		return post_errors.new("name");

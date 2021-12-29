@@ -565,7 +565,8 @@
          },
          "type" : "object",
          "xml" : {
-            "name" : "iq"
+            "name" : "iq",
+            "namespace" : "jabber:client"
          }
       },
       "message" : {
@@ -631,7 +632,7 @@
                      "$ref" : "#/_common/delay"
                   },
                   "message" : {
-                     "$ref" : "#/message"
+                     "$ref" : "#/properties/message"
                   }
                },
                "title" : "XEP-0297: Stanza Forwarding",
@@ -894,7 +895,8 @@
          },
          "type" : "object",
          "xml" : {
-            "name" : "message"
+            "name" : "message",
+            "namespace" : "jabber:client"
          }
       },
       "presence" : {
@@ -1006,7 +1008,8 @@
          },
          "type" : "object",
          "xml" : {
-            "name" : "presence"
+            "name" : "presence",
+            "namespace" : "jabber:client"
          }
       }
    },

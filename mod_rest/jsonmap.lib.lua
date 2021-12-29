@@ -18,7 +18,7 @@ local schema do
 		end
 		schema.properties.message.properties.archive.properties.forward = schema.properties.message.properties.forwarded;
 		schema.properties.message.properties.forwarded.properties.delay = schema._common.delay;
-		schema.properties.message.properties.forwarded.properties.message.properties = schema.properties.message.properties;
+		schema.properties.message.properties.forwarded.properties.message = schema.properties.message;
 		schema.properties.iq.properties.archive.properties.form = schema._common.dataform;
 		schema.properties.iq.properties.archive.properties.page = schema._common.rsm;
 		schema.properties.iq.properties.result.properties.page = schema._common.rsm;
@@ -536,7 +536,7 @@ local function json2st(t)
 		end
 	end
 
-	local s = map.unparse(schema.properties[kind or "message"], t);
+	local s = map.unparse(schema, { [kind or "message"] = t }).tags[1];
 
 	s.attr.type = t_type;
 	s.attr.to = str(t.to) and jid.prep(t.to);
