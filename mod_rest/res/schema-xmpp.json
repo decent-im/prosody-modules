@@ -203,10 +203,10 @@
             "archive" : {
                "properties" : {
                   "form" : {
-                     "$ref" : "#_common/dataform"
+                     "$ref" : "#/_common/dataform"
                   },
                   "page" : {
-                     "$ref" : "#_common/rsm"
+                     "$ref" : "#/_common/rsm"
                   },
                   "queryid" : {
                      "type" : "string",
@@ -220,6 +220,12 @@
                   "name" : "query",
                   "namespace" : "urn:xmpp:mam:2"
                }
+            },
+            "dataform" : {
+               "$ref" : "#/_common/dataform"
+            },
+            "delay" : {
+               "$ref" : "#/_common/delay"
             },
             "extdisco" : {
                "properties" : {
@@ -307,6 +313,9 @@
                   "namespace" : "urn:xmpp:extdisco:2"
                }
             },
+            "from" : {
+               "$ref" : "#/_common/from"
+            },
             "gateway" : {
                "properties" : {
                   "desc" : {
@@ -325,6 +334,12 @@
                   "name" : "query",
                   "namespace" : "jabber:iq:gateway"
                }
+            },
+            "id" : {
+               "$ref" : "#/_common/id"
+            },
+            "lang" : {
+               "$ref" : "#/_common/lang"
             },
             "lastactivity" : {
                "properties" : {
@@ -348,6 +363,9 @@
                   "name" : "query",
                   "namespace" : "jabber:iq:last"
                }
+            },
+            "nick" : {
+               "$ref" : "#/_common/nick"
             },
             "oob" : {
                "properties" : {
@@ -463,7 +481,7 @@
             "result" : {
                "properties" : {
                   "page" : {
-                     "$ref" : "#_common/rsm"
+                     "$ref" : "#/_common/rsm"
                   }
                },
                "type" : "object",
@@ -471,6 +489,9 @@
                   "name" : "fin",
                   "namespace" : "urn:xmpp:mam:2"
                }
+            },
+            "rsm" : {
+               "$ref" : "#/_common/rsm"
             },
             "stats" : {
                "description" : "Simple statistics gathering, array of (name, unit, value) tuples.",
@@ -507,6 +528,12 @@
                   "namespace" : "http://jabber.org/protocol/stats",
                   "wrapped" : true
                }
+            },
+            "to" : {
+               "$ref" : "#/_common/to"
+            },
+            "type" : {
+               "$ref" : "#/_common/type"
             },
             "version" : {
                "description" : "Ask about software version information",
@@ -546,7 +573,7 @@
             "archive" : {
                "properties" : {
                   "forward" : {
-                     "$ref" : "#_common/forwarded"
+                     "$ref" : "#/properties/message/properties/forwarded"
                   },
                   "queryid" : {
                      "type" : "string",
@@ -575,6 +602,12 @@
                "example" : "Hello, World!",
                "type" : "string"
             },
+            "dataform" : {
+               "$ref" : "#/_common/dataform"
+            },
+            "delay" : {
+               "$ref" : "#/_common/delay"
+            },
             "displayed" : {
                "description" : "Message ID of a message that has been displayed",
                "title" : "XEP-0333: Chat Markers",
@@ -595,13 +628,10 @@
             "forwarded" : {
                "properties" : {
                   "delay" : {
-                     "$ref" : "#_common/delay"
+                     "$ref" : "#/_common/delay"
                   },
                   "message" : {
-                     "type" : "object",
-                     "xml" : {
-                        "namespace" : "jabber:client"
-                     }
+                     "$ref" : "#/message"
                   }
                },
                "title" : "XEP-0297: Stanza Forwarding",
@@ -610,6 +640,12 @@
                   "name" : "forwarded",
                   "namespace" : "urn:xmpp:forward:0"
                }
+            },
+            "from" : {
+               "$ref" : "#/_common/from"
+            },
+            "id" : {
+               "$ref" : "#/_common/id"
             },
             "invite" : {
                "properties" : {
@@ -655,6 +691,9 @@
                   "namespace" : "jabber:x:conference"
                }
             },
+            "lang" : {
+               "$ref" : "#/_common/lang"
+            },
             "markable" : {
                "title" : "XEP-0333: Chat Markers",
                "type" : "boolean",
@@ -662,6 +701,9 @@
                   "namespace" : "urn:xmpp:chat-markers:0",
                   "x_name_is_value" : true
                }
+            },
+            "nick" : {
+               "$ref" : "#/_common/nick"
             },
             "occupant_id" : {
                "title" : "XEP-0421: Anonymous unique occupant identifiers for MUCs",
@@ -771,6 +813,9 @@
                   "x_single_attribute" : "id"
                }
             },
+            "rsm" : {
+               "$ref" : "#/_common/rsm"
+            },
             "stanza_ids" : {
                "items" : {
                   "properties" : {
@@ -839,6 +884,12 @@
                   }
                },
                "type" : "object"
+            },
+            "to" : {
+               "$ref" : "#/_common/to"
+            },
+            "type" : {
+               "$ref" : "#/_common/type"
             }
          },
          "type" : "object",
@@ -882,6 +933,18 @@
                   "namespace" : "http://jabber.org/protocol/caps"
                }
             },
+            "dataform" : {
+               "$ref" : "#/_common/dataform"
+            },
+            "delay" : {
+               "$ref" : "#/_common/delay"
+            },
+            "from" : {
+               "$ref" : "#/_common/from"
+            },
+            "id" : {
+               "$ref" : "#/_common/id"
+            },
             "idle_since" : {
                "format" : "date-time",
                "title" : "XEP-0319: Last User Interaction in Presence",
@@ -892,11 +955,20 @@
                   "x_single_attribute" : "since"
                }
             },
+            "lang" : {
+               "$ref" : "#/_common/lang"
+            },
+            "nick" : {
+               "$ref" : "#/_common/nick"
+            },
             "priority" : {
                "description" : "Presence priority",
                "maximum" : 127,
                "minimum" : -128,
                "type" : "integer"
+            },
+            "rsm" : {
+               "$ref" : "#/_common/rsm"
             },
             "show" : {
                "description" : "indicator of availability, ie away or not",
@@ -911,6 +983,12 @@
             "status" : {
                "description" : "Textual status message.",
                "type" : "string"
+            },
+            "to" : {
+               "$ref" : "#/_common/to"
+            },
+            "type" : {
+               "$ref" : "#/_common/type"
             },
             "vcard_update" : {
                "properties" : {
