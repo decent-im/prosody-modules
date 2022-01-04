@@ -11,7 +11,7 @@ rockspec:
     copy_directories:
     - templates
   dependencies:
-  - mod_bookmarks
+  - mod_bookmarks2
 ---
 
 Introduction

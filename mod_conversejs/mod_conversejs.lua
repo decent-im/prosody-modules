@@ -17,7 +17,7 @@ local has_ws = pcall(function ()
 end);
 
 pcall(function ()
-	module:depends("bookmarks");
+	module:depends("bookmarks2");
 end);
 
 local cdn_url = module:get_option_string("conversejs_cdn", "https://cdn.conversejs.org");
