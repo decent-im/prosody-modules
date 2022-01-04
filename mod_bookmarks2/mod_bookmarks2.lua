@@ -82,13 +82,8 @@ local function on_retrieve_legacy_pep(event)
 	local service = mod_pep.get_pep_service(username);
 	local ok, ret = service:get_items(namespace, session.full_jid);
 	if not ok then
-		if ret == "item-not-found" then
-			module:log("debug", "Got no PEP bookmarks item for %s, returning empty legacy PEP bookmarks", jid);
-			session.send(st.reply(stanza):add_child(query));
-		else
-			module:log("error", "Failed to retrieve PEP bookmarks of %s: %s", jid, ret);
-			session.send(st.error_reply(stanza, "cancel", ret, "Failed to retrive bookmarks from PEP"));
-		end
+		module:log("error", "Failed to retrieve PEP bookmarks of %s: %s", jid, ret);
+		session.send(st.error_reply(stanza, "cancel", ret, "Failed to retrive bookmarks from PEP"));
 		return true;
 	end
 
@@ -122,8 +117,13 @@ local function on_retrieve_private_xml(event)
 	local service = mod_pep.get_pep_service(username);
 	local ok, ret = service:get_items(namespace, session.full_jid);
 	if not ok then
-		module:log("error", "Failed to retrieve PEP bookmarks of %s: %s", jid, ret);
-		session.send(st.error_reply(stanza, "cancel", ret, "Failed to retrive bookmarks from PEP"));
+		if ret == "item-not-found" then
+			module:log("debug", "Got no PEP bookmarks item for %s, returning empty private bookmarks", jid);
+			session.send(st.reply(stanza):add_child(query));
+		else
+			module:log("error", "Failed to retrieve PEP bookmarks of %s: %s", jid, ret);
+			session.send(st.error_reply(stanza, "cancel", ret, "Failed to retrive bookmarks from PEP"));
+		end
 		return true;
 	end
 
