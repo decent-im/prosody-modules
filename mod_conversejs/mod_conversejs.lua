@@ -16,9 +16,13 @@ local has_ws = pcall(function ()
 	module:depends("websocket");
 end);
 
-pcall(function ()
-	module:depends("bookmarks2");
-end);
+if not pcall(function()
+	module:depends("bookmarks");
+end) then
+	pcall(function()
+		module:depends("bookmarks2")
+	end);
+end
 
 local cdn_url = module:get_option_string("conversejs_cdn", "https://cdn.conversejs.org");
 
