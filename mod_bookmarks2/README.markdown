@@ -1,6 +1,6 @@
 ---
 labels:
-- 'Stage-Beta'
+- 'Stage-Merged'
 summary: Synchronise bookmarks between Private XML, legacy PEP, and PEP
 ...
 
@@ -29,9 +29,9 @@ further configuration is needed.
 Compatibility
 -------------
 
-  ------- ---------------
-  trunk   Works
+  ------- -----------------------------------------
+  trunk   [Merged][doc:modules:mod_bookmarks]
   0.11    Works
   0.10    Does not work
   0.9     Does not work
-  ------- ---------------
+  ------- -----------------------------------------
