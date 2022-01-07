@@ -13,11 +13,14 @@ local dm_load = require "util.datamanager".load
 local jid_split = require "util.jid".split
 
 -- COMPAT w/trunk
-local is_on_trunk = false;
+local mod_bookmarks_available = false;
 local mm = require "core.modulemanager";
 if mm.get_modules_for_host then
-	if mm.get_modules_for_host(module.host):contains("bookmarks") then
-		is_on_trunk = true;
+	local host_modules = mm.get_modules_for_host(module.host);
+	if host_modules:contains("bookmarks") then
+		mod_bookmarks_available = "bookmarks";
+	elseif host_modules:contains("bookmarks2") then
+		mod_bookmarks_available = "bookmarks2";
 	end
 end
 
@@ -48,8 +51,8 @@ local function get_default_bookmarks(nickname)
 	return reply;
 end
 
-if is_on_trunk then
-	local mod_bookmarks = module:depends "bookmarks";
+if mod_bookmarks_available then
+	local mod_bookmarks = module:depends(mod_bookmarks_available);
 	local function on_bookmarks_empty(event)
 		local session = event.session;
 		if mod_bookmarks.publish_to_pep then
