@@ -44,12 +44,15 @@ function proxy_component(origin, stanza)
 	if ibb_tag.name == "open" then
 		-- Starting a new stream
 		local to_host, to_port = ibb_tag.attr[host_attr], ibb_tag.attr[port_attr];
-		local jid, sid = stanza.attr.from, ibb_tag.attr.sid;
+		local jid, sid, block_size = stanza.attr.from, ibb_tag.attr.sid, ibb_tag.attr["block-size"];
 		if not (to_host and to_port) then
 			origin.send(st.error_reply(stanza, "modify", "bad-request", "No host/port specified"));
 			return true;
 		elseif not sid or sid == "" then
 			origin.send(st.error_reply(stanza, "modify", "bad-request", "No sid specified"));
+			return true;
+		elseif not block_size or not tonumber(block_size) then
+			origin.send(st.error_reply(stanza, "modify", "bad-request", "Bad block-size attribute"));
 			return true;
 		elseif ibb_tag.attr.stanza ~= "message" then
 			origin.send(st.error_reply(stanza, "modify", "bad-request", "Only 'message' stanza transport is supported"));

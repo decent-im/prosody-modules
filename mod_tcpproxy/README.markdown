@@ -39,16 +39,17 @@ A new stream is opened like this:
 ``` {.xml}
 <iq type="set" id="newconn1" to="tcp.example.com">
   <open xmlns='http://jabber.org/protocol/ibb'
-        sid='connection1'
-        stanza='message'
+        sid='connection1'
+        block-size='4096'
+        stanza='message'
         xmlns:tcp='http://prosody.im/protocol/tcpproxy'
         tcp:host='example.com'
         tcp:port='80' />
 </iq>
 ```
 
-The stanza attribute (currently) MUST be 'message', and a block-size, if
-given, is (currently) ignored.
+The stanza attribute (currently) MUST be 'message', and block-size is
+(currently) ignored.
 
 In response to this stanza you will receive a result upon connection
 success, or an error if the connection failed. You can then send to the
@@ -67,6 +68,6 @@ Todo
 ====
 
 -   ACLs (restrict to certain JIDs, and/or certain target hosts/ports)
--   Honour block-size (undecided)
+-   Honour block-size
 -   Support iq stanzas for data transmission
 -   Signal to start SSL/TLS on a connection
