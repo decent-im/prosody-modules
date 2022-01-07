@@ -16,12 +16,11 @@ local has_ws = pcall(function ()
 	module:depends("websocket");
 end);
 
-if not pcall(function()
-	module:depends("bookmarks");
-end) then
-	pcall(function()
-		module:depends("bookmarks2")
-	end);
+do
+	local mods = module:get_option_inherited_set("modules_enabled") - module:get_option_inherited_set("modules_disabled");
+	if not mods:contains("bookmarks") or mods:contains("bookmarks2") then
+		module:log("warn", "Converse.js does not work well without mod_bookmarks, consider enabling it");
+	end
 end
 
 local cdn_url = module:get_option_string("conversejs_cdn", "https://cdn.conversejs.org");
