@@ -53,8 +53,10 @@ if is_on_trunk then
 	local function on_bookmarks_empty(event)
 		local session = event.session;
 		local bookmarks = get_default_bookmarks(session.username);
-		if bookmarks then
+		if bookmarks.publish_to_pep then
 			mod_bookmarks.publish_to_pep(session.full_jid, bookmarks);
+		else
+			module:log("error", "Method for publishing legacy bookmarks not exposed by mod_bookmarks")
 		end
 	end
 	module:hook("bookmarks/empty", on_bookmarks_empty);
