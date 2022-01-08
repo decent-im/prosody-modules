@@ -10,7 +10,7 @@
 
 local st = require "util.stanza"
 local dm_load = require "util.datamanager".load
-local jid_split = require "util.jid".split
+local jid = require "util.jid"
 
 -- COMPAT w/trunk
 local mod_bookmarks_available = false;
@@ -25,7 +25,7 @@ if mm.get_modules_for_host then
 end
 
 local function get_default_bookmarks(nickname)
-	local bookmarks = module:get_option("default_bookmarks");
+	local bookmarks = module:get_option_array("default_bookmarks");
 	if not bookmarks or #bookmarks == 0 then
 		return false;
 	end
@@ -33,7 +33,7 @@ local function get_default_bookmarks(nickname)
 	local nick = nickname and st.stanza("nick"):text(nickname);
 	for _, bookmark in ipairs(bookmarks) do
 		if type(bookmark) ~= "table" then -- assume it's only a jid
-			bookmark = { jid = bookmark, name = jid_split(bookmark) };
+			bookmark = { jid = bookmark, name = jid.split(bookmark) };
 		end
 		reply:tag("conference", {
 			jid = bookmark.jid,
@@ -79,14 +79,22 @@ if mod_bookmarks_available then
 				publish_options["max_items"] = module:get_option_number("pep_max_items", 256);
 			end
 			local service = mod_pep.get_pep_service(session.username);
-			local bookmarks = module:get_option("default_bookmarks");
+			local bookmarks = module:get_option_array("default_bookmarks");
 			local ns = event.version or "urn:xmpp:bookmarks:1";
 			for i, bookmark in ipairs(bookmarks) do
-				local item = st.stanza("item", { xmlns = "http://jabber.org/protocol/pubsub"; id = bookmark.jid });
-				item:tag("conference", { xmlns = ns; name = bookmark.name; autojoin = bookmark.autojoin and "true" or nil });
-				if bookmark.nick then item:text_tag("nick", bookmarks.nick); end
-				if bookmark.password then item:text_tag("password", bookmarks.password); end
-				service:publish("urn:xmpp:bookmarks:1", session.full_jid, bookmark.jid, item, publish_options);
+				local bm_jid = jid.prep(bookmark.jid);
+				if not bm_jid then
+					module:log("error", "Invalid JID in default_bookmarks[%d].jid = %q", i, bookmark.jid);
+				else
+					local item = st.stanza("item", { xmlns = "http://jabber.org/protocol/pubsub"; id = bm_jid });
+					item:tag("conference", { xmlns = ns; name = bookmark.name; autojoin = bookmark.autojoin and "true" or nil });
+					if bookmark.nick then item:text_tag("nick", bookmarks.nick); end
+					if bookmark.password then item:text_tag("password", bookmarks.password); end
+					local ok, err = service:publish("urn:xmpp:bookmarks:1", session.full_jid, bm_jid, item, publish_options);
+					if not ok then
+						module:log("error", "Could not add default bookmark %s to %s: %s", bm_jid, session.username, err);
+					end
+				end
 			end
 		end
 		module:hook("bookmarks/empty", publish_bookmarks2);
