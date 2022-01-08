@@ -53,18 +53,18 @@ end
 
 if mod_bookmarks_available then
 	local mod_bookmarks = module:depends(mod_bookmarks_available);
-	local function on_bookmarks_empty(event)
-		local session = event.session;
-		if mod_bookmarks.publish_to_pep then
+	if mod_bookmarks.publish_to_pep then
+		local function on_bookmarks_empty(event)
+			local session = event.session;
 			local bookmarks = get_default_bookmarks(session.username);
 			if bookmarks then
 				mod_bookmarks.publish_to_pep(session.full_jid, bookmarks);
 			end
-		else
-			module:log("error", "Method for publishing legacy bookmarks not exposed by mod_bookmarks")
 		end
+		module:hook("bookmarks/empty", on_bookmarks_empty);
+	else
+		module:log("error", "Method for publishing legacy bookmarks not exposed by mod_bookmarks")
 	end
-	module:hook("bookmarks/empty", on_bookmarks_empty);
 else
 	local function on_private_xml_get(event)
 		local origin, stanza = event.origin, event.stanza;
