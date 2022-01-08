@@ -63,7 +63,33 @@ if mod_bookmarks_available then
 		end
 		module:hook("bookmarks/empty", on_bookmarks_empty);
 	else
-		module:log("error", "Method for publishing legacy bookmarks not exposed by mod_bookmarks")
+		local mod_pep = module:depends "pep";
+
+		local function publish_bookmarks2(event)
+			local session = event.session;
+			local publish_options = {
+				["persist_items"] = true;
+				["max_items"] = "max";
+				["send_last_published_item"] = "never";
+				["access_model"] = "whitelist";
+			}
+			if not pcall(mod_pep.check_node_config, nil, nil, publish_options) then
+				-- 0.11 or earlier not supporting max_items="max" trows an error here
+				module:log("debug", "Setting max_items=pep_max_items because 'max' is not supported in this version");
+				publish_options["max_items"] = module:get_option_number("pep_max_items", 256);
+			end
+			local service = mod_pep.get_pep_service(session.username);
+			local bookmarks = module:get_option("default_bookmarks");
+			local ns = event.version or "urn:xmpp:bookmarks:1";
+			for i, bookmark in ipairs(bookmarks) do
+				local item = st.stanza("item", { xmlns = "http://jabber.org/protocol/pubsub"; id = bookmark.jid });
+				item:tag("conference", { xmlns = ns; name = bookmark.name; autojoin = bookmark.autojoin and "true" or nil });
+				if bookmark.nick then item:text_tag("nick", bookmarks.nick); end
+				if bookmark.password then item:text_tag("password", bookmarks.password); end
+				service:publish("urn:xmpp:bookmarks:1", session.full_jid, bookmark.jid, item, publish_options);
+			end
+		end
+		module:hook("bookmarks/empty", publish_bookmarks2);
 	end
 else
 	local function on_private_xml_get(event)
