@@ -60,7 +60,7 @@ local function inject_bookmark(jid, room, autojoin, name)
 			:tag("conference", { xmlns = XMLNS_BM2; name = name; autojoin = autojoin and "true" or "false"; })
 	end
 
-	update_bookmark(jid, pep_service, current, room, found)
+	update_bookmark(jid, pep_service, room, found)
 end
 
 local function remove_bookmark(jid, room, autojoin, name)
