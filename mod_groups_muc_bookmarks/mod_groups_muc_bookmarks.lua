@@ -17,7 +17,13 @@ local default_options = {
 
 local function get_current_bookmarks(jid, service)
 	local ok, items = service:get_items(XMLNS_BM2, jid)
-	if not ok then return nil, items; end
+	if not ok then
+		if items == "item-not-found" then
+			return {}, nil;
+		else
+			return nil, items;
+		end
+	end
 	return items or {};
 end
 
