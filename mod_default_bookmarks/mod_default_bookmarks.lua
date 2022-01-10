@@ -53,7 +53,7 @@ end
 
 if mod_bookmarks_available then
 	local mod_bookmarks = module:depends(mod_bookmarks_available);
-	if mod_bookmarks.publish_to_pep then
+	if rawget(mod_bookmarks, "publish_to_pep") then
 		local function on_bookmarks_empty(event)
 			local session = event.session;
 			local bookmarks = get_default_bookmarks(session.username);
