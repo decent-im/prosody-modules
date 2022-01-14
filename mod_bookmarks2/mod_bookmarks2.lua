@@ -24,6 +24,7 @@ if not pcall(mod_pep.check_node_config, nil, nil, default_options) then
 	-- 0.11 or earlier not supporting max_items="max" trows an error here
 	module:log("debug", "Setting max_items=pep_max_items because 'max' is not supported in this version");
 	default_options["max_items"] = module:get_option_number("pep_max_items", 256);
+	default_options["send_last_published_item"] = nil; -- not available in 0.11
 end
 
 module:hook("account-disco-info", function (event)
