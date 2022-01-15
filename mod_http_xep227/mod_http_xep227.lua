@@ -132,13 +132,15 @@ local function handle_export_227(event)
 		end
 	end
 
-	if not user_xml or not user_xml:find("host/user") then
-		module:log("warn", "No data to export: %s", tostring(user_xml));
+	local xml_data = user_xml:get_user_xml(username, session.host);
+
+	if not xml_data or not xml_data:find("host/user") then
+		module:log("warn", "No data to export: %s", tostring(xml_data));
 		return 204;
 	end
 
 	event.response.headers["Content-Type"] = "application/xml";
-	return [[<?xml version="1.0" encoding="utf-8" ?>]]..tostring(user_xml);
+	return [[<?xml version="1.0" encoding="utf-8" ?>]]..tostring(xml_data);
 end
 
 local function is_looking_like_xep227(xml_data)
