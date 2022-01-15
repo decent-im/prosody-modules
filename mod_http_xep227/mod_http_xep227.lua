@@ -72,7 +72,7 @@ local function get_config_driver(store_name, host)
 		store_name = "pep_data";
 	end
 	-- Return driver
-	return sm.get_driver(session.host, driver_store_name);
+	return sm.get_driver(host, store_name);
 end
 
 local function handle_export_227(event)
@@ -147,7 +147,7 @@ local function is_looking_like_xep227(xml_data)
 		return false;
 	end
 	-- Looks like 227, but check it has at least one host + user element
-	return not not input_xml_parsed:find("host/user");
+	return not not xml_data:find("host/user");
 end
 
 local function handle_import_227(event)
@@ -158,7 +158,7 @@ local function handle_import_227(event)
 	local input_xml_parsed = xml.parse(input_xml_raw);
 
 	-- Some sanity checks
-	if not input_xml_parsed or not is_looking_like_227(input_xml_parsed) then
+	if not input_xml_parsed or not is_looking_like_xep227(input_xml_parsed) then
 		module:log("warn", "No data to import");
 		return 422;
 	end
