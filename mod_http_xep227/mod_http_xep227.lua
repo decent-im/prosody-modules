@@ -1,6 +1,7 @@
 local it = require "util.iterators";
 local http = require "util.http";
 local sm = require "core.storagemanager";
+local st = require "util.stanza";
 local xml = require "util.xml";
 
 local tokens = module:depends("tokenauth");
@@ -20,7 +21,9 @@ local known_stores = {
 };
 
 local function new_user_xml(username, host)
-	local user_xml;
+	local user_xml = st.stanza("server-data", {xmlns='urn:xmpp:pie:0'})
+		:tag("host", { jid = host })
+			:tag("user", { name = username }):reset();
 
 	return {
 		set_user_xml = function (_, store_username, store_host, new_xml)
