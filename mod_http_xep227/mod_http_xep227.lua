@@ -184,7 +184,8 @@ local function handle_import_227(event)
 
 	local xep227_driver = sm.load_driver(session.host, "xep0227");
 
-	local selected_stores = get_selected_stores(event.request.url.query);
+	local query_params = http.formdecode(event.request.url.query or "");
+	local selected_stores = get_selected_stores(query_params);
 
 	for _, store_name in ipairs(selected_stores.keyval) do
 		-- Initialize the destination store (XEP-0227 backed)
