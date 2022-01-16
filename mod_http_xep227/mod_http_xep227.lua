@@ -253,8 +253,6 @@ local function check_auth(routes)
 		if not session then
 			event.response.headers.authorization = ("Bearer realm=%q"):format(module.host.."/"..module.name);
 			return false, 401;
-		elseif session.auth_scope ~= "prosody:scope:admin" then
-			return false, 403;
 		end
 		event.session = session;
 		return true;
