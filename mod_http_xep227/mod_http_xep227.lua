@@ -120,18 +120,24 @@ local function handle_export_227(event)
 		local source_driver = get_config_driver(store_name, session.host);
 		local source_archive = source_driver:open(store_name, "archive");
 		local dest_archive = xep227_driver:open_xep0227(store_name, "archive", user_xml);
-		local count, errs = 0, 0;
-		for id, item, when, with in source_archive:find(username) do
-			local ok, err = dest_archive:append(username, id, item, when, with);
-			if ok then
-				count = count + 1;
-			else
-				module:log("warn", "Error: %s", err);
-				errs = errs + 1;
+		local results_iter, results_err = source_archive:find(username);
+		if results_iter then
+			local count, errs = 0, 0;
+			for id, item, when, with in results_iter do
+				local ok, err = dest_archive:append(username, id, item, when, with);
+				if ok then
+					count = count + 1;
+				else
+					module:log("warn", "Error: %s", err);
+					errs = errs + 1;
+				end
+				if ( count + errs ) % 100 == 0 then
+					module:log("info", "%d items migrated, %d errors", count, errs);
+				end
 			end
-			if ( count + errs ) % 100 == 0 then
-				module:log("info", "%d items migrated, %d errors", count, errs);
-			end
+		elseif results_err then
+			module:log("warn", "Unable to read from '%s': %s", store_name, results_err);
+			return 500;
 		end
 	end
 
@@ -211,18 +217,24 @@ local function handle_import_227(event)
 		local source_archive = xep227_driver:open_xep0227(store_name, "archive", user_xml);
 		local dest_driver = get_config_driver(store_name, session.host);
 		local dest_archive = dest_driver:open(store_name, "archive");
-		local count, errs = 0, 0;
-		for id, item, when, with in source_archive:find(username) do
-			local ok, err = dest_archive:append(username, id, item, when, with);
-			if ok then
-				count = count + 1;
-			else
-				module:log("warn", "Error: %s", err);
-				errs = errs + 1;
+		local results_iter, results_err = source_archive:find(username);
+		if results_iter then
+			local count, errs = 0, 0;
+			for id, item, when, with in source_archive:find(username) do
+				local ok, err = dest_archive:append(username, id, item, when, with);
+				if ok then
+					count = count + 1;
+				else
+					module:log("warn", "Error: %s", err);
+					errs = errs + 1;
+				end
+				if ( count + errs ) % 100 == 0 then
+					module:log("info", "%d items migrated, %d errors", count, errs);
+				end
 			end
-			if ( count + errs ) % 100 == 0 then
-				module:log("info", "%d items migrated, %d errors", count, errs);
-			end
+		elseif results_err then
+			module:log("warn", "Unable to read from '%s': %s", store_name, results_err);
+			return 500;
 		end
 	end
 
