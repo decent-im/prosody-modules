@@ -205,7 +205,7 @@ local function handle_import_227(event)
 	end
 
 	if selected_stores.export_pep_data then
-		local pep_store = xep227_driver:open_xep0277("pep", nil, user_xml);
+		local pep_store = xep227_driver:open_xep0227("pep", nil, user_xml);
 		local pep_node_list = pep_store:get(session.username);
 		if pep_node_list then
 			for node_name in it.keys(pep_node_list) do
