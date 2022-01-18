@@ -67,7 +67,7 @@ if lfs.attributes("/proc/self/fd", "mode") == "directory" then
 		if has_posix then
 			local ok, soft, hard = posix.getrlimit("NOFILE")
 			if ok then
-				max_fds:set(hard)
+				max_fds:set(soft or hard);
 			end
 		end
 	end);
