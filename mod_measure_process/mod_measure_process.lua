@@ -57,6 +57,13 @@ if lfs.attributes("/proc/self/fd", "mode") == "directory" then
 		module:log("warn", "not reporting maximum number of file descriptors because mod_posix is not available")
 	end
 
+	local function limit2num(limit)
+		if limit == "unlimited" then
+			return math.huge
+		end
+		return limit
+	end
+
 	module:hook("stats-update", function ()
 		local count = 0
 		for _ in lfs.dir("/proc/self/fd") do
@@ -67,7 +74,7 @@ if lfs.attributes("/proc/self/fd", "mode") == "directory" then
 		if has_posix then
 			local ok, soft, hard = posix.getrlimit("NOFILE")
 			if ok then
-				max_fds:set(soft or hard);
+				max_fds:set(limit2num(soft or hard));
 			end
 		end
 	end);
