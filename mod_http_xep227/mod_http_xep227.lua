@@ -4,6 +4,9 @@ local sm = require "core.storagemanager";
 local st = require "util.stanza";
 local xml = require "util.xml";
 
+local jid_join = require "util.jid".join;
+
+local mod_pep = module:depends("pep");
 local tokens = module:depends("tokenauth");
 module:depends("storage_xep0227");
 
@@ -19,6 +22,8 @@ local known_stores = {
 	[archive_store_name] = "archive";
 	pep_data = "archive";
 };
+
+local xmlns_pubsub = "http://jabber.org/protocol/pubsub";
 
 local function new_user_xml(username, host)
 	local user_xml = st.stanza("server-data", {xmlns='urn:xmpp:pie:0'})
@@ -152,6 +157,111 @@ local function handle_export_227(event)
 	return [[<?xml version="1.0" encoding="utf-8" ?>]]..tostring(xml_data);
 end
 
+local function generic_keyval_importer(username, host, store_name, source_store)
+	-- Read the current data
+	local data, err = source_store:get(username);
+	if data ~= nil or not err then
+		local target_store = sm.open(host, store_name);
+		-- Transform the data and update user_xml (via the _set_user_xml callback)
+		if not target_store:set(username, data == nil and {} or data) then
+			return 500;
+		end
+		module:log("debug", "Imported data for '%s' store", store_name);
+	elseif err then
+		return nil, err;
+	else
+		module:log("debug", "No data for store '%s'", store_name);
+	end
+	return true;
+end
+
+local function generic_archive_importer(username, host, store_name, source_archive)
+	local dest_driver = get_config_driver(store_name, host);
+	local dest_archive = dest_driver:open(store_name, "archive");
+	local results_iter, results_err = source_archive:find(username);
+	if results_iter then
+		local count, errs = 0, 0;
+		for id, item, when, with in source_archive:find(username) do
+			local ok, err = dest_archive:append(username, id, item, when, with);
+			if ok then
+				count = count + 1;
+			else
+				module:log("warn", "Error: %s", err);
+				errs = errs + 1;
+			end
+			if ( count + errs ) % 100 == 0 then
+				module:log("info", "%d items migrated, %d errors", count, errs);
+			end
+		end
+	elseif results_err then
+		module:log("warn", "Unable to read from '%s': %s", store_name, results_err);
+		return nil, "error reading from source archive";
+	end
+	return true;
+end
+
+local special_keyval_importers = {};
+
+function special_keyval_importers.pep(username, host, store_name, store) --luacheck: ignore 212/store_name
+	local user_jid = jid_join(username, host);
+	local pep_service = mod_pep.get_pep_service(username);
+	local pep_nodes, store_err = store:get(username);
+	if not pep_nodes and store_err then
+		return nil, store_err;
+	end
+
+	local all_ok = true;
+	for node_name, node_config in pairs(pep_nodes) do
+		local ok, ret = pep_service:get_node_config(node_name, user_jid);
+		if not ok and ret == "item-not-found" then
+			-- Create node according to imported data
+			if node_config == true then node_config = {}; end
+			local create_ok, create_err = pep_service:create(node_name, user_jid, node_config.config);
+			if not create_ok then
+				module:log("warn", "Failed to create PEP node: %s", create_err);
+				all_ok = false;
+			end
+		end
+	end
+
+	return all_ok;
+end
+
+local special_archive_importers = setmetatable({}, {
+	__index = function (t, k)
+		if k:match("^pep_") then
+			return t.pep_data;
+		end
+	end;
+});
+
+function special_archive_importers.pep_data(username, host, store_name, source_archive)
+	local user_jid = jid_join(username, host);
+	local pep_service = mod_pep.get_pep_service(username);
+
+	local node_name = store_name:match("^pep_(.+)$");
+	if not node_name then
+		return nil, "invalid store name";
+	end
+
+	local results_iter, results_err = source_archive:find(username);
+	if results_iter then
+		local count, errs = 0, 0;
+		for id, item in source_archive:find(username) do
+			local wrapped_item = st.stanza("item", { xmlns = xmlns_pubsub, id = id })
+				:add_child(item);
+			local ok, err = pep_service:publish(node_name, user_jid, id, wrapped_item);
+			if not ok then
+				module:log("warn", "Failed to publish PEP item to '%s': %s", node_name, err, tostring(wrapped_item));
+			end
+		end
+		module:log("debug", "Imported %d PEP items (%d errors)", count, errs);
+	elseif results_err then
+		return nil, "store access error";
+	end
+	return true;
+end
+
 local function is_looking_like_xep227(xml_data)
 	if not xml_data or xml_data.name ~= "server-data"
 	or xml_data.attr.xmlns ~= "urn:xmpp:pie:0" then
@@ -187,19 +297,16 @@ local function handle_import_227(event)
 	local query_params = http.formdecode(event.request.url.query or "");
 	local selected_stores = get_selected_stores(query_params);
 
+	module:log("debug", "Importing %d keyval stores (%s)...", #selected_stores.keyval, table.concat(selected_stores.keyval, ", "));
 	for _, store_name in ipairs(selected_stores.keyval) do
+		module:log("debug", "Importing keyval store %s...", store_name);
 		-- Initialize the destination store (XEP-0227 backed)
-		local store = xep227_driver:open_xep0227(store_name, nil, user_xml);
+		local source_store = xep227_driver:open_xep0227(store_name, nil, user_xml);
 
-		-- Read the current data
-		local data, err = store:get(username);
-		if data ~= nil or not err then
-			local target_store = sm.open(session.host, store_name);
-			-- Transform the data and update user_xml (via the _set_user_xml callback)
-			if not target_store:set(username, data == nil and {} or data) then
-				return 500;
-			end
-		elseif err then
+		local importer = special_keyval_importers[store_name] or generic_keyval_importer;
+		local ok, err = importer(username, session.host, store_name, source_store);
+		if not ok then
+			module:log("warn", "Importer for keyval store '%s' encountered error: %s", store_name, err or "<no error returned>");
 			return 500;
 		end
 	end
@@ -214,27 +321,15 @@ local function handle_import_227(event)
 		end
 	end
 
+	module:log("debug", "Importing %d archive stores (%s)...", #selected_stores.archive, table.concat(selected_stores.archive, ", "));
 	for store_name in it.values(selected_stores.archive) do
+		module:log("debug", "Importing archive store %s...", store_name);
 		local source_archive = xep227_driver:open_xep0227(store_name, "archive", user_xml);
-		local dest_driver = get_config_driver(store_name, session.host);
-		local dest_archive = dest_driver:open(store_name, "archive");
-		local results_iter, results_err = source_archive:find(username);
-		if results_iter then
-			local count, errs = 0, 0;
-			for id, item, when, with in source_archive:find(username) do
-				local ok, err = dest_archive:append(username, id, item, when, with);
-				if ok then
-					count = count + 1;
-				else
-					module:log("warn", "Error: %s", err);
-					errs = errs + 1;
-				end
-				if ( count + errs ) % 100 == 0 then
-					module:log("info", "%d items migrated, %d errors", count, errs);
-				end
-			end
-		elseif results_err then
-			module:log("warn", "Unable to read from '%s': %s", store_name, results_err);
+
+		local importer = special_archive_importers[store_name] or generic_archive_importer;
+		local ok, err = importer(username, session.host, store_name, source_archive);
+		if not ok then
+			module:log("warn", "Importer for archive store '%s' encountered error: %s", err or "<no error returned>");
 			return 500;
 		end
 	end
