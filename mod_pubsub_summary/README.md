@@ -8,6 +8,6 @@ version like this:
 >
 > Lorem ipsum dolor sit amet.
 >
-> htts://blog.example.com/example-post
+> https://blog.example.com/example-post
 
 
