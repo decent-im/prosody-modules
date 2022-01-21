@@ -1,3 +1,7 @@
+---
+summary: Support for MUC vCards and avatars
+---
+
 Introduction
 ============
 
