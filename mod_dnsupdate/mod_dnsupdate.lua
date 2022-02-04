@@ -52,7 +52,7 @@ function module.command(arg)
 	end
 	local ihost = idna_to_ascii(vhost);
 	if not ihost then
-		module:log("error", "Host %q falis IDNA", vhost);
+		module:log("error", "Host %q fails IDNA", vhost);
 		return 1;
 	end
 	local is_component = config.get(vhost, "component_module");
