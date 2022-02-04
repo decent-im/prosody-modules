@@ -26,7 +26,7 @@ local translate_rss = module:require("feeds").translate_rss;
 local xmlns_atom = "http://www.w3.org/2005/Atom";
 
 local function parse_feed(data)
-	local feed, err = parse_xml(data);
+	local feed, err = parse_xml(data, { allow_processing_instructions = true; allow_comments = true });
 	if not feed then return feed, err; end
 	if feed.attr.xmlns == xmlns_atom then
 		return feed;
