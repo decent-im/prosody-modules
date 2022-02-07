@@ -52,7 +52,6 @@ module:hook_global("s2s-destroyed", function(event)
 											:text_tag("reason", err.text or "Connection to remote server lost")
 										:up()
 										:tag("status", { code = "110" }):up()
-										:tag("status", { code = "307" }):up()
 										:tag("status", { code = "333" }):up()
 									:reset());
 						end);
