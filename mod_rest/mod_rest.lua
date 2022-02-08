@@ -384,13 +384,14 @@ local function handle_request(event, path)
 	end
 end
 
+module:depends("http");
+
 local demo_handlers = {};
 if module:get_option_path("rest_demo_resources", nil) then
 	demo_handlers = module:require"apidemo";
 end
 
 -- Handle stanzas submitted via HTTP
-module:depends("http");
 module:provides("http", {
 		route = {
 			POST = handle_request;
