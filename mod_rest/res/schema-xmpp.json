@@ -535,6 +535,102 @@
             "type" : {
                "$ref" : "#/_common/type"
             },
+            "upload_request" : {
+               "properties" : {
+                  "content-type" : {
+                     "xml" : {
+                        "attribute" : true,
+                        "name" : "content-type"
+                     }
+                  },
+                  "filename" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "size" : {
+                     "type" : "integer",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "required" : [
+                  "filename",
+                  "size"
+               ],
+               "type" : "object",
+               "xml" : {
+                  "name" : "request",
+                  "namespace" : "urn:xmpp:http:upload:0"
+               }
+            },
+            "upload_slot" : {
+               "properties" : {
+                  "get" : {
+                     "properties" : {
+                        "url" : {
+                           "format" : "uri",
+                           "type" : "string",
+                           "xml" : {
+                              "attribute" : true
+                           }
+                        }
+                     },
+                     "type" : "object"
+                  },
+                  "put" : {
+                     "properties" : {
+                        "headers" : {
+                           "items" : {
+                              "properties" : {
+                                 "name" : {
+                                    "enum" : [
+                                       "Authorization",
+                                       "Cookie",
+                                       "Expires"
+                                    ],
+                                    "type" : "string",
+                                    "xml" : {
+                                       "attribute" : true
+                                    }
+                                 },
+                                 "value" : {
+                                    "type" : "string",
+                                    "xml" : {
+                                       "text" : true
+                                    }
+                                 }
+                              },
+                              "required" : [
+                                 "name",
+                                 "value"
+                              ],
+                              "type" : "object",
+                              "xml" : {
+                                 "name" : "header"
+                              }
+                           },
+                           "type" : "array"
+                        },
+                        "url" : {
+                           "format" : "uri",
+                           "type" : "string",
+                           "xml" : {
+                              "attribute" : true
+                           }
+                        }
+                     },
+                     "type" : "object"
+                  }
+               },
+               "type" : "object",
+               "xml" : {
+                  "name" : "slot",
+                  "namespace" : "urn:xmpp:http:upload:0"
+               }
+            },
             "version" : {
                "description" : "Ask about software version information",
                "properties" : {

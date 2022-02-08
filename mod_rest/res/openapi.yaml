@@ -338,6 +338,10 @@ components:
           $ref: '#/components/schemas/register'
         extdisco:
           $ref: '#/components/schemas/extdisco'
+        upload_request:
+          $ref: '#/components/schemas/upload_request'
+        upload_slot:
+          $ref: '#/components/schemas/upload_slot'
 
         error:
           $ref: '#/components/schemas/error'
@@ -1080,6 +1084,72 @@ components:
       required:
       - username
       - password
+
+    upload_slot:
+      type: object
+      xml:
+        name: slot
+        namespace: urn:xmpp:http:upload:0
+      properties:
+        put:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+              xml:
+                attribute: true
+            headers:
+              type: array
+              items:
+                type: object
+                required:
+                - name
+                - value
+                xml:
+                  name: header
+                properties:
+                  name:
+                    type: string
+                    enum:
+                    - Authorization
+                    - Cookie
+                    - Expires
+                    xml:
+                      attribute: true
+                  value:
+                    type: string
+                    xml:
+                      text: true
+        get:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+              xml:
+                attribute: true
+    upload_request:
+      type: object
+      required:
+      - filename
+      - size
+      xml:
+        name: request
+        namespace: urn:xmpp:http:upload:0
+      properties:
+        filename:
+          type: string
+          xml:
+            attribute: true
+        content-type:
+          xml:
+            attribute: true
+            name: content-type
+        size:
+          type: integer
+          xml:
+            attribute: true
 
     error:
       description: Description of something gone wrong. See the Stanza Errors section in RFC 6120.
