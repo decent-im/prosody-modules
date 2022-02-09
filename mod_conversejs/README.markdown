@@ -10,6 +10,8 @@ rockspec:
   build:
     copy_directories:
     - templates
+  dependencies:
+  - mod_bookmarks
 ---
 
 Introduction
