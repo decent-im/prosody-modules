@@ -20,6 +20,9 @@ prosody.shutdown = coroutine.wrap(function (reason, code)
 	coroutine.yield(true, "shutdown initiated");
 	-- Close c2s ports, stop accepting new connections
 	portman.deactivate("c2s");
+	portman.deactivate("legacy_ssl");
+	portman.deactivate("c2s_direct_tls");
+
 	-- Close all c2s sessions
 	for _, sess in pairs(prosody.full_sessions) do
 		sess:close{ condition = "system-shutdown", text = reason }
