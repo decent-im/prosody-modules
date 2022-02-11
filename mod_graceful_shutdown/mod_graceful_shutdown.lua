@@ -23,6 +23,11 @@ prosody.shutdown = coroutine.wrap(function (reason, code)
 	portman.deactivate("legacy_ssl");
 	portman.deactivate("c2s_direct_tls");
 
+	-- Close multiplexing ports to ensure c2s is not reachable via those either
+	portman.deactivate("multiplex");
+	portman.deactivate("multiplex_ssl");
+	portman.deactivate("proxy"); -- mod_net_proxy
+
 	-- Close all c2s sessions
 	for _, sess in pairs(prosody.full_sessions) do
 		sess:close{ condition = "system-shutdown", text = reason }
