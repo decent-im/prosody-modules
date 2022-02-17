@@ -42,6 +42,7 @@ function module.command(arg)
 		out:write("\t-l --ttl\tTTL to use\n");
 		out:write("\t--each\tremove and replace individual SRV records\n");
 		out:write("\t--reset\tremove and replace all SRV records\n");
+		out:write("\t--remove\tremove all SRV records\n");
 		return opts and opts.help and 0 or 1;
 	end
 
@@ -103,7 +104,7 @@ function module.command(arg)
 	for _, service in ipairs(services) do
 		local ports = set.new(configured_ports[service]);
 		local records = (async.wait_for(existing_srv[service]));
-		if opts.reset then
+		if opts.remove or opts.reset then
 			print(("del _%s._tcp.%s IN SRV"):format(service, ihost));
 		else
 			for _, rr in ipairs(records) do
@@ -117,7 +118,9 @@ function module.command(arg)
 				end
 			end
 		end
-		for port in ports do print(("add _%s._tcp.%s IN SRV 1 1 %d %s"):format(service, ihost, port, target)); end
+		if not opts.remove then
+			for port in ports do print(("add _%s._tcp.%s IN SRV 1 1 %d %s"):format(service, ihost, port, target)); end
+		end
 	end
 
 	print("show");
