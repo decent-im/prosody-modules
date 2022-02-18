@@ -1,4 +1,10 @@
+::: {.alert .alert-warning}
 This module is an experiment about a more graceful shutdown process.
+
+Graceful shutdown has now been implemented in Prosody trunk and will be
+part 0.12. See [issue #1225](https://issues.prosody.im/1225) for
+details.
+:::
 
 Why
 ===
