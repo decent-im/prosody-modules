@@ -5,9 +5,6 @@ local commands = module:shared("admin_shell/commands")
 
 function commands.portcheck(session, line)
 	for desc, interface, port in line:gmatch("%s(%[?([%x:.*]+)%]?:(%d+))") do
-		if interface == "*" then
-			interface = "0.0.0.0";
-		end
 		assert(portmanager.get_service_at(interface, tonumber(port)), desc);
 	end
 	session.print "OK";
