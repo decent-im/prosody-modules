@@ -20,7 +20,10 @@ Details
 
 Add to modules_enabled, there are no configuration options.
 
-Depends on luaossl which is available in Debian as `lua-luaossl` or via
+Depends on
+[luaossl](http://25thandclement.com/~william/projects/luaossl.html)
+which is available in Debian as
+[`lua-luaossl`](https://tracker.debian.org/pkg/lua-luaossl) or via
 `luarocks install luaossl`.
 
 Compatibility
