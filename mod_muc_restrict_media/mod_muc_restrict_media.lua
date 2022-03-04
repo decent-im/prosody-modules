@@ -1,6 +1,6 @@
 module:depends"muc";
 
-local restrict_by_default = not module:get_option_boolean("muc_room_default_restrict_media", true);
+local restrict_by_default = module:get_option_boolean("muc_room_default_restrict_media", true);
 
 local function should_restrict_media(room)
 	local restrict_media = room._data.restrict_media;
