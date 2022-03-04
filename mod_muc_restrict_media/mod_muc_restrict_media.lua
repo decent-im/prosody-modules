@@ -24,7 +24,7 @@ module:hook("muc-config-submitted", function(event)
 	local room, fields, changed = event.room, event.fields, event.changed;
 	local new_restrict_media = not fields["{xmpp:prosody.im}muc#roomconfig_unaffiliated_media"];
 	if new_restrict_media ~= should_restrict_media(room) then
-		if new_restrict_media == restrict_by_default(room) then
+		if new_restrict_media == restrict_by_default then
 			room._data.restrict_media = nil;
 		else
 			room._data.restrict_media = new_restrict_media;
