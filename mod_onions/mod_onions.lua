@@ -268,6 +268,9 @@ module:hook("route/remote", route_to_onion, 200);
 module:hook_global("s2s-check-certificate", function (event)
 	local host = event.host;
 	if host and host:find("%.onion$") then
+		-- This cancels the event chain without reporting any cert
+		-- validation results. The connection will typically proceed
+		-- to auth using dialback.
 		return true;
 	end
 end);
