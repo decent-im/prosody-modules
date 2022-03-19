@@ -103,7 +103,9 @@ end
 
 -- Feature requests? What could fit under account management?
 
+-- COMPAT w/0.11 (uses "user" instead of "any")
+local permission = pcall(require, "core.features") and "any" or "user";
 
 local adhoc_new = module:require "adhoc".new;
-local adhoc_passwd = adhoc_new("Change Password", "passwd", change_password_command_handler, "user");
+local adhoc_passwd = adhoc_new("Change Password", "passwd", change_password_command_handler, permission);
 module:add_item ("adhoc", adhoc_passwd);
