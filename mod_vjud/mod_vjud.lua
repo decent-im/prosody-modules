@@ -184,7 +184,7 @@ else -- if "opt-in", default
 	end
 
 	local adhoc_new = module:require "adhoc".new;
-	local adhoc_vjudsetup = adhoc_new("Search settings", "vjudsetup", opt_in_handler);--, "self");-- and nil);
+	local adhoc_vjudsetup = adhoc_new("Search settings", "vjudsetup", opt_in_handler, "any");--, "self");-- and nil);
 	module:depends"adhoc";
 	module:provides("adhoc", adhoc_vjudsetup);
 
