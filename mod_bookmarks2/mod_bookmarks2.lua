@@ -155,7 +155,12 @@ local function publish_to_pep(jid, bookmarks, synchronise)
 		if synchronise then
 			-- If we set zero legacy bookmarks, purge the bookmarks 2 node.
 			module:log("debug", "No bookmark in the set, purging instead.");
-			return service:purge(namespace, jid, true);
+			local ok, err = service:purge(namespace, jid, true);
+			if not ok and err == "item-not-found" then
+				-- Nothing there already, all is well.
+				return true;
+			end
+			return ok, err;
 		else
 			return true;
 		end
