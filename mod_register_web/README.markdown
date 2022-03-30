@@ -2,6 +2,10 @@
 labels:
 - 'Stage-Alpha'
 summary: A web interface to register user accounts
+rockspec:
+  build:
+    copy_directories:
+    - templates
 ...
 
 Introduction
