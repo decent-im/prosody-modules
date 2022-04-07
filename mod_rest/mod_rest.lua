@@ -332,8 +332,10 @@ local function handle_request(event, path)
 	local send_type = decide_type((request.headers.accept or "") ..",".. (request.headers.content_type or ""), supported_outputs)
 
 	if echo then
+		local ret, err = errors.coerce(encode(send_type, payload));
+		if not ret then return err; end
 		response.headers.content_type = send_type;
-		return encode(send_type, payload);
+		return ret;
 	end
 
 	if payload.name == "iq" then
