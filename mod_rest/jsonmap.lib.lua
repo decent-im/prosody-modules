@@ -211,26 +211,6 @@ field_mappings = {
 		end;
 	};
 
-	-- XEP-0432: Simple JSON Messaging
-	payload = { type = "func", xmlns = "urn:xmpp:json-msg:0", tagname = "payload",
-		st2json = function (s)
-			local rawjson = s:get_child_text("json", "urn:xmpp:json:0");
-			if not rawjson then return nil, "missing-json-payload"; end
-			local parsed, err = json.decode(rawjson);
-			if not parsed then return nil, err; end
-			return {
-				datatype = s.attr.datatype;
-				data = parsed;
-			};
-		end;
-		json2st = function (s)
-			if type(s) == "table" then
-				return st.stanza("payload", { xmlns = "urn:xmpp:json-msg:0", datatype = s.datatype })
-				:tag("json", { xmlns = "urn:xmpp:json:0" }):text(json.encode(s.data));
-			end;
-		end
-	};
-
 	-- XEP-0004: Data Forms
 	dataform = {
 		-- Generic and complete dataforms mapping
@@ -450,6 +430,19 @@ local function st2json(s)
 		return t;
 	end
 
+	if type(t.payload) == "table" then
+		if type(t.payload.data) == "string" then
+			local data, err = json.decode(t.payload.data);
+			if err then
+				return nil, err;
+			else
+				t.payload.data = data;
+			end
+		else
+			return nil, "invalid payload.data";
+		end
+	end
+
 	for _, tag in ipairs(s.tags) do
 		local prefix = "{" .. (tag.attr.xmlns or "jabber:client") .. "}";
 		local mapping = byxmlname[prefix .. tag.name];
@@ -534,6 +527,10 @@ local function json2st(t)
 			archive["before"] = nil;
 			archive["max"] = nil;
 		end
+	end
+
+	if type(t.payload) == "table" then
+		t.payload.data = json.encode(t.payload.data);
 	end
 
 	local s = map.unparse(schema, { [kind or "message"] = t }).tags[1];

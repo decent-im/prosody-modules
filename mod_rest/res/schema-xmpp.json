@@ -149,6 +149,28 @@
             "namespace" : "http://jabber.org/protocol/nick"
          }
       },
+      "payload" : {
+         "properties" : {
+            "data" : {
+               "format" : "json",
+               "type" : "string",
+               "xml" : {
+                  "text" : true
+               }
+            },
+            "datatype" : {
+               "type" : "string",
+               "xml" : {
+                  "attribute" : true
+               }
+            }
+         },
+         "title" : "XEP-0432: Simple JSON Messaging",
+         "type" : "object",
+         "xml" : {
+            "namespace" : "urn:xmpp:json-msg:0"
+         }
+      },
       "rsm" : {
          "properties" : {
             "after" : {
