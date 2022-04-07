@@ -552,8 +552,8 @@ local function json2st(t)
 	for k, v in pairs(t) do
 		local mapping = field_mappings[k];
 		if mapping and mapping.type == "func" and mapping.json2st then
-				s:add_child(mapping.json2st(v)):up();
-			end
+			s:add_child(mapping.json2st(v)):up();
+		end
 	end
 
 	s:reset();
