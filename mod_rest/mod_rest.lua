@@ -230,16 +230,21 @@ local function flatten(t)
 end
 
 local function encode(type, s)
-	if type == "application/json" then
-		return json.encode(jsonmap.st2json(s));
-	elseif type == "application/x-www-form-urlencoded" then
-		return http.formencode(flatten(jsonmap.st2json(s)));
-	elseif type == "application/cbor" then
-		return cbor.encode(jsonmap.st2json(s));
-	elseif type == "text/plain" then
+	if type == "text/plain" then
 		return s:get_child_text("body") or "";
+	elseif type == "application/xmpp+xml" then
+		return tostring(s);
 	end
-	return tostring(s);
+	local mapped, err = jsonmap.st2json(s);
+	if not mapped then return mapped, err; end
+	if type == "application/json" then
+		return json.encode(mapped);
+	elseif type == "application/x-www-form-urlencoded" then
+		return http.formencode(flatten(mapped));
+	elseif type == "application/cbor" then
+		return cbor.encode(mapped);
+	end
+	error "unsupported encoding";
 end
 
 local post_errors = errors.init("mod_rest", {
