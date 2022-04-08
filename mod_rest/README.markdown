@@ -130,7 +130,8 @@ Component "rest.example.net" "rest"
 rest_callback_url = "http://my-api.example:9999/stanzas"
 ```
 
-To enable JSON payloads set
+The preferred format can be indicated via the Accept header in response
+to an OPTIONS probe that mod_rest does on startup, or by configuring:
 
 ``` {.lua}
 rest_callback_content_type = "application/json"
