@@ -130,6 +130,10 @@ Component "rest.example.net" "rest"
 rest_callback_url = "http://my-api.example:9999/stanzas"
 ```
 
+The callback URL supports a few variables from the stanza being sent,
+namely `{kind}` (e.g. message, presence, iq or meta) and ones
+corresponding to stanza attributes: `{type}`, `{to}` and `{from}`.
+
 The preferred format can be indicated via the Accept header in response
 to an OPTIONS probe that mod_rest does on startup, or by configuring:
 

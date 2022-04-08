@@ -1,6 +1,6 @@
 -- RESTful API
 --
--- Copyright (c) 2019-2020 Kim Alvefur
+-- Copyright (c) 2019-2022 Kim Alvefur
 --
 -- This file is MIT/X11 licensed.
 
@@ -416,13 +416,22 @@ module:provides("http", {
 -- Forward stanzas from XMPP to HTTP and return any reply
 local rest_url = module:get_option_string("rest_callback_url", nil);
 if rest_url then
+	local function get_url() return rest_url; end
+	if rest_url:find("%b{}") then
+		local httputil = require "util.http";
+		local render_url = require"util.interpolation".new("%b{}", httputil.urlencode);
+		function get_url(stanza)
+			local at = stanza.attr;
+			return render_url(rest_url, { kind = stanza.name, type = at.type, to = at.to, from = at.from });
+		end
+	end
 	local send_type = module:get_option_string("rest_callback_content_type", "application/xmpp+xml");
 	if send_type == "json" then
 		send_type = "application/json";
 	end
 
 	module:set_status("info", "Not yet connected");
-	http.request(rest_url, {
+	http.request(get_url(st.stanza("meta", { type = "info", to = module.host, from = module.host })), {
 			method = "OPTIONS",
 		}, function (body, code, response)
 			if code == 0 then
@@ -455,7 +464,7 @@ if rest_url then
 		stanza = st.clone(stanza, true);
 
 		module:log("debug", "Sending[rest]: %s", stanza:top_tag());
-		http.request(rest_url, {
+		http.request(get_url(stanza), {
 				body = request_body,
 				headers = {
 					["Content-Type"] = send_type,
