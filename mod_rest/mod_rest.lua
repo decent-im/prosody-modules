@@ -435,13 +435,16 @@ if rest_url then
 			method = "OPTIONS",
 		}, function (body, code, response)
 			if code == 0 then
-				return module:log_status("error", "Could not connect to callback URL %q: %s", rest_url, body);
-			else
+				module:log_status("error", "Could not connect to callback URL %q: %s", rest_url, body);
+			elseif code == 200 then
 				module:set_status("info", "Connected");
-			end
-			if code == 200 and response.headers.accept then
-				send_type = decide_type(response.headers.accept, supported_outputs);
-				module:log("debug", "Set 'rest_callback_content_type' = %q based on Accept header", send_type);
+				if response.headers.accept then
+					send_type = decide_type(response.headers.accept, supported_outputs);
+					module:log("debug", "Set 'rest_callback_content_type' = %q based on Accept header", send_type);
+				end
+			else
+				module:log_status("warn", "Unexpected response code %d from OPTIONS probe", code);
+				module:log("warn", "Endpoint said: %s", body);
 			end
 		end);
 
