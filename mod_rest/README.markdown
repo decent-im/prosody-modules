@@ -169,6 +169,41 @@ Content-Length: 133
 }
 ```
 
+### Which stanzas
+
+The set of stanzas routed to the callback is determined by these two
+settings:
+
+`rest_callback_stanzas`
+:   The stanza kinds to handle, defaults to `{ "message", "presence", "iq" }`
+
+`rest_callback_events`
+:   For the selected stanza kinds, which events to handle.  When loaded
+on a Component, this defaults to `{ "bare", "full", "host" }`, while on
+a VirtualHost the default is `{ "host" }`.
+
+Events correspond to which form of address was used in the `to`
+attribute of the stanza.
+
+bare
+:   `localpart@hostpart`
+
+full
+:   `localpart@hostpart/resourcepart`
+
+host
+:   `hostpart`
+
+The following example would handle only stanzas like `<message
+to="anything@hello.example"/>`
+
+```lua
+Component "hello.example" "rest"
+rest_callback_url = "http://hello.internal.example:9003/api"
+rest_callback_stanzas = { "message" }
+rest_callback_events = { "bare" }
+```
+
 ### Replying
 
 To accept the stanza without returning a reply, respond with HTTP status

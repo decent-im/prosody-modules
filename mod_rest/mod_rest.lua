@@ -553,21 +553,19 @@ if rest_url then
 		return true;
 	end
 
-	if module:get_host_type() == "component" then
-		module:hook("iq/bare", handle_stanza, -1);
-		module:hook("message/bare", handle_stanza, -1);
-		module:hook("presence/bare", handle_stanza, -1);
-		module:hook("iq/full", handle_stanza, -1);
-		module:hook("message/full", handle_stanza, -1);
-		module:hook("presence/full", handle_stanza, -1);
-		module:hook("iq/host", handle_stanza, -1);
-		module:hook("message/host", handle_stanza, -1);
-		module:hook("presence/host", handle_stanza, -1);
-	else
-		-- Don't override everything on normal VirtualHosts
-		module:hook("iq/host", handle_stanza, -1);
-		module:hook("message/host", handle_stanza, -1);
-		module:hook("presence/host", handle_stanza, -1);
+	local send_kinds = module:get_option_set("rest_callback_stanzas", { "message", "presence", "iq" });
+
+	local event_presets = {
+		-- Don't override everything on normal VirtualHosts by default
+		["local"] = { "host" },
+		-- Comonents get to handle all kinds of stanzas
+		["component"] = { "bare", "full", "host" },
+	};
+	local hook_events = module:get_option_set("rest_callback_events", event_presets[module:get_host_type()]);
+	for kind in send_kinds do
+		for event in hook_events do
+			module:hook(kind.."/"..event, handle_stanza, -1);
+		end
 	end
 end
 
