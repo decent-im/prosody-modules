@@ -17,4 +17,4 @@ None currently.
 Compatibility
 =============
 
-Requires Prosody trunk.
+Requires Prosody 0.12+ or trunk.
