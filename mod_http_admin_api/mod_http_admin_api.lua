@@ -330,7 +330,7 @@ local function get_user_debug_info(username)
 					service = push_info.jid;
 					node = push_info.node;
 					error_count = push_errors[identifier] or 0;
-					client = push_info.client;
+					client_id = push_info.client_id;
 				};
 			end
 		end
