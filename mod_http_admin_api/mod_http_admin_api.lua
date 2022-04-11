@@ -331,6 +331,7 @@ local function get_user_debug_info(username)
 					node = push_info.node;
 					error_count = push_errors[identifier] or 0;
 					client_id = push_info.client_id;
+					encryption = not not push_info.encryption;
 				};
 			end
 		end
