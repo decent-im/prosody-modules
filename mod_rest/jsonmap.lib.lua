@@ -50,6 +50,8 @@ field_mappings = {
 				return s.attr.node or true;
 			end
 			local identities, features, extensions = array(), array(), {};
+
+			-- features and identities could be done with util.datamapper
 			for tag in s:childtags() do
 				if tag.name == "identity" and tag.attr.category and tag.attr.type then
 					identities:push({ category = tag.attr.category, type = tag.attr.type, name = tag.attr.name });
@@ -57,6 +59,8 @@ field_mappings = {
 					features:push(tag.attr.var);
 				end
 			end
+
+			-- Especially this would be hard to do with util.datamapper
 			for form in s:childtags("x", "jabber:x:data") do
 				local jform = field_mappings.formdata.st2json(form);
 				local form_type = jform["FORM_TYPE"];
@@ -65,6 +69,7 @@ field_mappings = {
 					extensions[form_type] = jform;
 				end
 			end
+
 			if next(extensions) == nil then extensions = nil; end
 			return { node = s.attr.node, identities = identities, features = features, extensions = extensions };
 		end;
