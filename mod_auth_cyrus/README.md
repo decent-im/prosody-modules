@@ -3,7 +3,7 @@ title: Cyrus SASL
 rockspec:
   build:
     modules:
-      util.sasl_cyrus: sasl_cyrus.lua
+      mod_auth_cyrus.sasl_cyrus: sasl_cyrus.lua
 ---
 
 # Introduction
