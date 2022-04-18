@@ -136,7 +136,7 @@ paths:
     get:
       tags:
       - query
-      summary: Query a message archive
+      summary: Query for external services (usually STUN and TURN)
       security:
       - basic: []
       - token: []
