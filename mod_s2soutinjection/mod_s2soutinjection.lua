@@ -2,12 +2,69 @@ local st = require"util.stanza";
 local new_ip = require"util.ip".new_ip;
 local new_outgoing = require"core.s2smanager".new_outgoing;
 local bounce_sendq = module:depends"s2s".route_to_new_session.bounce_sendq;
-local s2sout = module:depends"s2s".route_to_new_session.s2sout;
+local initialize_filters = require "util.filters".initialize;
+local st = require "util.stanza";
+
+local portmanager = require "core.portmanager";
+
+local addclient = require "net.server".addclient;
+
+module:depends("s2s");
+
+local sessions = module:shared("sessions");
 
 local injected = module:get_option("s2s_connect_overrides");
 
-local function isip(addr)
-	return not not (addr and addr:match("^%d+%.%d+%.%d+%.%d+$") or addr:match("^[%x:]*:[%x:]-:[%x:]*$"));
+-- The proxy_listener handles connection while still connecting to the proxy,
+-- then it hands them over to the normal listener (in mod_s2s)
+local proxy_listener = { default_port = port, default_mode = "*a", default_interface = "*" };
+
+function proxy_listener.onconnect(conn)
+	local session = sessions[conn];
+
+	-- Now the real s2s listener can take over the connection.
+	local listener = portmanager.get_service("s2s").listener;
+
+	local w, log = conn.send, session.log;
+
+	local filter = initialize_filters(session);
+
+	session.version = 1;
+
+	session.sends2s = function (t)
+		log("debug", "sending (s2s over proxy): %s", (t.top_tag and t:top_tag()) or t:match("^[^>]*>?"));
+		if t.name then
+			t = filter("stanzas/out", t);
+		end
+		if t then
+			t = filter("bytes/out", tostring(t));
+			if t then
+				return conn:write(tostring(t));
+			end
+		end
+	end
+
+	session.open_stream = function ()
+		session.sends2s(st.stanza("stream:stream", {
+			xmlns='jabber:server', ["xmlns:db"]='jabber:server:dialback',
+			["xmlns:stream"]='http://etherx.jabber.org/streams',
+			from=session.from_host, to=session.to_host, version='1.0', ["xml:lang"]='en'}):top_tag());
+	end
+
+	conn.setlistener(conn, listener);
+
+	listener.register_outgoing(conn, session);
+
+	listener.onconnect(conn);
+end
+
+function proxy_listener.register_outgoing(conn, session)
+	session.direction = "outgoing";
+	sessions[conn] = session;
+end
+
+function proxy_listener.ondisconnect(conn, err)
+	sessions[conn]  = nil;
 end
 
 module:hook("route/remote", function(event)
@@ -16,34 +73,18 @@ module:hook("route/remote", function(event)
 	if not inject then return end
 	log("debug", "opening a new outgoing connection for this stanza");
 	local host_session = new_outgoing(from_host, to_host);
-	host_session.version = 1;
 
 	-- Store in buffer
 	host_session.bounce_sendq = bounce_sendq;
 	host_session.sendq = { {tostring(stanza), stanza.attr.type ~= "error" and stanza.attr.type ~= "result" and st.reply(stanza)} };
 	log("debug", "stanza [%s] queued until connection complete", tostring(stanza.name));
 
-	local ip_hosts, srv_hosts = {}, {};
-	host_session.srv_hosts = srv_hosts;
-	host_session.srv_choice = 0;
+	local host, port = inject[1] or inject, tonumber(inject[2]) or 5269;
 
-	if type(inject) == "string" then inject = { inject } end
+	local conn = addclient(host, port, proxy_listener, "*a");
 
-	for _, item in ipairs(inject) do
-		local host, port = item[1] or item, tonumber(item[2]) or 5269;
-		if isip(host) then
-			ip_hosts[#ip_hosts+1] = { ip = new_ip(host), port = port }
-		else
-			srv_hosts[#srv_hosts+1] = { target = host, port = port }
-		end
-	end
-	if #ip_hosts > 0 then
-		host_session.ip_hosts = ip_hosts;
-		host_session.ip_choice = 0; -- Incremented by try_next_ip
-		s2sout.try_next_ip(host_session);
-		return true;
-	end
+	proxy_listener.register_outgoing(conn, host_session);
 
-	return s2sout.try_connect(host_session, host_session.srv_hosts[1].target, host_session.srv_hosts[1].port);
+	host_session.conn = conn;
+	return true;
 end, -2);
-

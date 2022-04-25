@@ -16,15 +16,16 @@ modules_enabled = {
     "s2soutinjection";
 }
 
+-- targets must be IPs, not hostnames
 s2s_connect_overrides = {
     -- This one will use the default port, 5269
-    ["example.com"] = "xmpp.server.local";
+    ["example.com"] = "1.2.3.4";
 
     -- To set a different port:
-    ["another.example"] = { "non-standard-port.example", 9999 };
+    ["another.example"] = { "127.0.0.1", 9999 };
 }
 ```
 
 # Compatibility
 
-Requires 0.9.x or later.
+Requires 0.9.x or later. Tested on 0.12.0
