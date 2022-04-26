@@ -2,6 +2,7 @@ module:set_global();
 
 local time_now = os.time;
 local st = require "util.stanza";
+local moduleapi = require "core.moduleapi";
 
 local host_wide_user = "@";
 
@@ -77,10 +78,8 @@ local function audit(host, user, source, event_type, extra)
 	end
 end
 
-local module_api = getmetatable(module).__index;
-
-function module_api:audit(user, event_type, extra)
-	audit(self.host, user, "mod_" .. self:get_name(), event_type, extra);
+function moduleapi.audit(module, user, event_type, extra)
+	audit(module.host, user, "mod_" .. module:get_name(), event_type, extra);
 end
 
 module:hook("audit", audit, 0);
