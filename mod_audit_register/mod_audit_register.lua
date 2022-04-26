@@ -1,4 +1,5 @@
 module:depends("audit");
+-- luacheck: read globals module.audit
 
 local st = require "util.stanza";
 

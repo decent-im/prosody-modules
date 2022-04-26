@@ -1,4 +1,5 @@
 module:depends("audit");
+-- luacheck: read globals module.audit
 
 module:hook("authentication-failure", function(event)
 	local session = event.session;

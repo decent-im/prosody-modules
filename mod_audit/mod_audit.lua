@@ -12,7 +12,7 @@ local function get_store(self, host)
 	if store then
 		return store
 	end
-	local store = module:context(host):open_store("audit", "archive");
+	store = module:context(host):open_store("audit", "archive");
 	rawset(self, host, store);
 	return store;
 end
@@ -41,14 +41,14 @@ local function audit(host, user, source, event_type, extra)
 	if not host or host == "*" then
 		error("cannot log audit events for global");
 	end
-	local user = user or host_wide_user;
+	local user_key = user or host_wide_user;
 
 	local attr = {
 		["source"] = source,
 		["type"] = event_type,
 	};
-	if user ~= host_wide_user then
-		attr.user = user;
+	if user_key ~= host_wide_user then
+		attr.user = user_key;
 	end
 	local stanza = st.stanza("audit-event", attr);
 	if extra ~= nil then
@@ -68,7 +68,7 @@ local function audit(host, user, source, event_type, extra)
 		end
 	end
 
-	local id, err = stores[host]:append(nil, nil, stanza, time_now(), user);
+	local id, err = stores[host]:append(nil, nil, stanza, time_now(), user_key);
 	if err then
 		module:log("error", "failed to persist audit event: %s", err);
 		return
