@@ -1,5 +1,8 @@
 module:set_global();
 
+local audit_log_limit = module:get_option_number("audit_log_limit", 10000);
+local cleanup_after = module:get_option_string("audit_log_expires_after", "2w");
+
 local time_now = os.time;
 local st = require "util.stanza";
 local moduleapi = require "core.moduleapi";
@@ -81,5 +84,3 @@ end
 function moduleapi.audit(module, user, event_type, extra)
 	audit(module.host, user, "mod_" .. module:get_name(), event_type, extra);
 end
-
-module:hook("audit", audit, 0);
