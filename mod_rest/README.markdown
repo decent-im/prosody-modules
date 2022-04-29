@@ -276,9 +276,6 @@ Further JSON object keys as follows:
 `status`
 :   Human-readable status message.
 
-`join`
-:   Boolean. Join a group chat.
-
 #### Info-Queries
 
 Only one type of payload can be included in an `iq`.
@@ -435,8 +432,8 @@ stanza, for full flexibility use the XML mode.
 
 ### Presence
 
-`join`
-:   Boolean, used to join group chats.
+`muc`
+:   Object with [MUC][XEP-0045] related properties.
 
 ### IQ
 

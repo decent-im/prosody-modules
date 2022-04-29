@@ -283,8 +283,8 @@ components:
         idle_since:
           $ref: '#/components/schemas/idle_since'
 
-        join:
-          $ref: '#/components/schemas/join'
+        muc:
+          $ref: '#/components/schemas/muc'
 
         error:
           $ref: '#/components/schemas/error'
@@ -510,11 +510,37 @@ components:
         namespace: urn:xmpp:message-correct:0
         x_single_attribute: id
 
-    join:
-      description: For joining Multi-User-Chats
-      type: boolean
-      enum:
-      - true
+    muc:
+      description: Multi-User-Chat related
+      type: object
+      xml:
+        name: x
+        namespace: http://jabber.org/protocol/muc
+      properties:
+        history:
+          type: object
+          properties:
+            maxchars:
+              type: integer
+              minimum: 0
+              xml:
+                attribute: true
+            maxstanzas:
+              type: integer
+              minimum: 0
+              xml:
+                attribute: true
+            seconds:
+              type: integer
+              minimum: 0
+              xml:
+                attribute: true
+            since:
+              type: string
+              format: date-time
+              xml:
+                attribute: true
+
 
     invite:
       type: object

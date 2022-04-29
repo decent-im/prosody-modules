@@ -538,6 +538,11 @@ local function json2st(t)
 		t.payload.data = json.encode(t.payload.data);
 	end
 
+	if kind == "presence" and t.join == true and t.muc == nil then
+		-- COMPAT Older boolean 'join' property used with XEP-0045
+		t.muc = {};
+	end
+
 	local s = map.unparse(schema, { [kind or "message"] = t }).tags[1];
 
 	s.attr.type = t_type;

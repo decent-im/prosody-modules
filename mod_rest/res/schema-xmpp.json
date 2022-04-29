@@ -1078,6 +1078,48 @@
             "lang" : {
                "$ref" : "#/_common/lang"
             },
+            "muc" : {
+               "properties" : {
+                  "history" : {
+                     "properties" : {
+                        "maxchars" : {
+                           "minimum" : 0,
+                           "type" : "integer",
+                           "xml" : {
+                              "attribute" : true
+                           }
+                        },
+                        "maxstanzas" : {
+                           "minimum" : 0,
+                           "type" : "integer",
+                           "xml" : {
+                              "attribute" : true
+                           }
+                        },
+                        "seconds" : {
+                           "minimum" : 0,
+                           "type" : "integer",
+                           "xml" : {
+                              "attribute" : true
+                           }
+                        },
+                        "since" : {
+                           "format" : "date-time",
+                           "type" : "string",
+                           "xml" : {
+                              "attribute" : true
+                           }
+                        }
+                     },
+                     "type" : "object"
+                  }
+               },
+               "type" : "object",
+               "xml" : {
+                  "name" : "x",
+                  "namespace" : "http://jabber.org/protocol/muc"
+               }
+            },
             "nick" : {
                "$ref" : "#/_common/nick"
             },
