@@ -255,7 +255,7 @@
                      "items" : {
                         "properties" : {
                            "expires" : {
-                              "format" : "datetime",
+                              "format" : "date-time",
                               "type" : "string",
                               "xml" : {
                                  "attribute" : true
