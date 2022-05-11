@@ -130,7 +130,12 @@ Component "rest.example.net" "rest"
 rest_callback_url = "http://my-api.example:9999/stanzas"
 ```
 
-To enable JSON payloads set
+The callback URL supports a few variables from the stanza being sent,
+namely `{kind}` (e.g. message, presence, iq or meta) and ones
+corresponding to stanza attributes: `{type}`, `{to}` and `{from}`.
+
+The preferred format can be indicated via the Accept header in response
+to an OPTIONS probe that mod_rest does on startup, or by configuring:
 
 ``` {.lua}
 rest_callback_content_type = "application/json"
@@ -162,6 +167,41 @@ Content-Length: 133
    "to" : "bot@rest.example.net",
    "type" : "chat"
 }
+```
+
+### Which stanzas
+
+The set of stanzas routed to the callback is determined by these two
+settings:
+
+`rest_callback_stanzas`
+:   The stanza kinds to handle, defaults to `{ "message", "presence", "iq" }`
+
+`rest_callback_events`
+:   For the selected stanza kinds, which events to handle.  When loaded
+on a Component, this defaults to `{ "bare", "full", "host" }`, while on
+a VirtualHost the default is `{ "host" }`.
+
+Events correspond to which form of address was used in the `to`
+attribute of the stanza.
+
+bare
+:   `localpart@hostpart`
+
+full
+:   `localpart@hostpart/resourcepart`
+
+host
+:   `hostpart`
+
+The following example would handle only stanzas like `<message
+to="anything@hello.example"/>`
+
+```lua
+Component "hello.example" "rest"
+rest_callback_url = "http://hello.internal.example:9003/api"
+rest_callback_stanzas = { "message" }
+rest_callback_events = { "bare" }
 ```
 
 ### Replying
@@ -235,9 +275,6 @@ Further JSON object keys as follows:
 
 `status`
 :   Human-readable status message.
-
-`join`
-:   Boolean. Join a group chat.
 
 #### Info-Queries
 
@@ -395,8 +432,8 @@ stanza, for full flexibility use the XML mode.
 
 ### Presence
 
-`join`
-:   Boolean, used to join group chats.
+`muc`
+:   Object with [MUC][XEP-0045] related properties.
 
 ### IQ
 

@@ -1,6 +1,6 @@
 -- RESTful API
 --
--- Copyright (c) 2019-2020 Kim Alvefur
+-- Copyright (c) 2019-2022 Kim Alvefur
 --
 -- This file is MIT/X11 licensed.
 
@@ -230,16 +230,21 @@ local function flatten(t)
 end
 
 local function encode(type, s)
-	if type == "application/json" then
-		return json.encode(jsonmap.st2json(s));
-	elseif type == "application/x-www-form-urlencoded" then
-		return http.formencode(flatten(jsonmap.st2json(s)));
-	elseif type == "application/cbor" then
-		return cbor.encode(jsonmap.st2json(s));
-	elseif type == "text/plain" then
+	if type == "text/plain" then
 		return s:get_child_text("body") or "";
+	elseif type == "application/xmpp+xml" then
+		return tostring(s);
 	end
-	return tostring(s);
+	local mapped, err = jsonmap.st2json(s);
+	if not mapped then return mapped, err; end
+	if type == "application/json" then
+		return json.encode(mapped);
+	elseif type == "application/x-www-form-urlencoded" then
+		return http.formencode(flatten(mapped));
+	elseif type == "application/cbor" then
+		return cbor.encode(mapped);
+	end
+	error "unsupported encoding";
 end
 
 local post_errors = errors.init("mod_rest", {
@@ -332,8 +337,10 @@ local function handle_request(event, path)
 	local send_type = decide_type((request.headers.accept or "") ..",".. (request.headers.content_type or ""), supported_outputs)
 
 	if echo then
+		local ret, err = errors.coerce(encode(send_type, payload));
+		if not ret then return err; end
 		response.headers.content_type = send_type;
-		return encode(send_type, payload);
+		return ret;
 	end
 
 	if payload.name == "iq" then
@@ -409,23 +416,35 @@ module:provides("http", {
 -- Forward stanzas from XMPP to HTTP and return any reply
 local rest_url = module:get_option_string("rest_callback_url", nil);
 if rest_url then
+	local function get_url() return rest_url; end
+	if rest_url:find("%b{}") then
+		local httputil = require "util.http";
+		local render_url = require"util.interpolation".new("%b{}", httputil.urlencode);
+		function get_url(stanza)
+			local at = stanza.attr;
+			return render_url(rest_url, { kind = stanza.name, type = at.type, to = at.to, from = at.from });
+		end
+	end
 	local send_type = module:get_option_string("rest_callback_content_type", "application/xmpp+xml");
 	if send_type == "json" then
 		send_type = "application/json";
 	end
 
 	module:set_status("info", "Not yet connected");
-	http.request(rest_url, {
+	http.request(get_url(st.stanza("meta", { type = "info", to = module.host, from = module.host })), {
 			method = "OPTIONS",
 		}, function (body, code, response)
 			if code == 0 then
-				return module:log_status("error", "Could not connect to callback URL %q: %s", rest_url, body);
-			else
+				module:log_status("error", "Could not connect to callback URL %q: %s", rest_url, body);
+			elseif code == 200 then
 				module:set_status("info", "Connected");
-			end
-			if code == 200 and response.headers.accept then
-				send_type = decide_type(response.headers.accept, supported_outputs);
-				module:log("debug", "Set 'rest_callback_content_type' = %q based on Accept header", send_type);
+				if response.headers.accept then
+					send_type = decide_type(response.headers.accept, supported_outputs);
+					module:log("debug", "Set 'rest_callback_content_type' = %q based on Accept header", send_type);
+				end
+			else
+				module:log_status("warn", "Unexpected response code %d from OPTIONS probe", code);
+				module:log("warn", "Endpoint said: %s", body);
 			end
 		end);
 
@@ -448,7 +467,7 @@ if rest_url then
 		stanza = st.clone(stanza, true);
 
 		module:log("debug", "Sending[rest]: %s", stanza:top_tag());
-		http.request(rest_url, {
+		http.request(get_url(stanza), {
 				body = request_body,
 				headers = {
 					["Content-Type"] = send_type,
@@ -534,21 +553,19 @@ if rest_url then
 		return true;
 	end
 
-	if module:get_host_type() == "component" then
-		module:hook("iq/bare", handle_stanza, -1);
-		module:hook("message/bare", handle_stanza, -1);
-		module:hook("presence/bare", handle_stanza, -1);
-		module:hook("iq/full", handle_stanza, -1);
-		module:hook("message/full", handle_stanza, -1);
-		module:hook("presence/full", handle_stanza, -1);
-		module:hook("iq/host", handle_stanza, -1);
-		module:hook("message/host", handle_stanza, -1);
-		module:hook("presence/host", handle_stanza, -1);
-	else
-		-- Don't override everything on normal VirtualHosts
-		module:hook("iq/host", handle_stanza, -1);
-		module:hook("message/host", handle_stanza, -1);
-		module:hook("presence/host", handle_stanza, -1);
+	local send_kinds = module:get_option_set("rest_callback_stanzas", { "message", "presence", "iq" });
+
+	local event_presets = {
+		-- Don't override everything on normal VirtualHosts by default
+		["local"] = { "host" },
+		-- Comonents get to handle all kinds of stanzas
+		["component"] = { "bare", "full", "host" },
+	};
+	local hook_events = module:get_option_set("rest_callback_events", event_presets[module:get_host_type()]);
+	for kind in send_kinds do
+		for event in hook_events do
+			module:hook(kind.."/"..event, handle_stanza, -1);
+		end
 	end
 end
 

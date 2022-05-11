@@ -1,5 +1,5 @@
 -- mod_conversejs
--- Copyright (C) 2017 Kim Alvefur
+-- Copyright (C) 2017-2022 Kim Alvefur
 
 local json_encode = require"util.json".encode;
 local xml_escape = require "util.stanza".xml_escape;

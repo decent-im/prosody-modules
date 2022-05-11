@@ -11,7 +11,12 @@ _M.resources = http_files.serve({
 	});
 
 local index do
-	local f = assert(io.open(api_demo.."/index.html"), "'rest_demo_resources' should point to the 'dist' directory");
+	local f, err = io.open(api_demo.."/index.html");
+	if not f then
+		module:log("error", "Could not open resource: %s", err);
+		module:log("error", "'rest_demo_resources' should point to the 'dist' directory");
+		return _M
+	end
 	index = f:read("*a");
 	f:close();
 

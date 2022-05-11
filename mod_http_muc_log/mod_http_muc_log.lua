@@ -275,6 +275,10 @@ local function logs_page(event, path)
 	local request, response = event.request, event.response;
 
 	local room, date = path:match("^([^/]+)/([^/]*)/?$");
+	if not room then
+		response.headers.location = url.build({ path = path .. "/" });
+		return 303;
+	end
 	room = nodeprep(room);
 	if not room then
 		return 400;

@@ -50,6 +50,8 @@ field_mappings = {
 				return s.attr.node or true;
 			end
 			local identities, features, extensions = array(), array(), {};
+
+			-- features and identities could be done with util.datamapper
 			for tag in s:childtags() do
 				if tag.name == "identity" and tag.attr.category and tag.attr.type then
 					identities:push({ category = tag.attr.category, type = tag.attr.type, name = tag.attr.name });
@@ -57,6 +59,8 @@ field_mappings = {
 					features:push(tag.attr.var);
 				end
 			end
+
+			-- Especially this would be hard to do with util.datamapper
 			for form in s:childtags("x", "jabber:x:data") do
 				local jform = field_mappings.formdata.st2json(form);
 				local form_type = jform["FORM_TYPE"];
@@ -65,6 +69,7 @@ field_mappings = {
 					extensions[form_type] = jform;
 				end
 			end
+
 			if next(extensions) == nil then extensions = nil; end
 			return { node = s.attr.node, identities = identities, features = features, extensions = extensions };
 		end;
@@ -209,26 +214,6 @@ field_mappings = {
 				return st.stanza("x", { xmlns = "jabber:x:oob" }):text_tag("url", s);
 			end
 		end;
-	};
-
-	-- XEP-0432: Simple JSON Messaging
-	payload = { type = "func", xmlns = "urn:xmpp:json-msg:0", tagname = "payload",
-		st2json = function (s)
-			local rawjson = s:get_child_text("json", "urn:xmpp:json:0");
-			if not rawjson then return nil, "missing-json-payload"; end
-			local parsed, err = json.decode(rawjson);
-			if not parsed then return nil, err; end
-			return {
-				datatype = s.attr.datatype;
-				data = parsed;
-			};
-		end;
-		json2st = function (s)
-			if type(s) == "table" then
-				return st.stanza("payload", { xmlns = "urn:xmpp:json-msg:0", datatype = s.datatype })
-				:tag("json", { xmlns = "urn:xmpp:json:0" }):text(json.encode(s.data));
-			end;
-		end
 	};
 
 	-- XEP-0004: Data Forms
@@ -450,6 +435,19 @@ local function st2json(s)
 		return t;
 	end
 
+	if type(t.payload) == "table" then
+		if type(t.payload.data) == "string" then
+			local data, err = json.decode(t.payload.data);
+			if err then
+				return nil, err;
+			else
+				t.payload.data = data;
+			end
+		else
+			return nil, "invalid payload.data";
+		end
+	end
+
 	for _, tag in ipairs(s.tags) do
 		local prefix = "{" .. (tag.attr.xmlns or "jabber:client") .. "}";
 		local mapping = byxmlname[prefix .. tag.name];
@@ -536,6 +534,15 @@ local function json2st(t)
 		end
 	end
 
+	if type(t.payload) == "table" then
+		t.payload.data = json.encode(t.payload.data);
+	end
+
+	if kind == "presence" and t.join == true and t.muc == nil then
+		-- COMPAT Older boolean 'join' property used with XEP-0045
+		t.muc = {};
+	end
+
 	local s = map.unparse(schema, { [kind or "message"] = t }).tags[1];
 
 	s.attr.type = t_type;
@@ -552,8 +559,8 @@ local function json2st(t)
 	for k, v in pairs(t) do
 		local mapping = field_mappings[k];
 		if mapping and mapping.type == "func" and mapping.json2st then
-				s:add_child(mapping.json2st(v)):up();
-			end
+			s:add_child(mapping.json2st(v)):up();
+		end
 	end
 
 	s:reset();

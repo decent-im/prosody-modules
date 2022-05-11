@@ -19,7 +19,7 @@ local host_fqdn = module:get_option("cyrus_server_fqdn");
 
 prosody.unlock_globals(); --FIXME: Figure out why this is needed and
 						  -- why cyrussasl isn't caught by the sandbox
-local cyrus_new = require "util.sasl_cyrus".new;
+local cyrus_new = module:require "sasl_cyrus".new;
 prosody.lock_globals();
 local new_sasl = function(realm)
 	return cyrus_new(
