@@ -24,6 +24,7 @@ local s_match, s_gmatch = string.match, string.gmatch
 local t_concat = table.concat;
 local m_random = math.random;
 local tostring, tonumber = tostring, tonumber;
+local unpack = table.unpack or unpack;
 
 local socket = require "socket"
 
