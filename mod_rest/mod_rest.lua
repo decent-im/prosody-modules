@@ -389,6 +389,10 @@ local function handle_request(event, path)
 			function (result)
 				module:log("debug", "Sending[rest]: %s", result.stanza:top_tag());
 				response.headers.content_type = send_type;
+				local tail = responses[#responses];
+				if tail.name ~= "iq" or tail.attr.from ~= result.stanza.attr.from or tail.attr.id ~= result.stanza.attr.id then
+					origin.send(result.stanza);
+				end
 				if responses[2] then
 					return encode(send_type, responses);
 				end
