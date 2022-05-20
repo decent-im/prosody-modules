@@ -8,7 +8,7 @@ module:set_global();
 
 -- Imports
 local softreq = require "util.dependencies".softreq;
-local bit = assert(softreq "bit" or softreq "bit32", "No bit module found. See https://prosody.im/doc/depends#bitop");
+local bit = assert(softreq "bit" or softreq "bit32" or softreq "util.bitcompat", "No bit module found. See https://prosody.im/doc/depends#bitop");
 local hex = require "util.hex";
 local ip = require "util.ip";
 local net = require "util.net";
