@@ -8,6 +8,12 @@ function reload_all()
 		return;
 	end
 	local configured_modules = module:get_option_inherited_set("modules_enabled", {});
+	local component_module = module:get_option_string("component_module");
+	if component_module then
+		-- Ensure awareness of the component module so that it is not unloaded
+		configured_modules:add(component_module);
+	end
+
 	-- ignore removed hosts
 	if not prosody.hosts[module.host] then
 		module:log("warn", "Ignoring host %s: host was removed...", module.host);
