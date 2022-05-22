@@ -15,5 +15,6 @@ module:hook("muc-occupant-joined", function (event)
 		local reserved_nick = jid.resource(occupant.nick);
 		module:log("debug", "Automatically reserving nickname '%s' for <%s>", reserved_nick, user_jid);
 		room:set_affiliation_data(user_jid, "reserved_nickname", reserved_nick);
+		room._reserved_nicks = nil; -- force refresh of nickname map
 	end
 end);
