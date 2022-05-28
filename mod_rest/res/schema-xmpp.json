@@ -735,6 +735,15 @@
                   "namespace" : "urn:xmpp:chat-markers:0"
                }
             },
+            "encryption" : {
+               "title" : "XEP-0380: Explicit Message Encryption",
+               "type" : "string",
+               "xml" : {
+                  "name" : "encryption",
+                  "namespace" : "urn:xmpp:eme:0",
+                  "x_single_attribute" : "namespace"
+               }
+            },
             "fallback" : {
                "title" : "XEP-0428: Fallback Indication",
                "type" : "boolean",

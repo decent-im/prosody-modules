@@ -17,6 +17,6 @@ Compatibility
 =============
 
   ------- ------------------
-  trunk   Works
+  0.12    Built-in, not needed
   0.11    Works; except in MUC-PMs
   ------- ------------------

@@ -68,6 +68,20 @@ if module:get_option_string("authentication") == "anonymous" and module:get_opti
 	end
 end
 
+local function event_suffix(jid_to)
+	local node, _, resource = jid.split(jid_to);
+	if node then
+		if resource then
+			return '/full';
+		else
+			return '/bare';
+		end
+	else
+		return '/host';
+	end
+end
+
+
 -- TODO This ought to be handled some way other than duplicating this
 -- core.stanza_router code here.
 local function compat_preevents(origin, stanza) --> boolean : handled
@@ -356,10 +370,31 @@ local function handle_request(event, path)
 			return post_errors.new("iq_tags");
 		end
 
-		return module:send_iq(payload, origin):next(
+		-- special handling of multiple responses to MAM queries primarily from
+		-- remote hosts, local go directly to origin.send()
+		local archive_event_name = "message"..event_suffix(from);
+		local archive_handler;
+		local archive_query = payload:get_child("query", "urn:xmpp:mam:2");
+		if archive_query then
+			archive_handler = function(result_event)
+				if result_event.stanza:find("{urn:xmpp:mam:2}result/@queryid") == archive_query.attr.queryid then
+					origin.send(result_event.stanza);
+					return true;
+				end
+			end
+			module:hook(archive_event_name, archive_handler, 1);
+		end
+
+		local p = module:send_iq(payload, origin):next(
 			function (result)
 				module:log("debug", "Sending[rest]: %s", result.stanza:top_tag());
 				response.headers.content_type = send_type;
+				if responses[1] then
+					local tail = responses[#responses];
+					if tail.name ~= "iq" or tail.attr.from ~= result.stanza.attr.from or tail.attr.id ~= result.stanza.attr.id then
+						origin.send(result.stanza);
+					end
+				end
 				if responses[2] then
 					return encode(send_type, responses);
 				end
@@ -377,6 +412,14 @@ local function handle_request(event, path)
 					return error;
 				end
 			end);
+
+		if archive_handler then
+			p:finally(function ()
+				module:unhook(archive_event_name, archive_handler);
+			end)
+		end
+
+		return p;
 	else
 		function origin.send(stanza)
 			module:log("debug", "Sending[rest]: %s", stanza:top_tag());

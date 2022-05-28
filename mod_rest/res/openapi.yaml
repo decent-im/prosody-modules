@@ -151,6 +151,58 @@ paths:
         '200':
           $ref: '#/components/responses/success'
 
+
+  /rest/archive/{to}:
+    get:
+      tags:
+      - query
+      summary: Query a message archive
+      security:
+      - basic: []
+      - token: []
+      parameters:
+      - $ref: '#/components/parameters/to'
+      - name: with
+        in: query
+        schema:
+          type: string
+      - name: start
+        in: query
+        schema:
+          type: string
+      - name: end
+        in: query
+        schema:
+          type: string
+      - name: before-id
+        in: query
+        schema:
+          type: string
+      - name: after-id
+        in: query
+        schema:
+          type: string
+      - name: ids
+        in: query
+        schema:
+          type: string
+        description: comma-separated list of archive ids
+      - name: after
+        in: query
+        schema:
+          type: string
+      - name: before
+        in: query
+        schema:
+          type: string
+      - name: max
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
 components:
   schemas:
     stanza:

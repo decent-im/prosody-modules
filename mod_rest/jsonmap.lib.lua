@@ -506,6 +506,13 @@ local function json2st(t)
 		local archive = t.archive;
 		if archive["with"] or archive["start"] or archive["end"] or archive["before-id"] or archive["after-id"]
 			or archive["ids"] then
+			if type(archive["ids"]) == "string" then
+				local ids = {};
+				for id in archive["ids"]:gmatch("[^,]+") do
+					table.insert(ids, id);
+				end
+				archive["ids"] = ids;
+			end
 			archive.form = {
 				type = "submit";
 				fields = {

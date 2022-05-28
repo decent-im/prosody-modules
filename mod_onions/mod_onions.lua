@@ -10,10 +10,7 @@ local portmanager = require "core.portmanager";
 
 local softreq = require "util.dependencies".softreq;
 
-local bit;
-pcall(function() bit = require"bit"; end);
-bit = bit or softreq"bit32"
-if not bit then module:log("error", "No bit module found. Either LuaJIT 2, lua-bitop or Lua 5.2 is required"); end
+local bit = assert(softreq "bit" or softreq "bit32" or softreq "util.bitcompat", "No bit module found. See https://prosody.im/doc/depends#bitop");
 
 local band = bit.band;
 local rshift = bit.rshift;
