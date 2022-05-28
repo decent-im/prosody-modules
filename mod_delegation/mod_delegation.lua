@@ -170,6 +170,20 @@ module:hook('presence/initial', on_presence)
 local managing_ent_error
 local stanza_cache = {} -- we cache original stanza to build reply
 
+local function clean_xmlns(node)
+    -- Recursively remove "jabber:client" attribute from node.
+    -- In Prosody internal routing, xmlns should not be set.
+    -- Keeping xmlns would lead to issues like mod_smacks ignoring the outgoing stanza,
+    -- so we remove all xmlns attributes with a value of "jabber:client"
+    -- note: this function comes from mod_privilege
+    if node.attr.xmlns == 'jabber:client' then
+        for childnode in node:childtags() do
+            clean_xmlns(childnode)
+        end
+        node.attr.xmlns = nil
+    end
+end
+
 local function managing_ent_result(event)
 	-- this function manage iq results from the managing entity
 	-- it do a couple of security check before sending the
@@ -209,7 +223,7 @@ local function managing_ent_result(event)
 		return true
 	end
 
-	iq.attr.xmlns = nil
+	clean_xmlns(iq)
 
 	local original = stanza_cache[stanza.attr.from][stanza.attr.id]
 	stanza_cache[stanza.attr.from][stanza.attr.id] = nil
