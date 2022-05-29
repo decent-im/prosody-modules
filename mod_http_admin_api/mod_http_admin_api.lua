@@ -225,6 +225,9 @@ local function get_session_debug_info(session)
 	-- Smacks queue
 	if session.last_requested_h and session.last_acknowledged_stanza then
 		info.queues.awaiting_acks = session.last_requested_h - session.last_acknowledged_stanza;
+	elseif session.outgoing_stanza_queue then
+		-- New mod_smacks
+		info.queues.awaiting_acks = session.outgoing_stanza_queue:count_unacked();
 	end
 	if session.push_identifier then
 		info.push_info = {
