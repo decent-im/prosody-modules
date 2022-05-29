@@ -305,6 +305,7 @@ local function handle_request(event, path)
 		end
 		from = jid.join(origin.username, origin.host, origin.resource);
 		origin.type = "c2s";
+		origin.log = module._log;
 	end
 	local payload, err = parse_request(request, path);
 	if not payload then
