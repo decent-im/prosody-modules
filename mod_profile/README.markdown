@@ -1,7 +1,8 @@
 ---
 labels:
-- 'Stage-Unmaintained'
+- 'Stage-Obsolete'
 summary: 'Replacement for mod\_vcard with vcard4 support and PEP integration'
+superseded_by: mod_vcard_legacy
 ---
 
 ::: {.alert .alert-warning}
