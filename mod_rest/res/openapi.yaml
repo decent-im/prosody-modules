@@ -284,6 +284,8 @@ components:
           $ref: '#/components/schemas/markable'
         displayed:
           $ref: '#/components/schemas/displayed'
+        encryption:
+          $ref: '#/components/schemas/encryption'
 
         error:
           $ref: '#/components/schemas/error'
@@ -802,6 +804,70 @@ components:
           example: urn:example:my-json#payload
           type: string
 
+    rsm:
+      title: 'XEP-0059: Result Set Management'
+      xml:
+        name: set
+        namespace: http://jabber.org/protocol/rsm
+      type: object
+      properties:
+        last:
+          type: string
+        max:
+          type: integer
+        index:
+          type: integer
+        count:
+          type: integer
+        before:
+          type: string
+        after:
+          type: string
+        first:
+          type: string
+
+    archive_query:
+      title: 'XEP-0313: Message Archive Management'
+      type: object
+      properties:
+        queryid:
+          xml:
+            attribute: true
+          type: string
+        page:
+          $ref: '#/components/schemas/rsm'
+        form:
+          $ref: '#/components/schemas/dataform'
+      xml:
+        name: query
+        namespace: urn:xmpp:mam:2
+
+    archive_result:
+      title: 'XEP-0313: Message Archive Management'
+      xml:
+        namespace: urn:xmpp:mam:2
+        name: result
+      type: object
+      properties:
+        queryid:
+          type: string
+          xml:
+            attribute: true
+        forward:
+          $ref: '#/components/schemas/forwarded'
+
+    forwarded:
+      title: 'XEP-0297: Stanza Forwarding'
+      xml:
+        name: forwarded
+        namespace: urn:xmpp:forward:0
+      type: object
+      properties:
+        message:
+          $ref: '#/components/schemas/message'
+        delay:
+          $ref: '#/components/schemas/delay'
+
     dataform:
       description: Data form
       type: object
@@ -1230,6 +1296,14 @@ components:
           type: integer
           xml:
             attribute: true
+
+    encryption:
+      title: 'XEP-0380: Explicit Message Encryption'
+      type: string
+      xml:
+        x_single_attribute: namespace
+        name: encryption
+        namespace: urn:xmpp:eme:0
 
     error:
       description: Description of something gone wrong. See the Stanza Errors section in RFC 6120.
