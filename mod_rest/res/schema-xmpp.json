@@ -701,6 +701,7 @@
                      }
                   }
                },
+               "title" : "XEP-0313: Message Archive Management",
                "type" : "object",
                "xml" : {
                   "name" : "result",

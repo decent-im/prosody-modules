@@ -595,8 +595,9 @@ components:
 
 
     invite:
-      type: object
       description: Invite to a group chat
+      title: "XEP-0249: Direct MUC Invitations"
+      type: object
       required:
       - jid
       xml:
@@ -784,6 +785,7 @@ components:
           type: string
 
     payload:
+      title: 'XEP-0335: JSON Containers'
       description: A piece of arbitrary JSON with a type field attached
       type: object
       xml:
