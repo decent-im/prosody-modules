@@ -1,3 +1,10 @@
+---
+labels:
+- 'Stage-Obsolete'
+superseded_by: mod_muc
+summary: XEP-0410 Server Optimization (now supported by Prosody mod_muc)
+---
+
 This module implements the [Server
 Optimization](https://xmpp.org/extensions/xep-0410.html#serveroptimization)
 part of [XEP-0410: MUC Self-Ping]
