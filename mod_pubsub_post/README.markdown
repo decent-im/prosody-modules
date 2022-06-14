@@ -92,10 +92,8 @@ affiliation with the _publish_ capability, usually `"publisher"`.
 ### Setting up affiliations
 
 Prosodys PubSub module supports [setting affiliations via
-XMPP](https://xmpp.org/extensions/xep-0060.html#owner-affiliations), in
-trunk since [revision
-384ef9732b81](https://hg.prosody.im/trunk/rev/384ef9732b81), so
-affiliations can be configured with a capable client.
+XMPP](https://xmpp.org/extensions/xep-0060.html#owner-affiliations),
+since 0.11.0, so affiliations can be configured with a capable client.
 
 It can however be done from another plugin:
 
@@ -109,7 +107,7 @@ pubsub:set_affiliation("princely_musings", true, "127.0.0.1", "publisher");
 
 ## Data mappings
 
-The datamapper library added in trunk allows posting JSON and having it
+The datamapper library added in 0.12.0 allows posting JSON and having it
 converted to XML based on a special JSON Schema.
 
 ``` json
