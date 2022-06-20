@@ -63,6 +63,7 @@ end
 module:hook("muc-occupant-groupchat", function (event)
 	local stanza = event.stanza;
 	if stanza.attr.type ~= "groupchat" then return; end
+	if event.room:get_affiliation(stanza.attr.from) then return end
 	if should_restrict_media(event.room) then
 		stanza:maptags(filter_media_tags);
 	end
