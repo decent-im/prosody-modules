@@ -368,6 +368,30 @@ local function logs_page(event, path)
 			end
 		end
 
+		local reactions = item:get_child("reactions", "urn:xmpp:reactions:0");
+		if reactions then
+			-- COMPAT Movim uses an @to attribute instead of the correct @id
+			local target_id = reactions.attr.id or reactions.attr.to;
+			for n = i - 1, 1, -1 do
+				if not logs[n] then
+					break -- Probably reached logs[0]
+				elseif logs[n].key == target_id then
+					local react_map = logs[n].reactions; -- { string : integer }
+					if not react_map then
+						react_map = {};
+						logs[n].reactions = react_map;
+					end
+					for reaction_tag in reactions:childtags("reaction") do
+						-- FIXME This doesn't replace previous reactions by the same user
+						-- on the same message.
+						local reaction_text = reaction_tag:get_text() or "�";
+						react_map[reaction_text] = (react_map[reaction_text] or 0) + 1;
+					end
+					break
+				end
+			end
+		end
+
 		if body or verb or oob then
 			local line = {
 				id = item.attr.id,
