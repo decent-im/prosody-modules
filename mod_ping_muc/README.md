@@ -33,4 +33,4 @@ modules_enabled = {
 
 # Compatibility
 
-Requires prosody **trunk**
+Requires Prosody 0.12.x or trunk
