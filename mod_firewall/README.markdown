@@ -364,10 +364,10 @@ These conditions access the roster of the recipient (only). Therefore they canno
 be used in some [chains](#chains), such as for outgoing messages (the recipient may be on another server).
 
 Performance note: these checks can potentially cause storage access (especially if the recipient
-is currently offline), so you may want to limit its use in high-traffic situations, and place rules
+is currently offline), so you may want to limit their use in high-traffic situations, and place rules
 containing a roster check below other rules (such as a rate limiter). The storage access is
-performed unconditionally before the first rule that contains a roster-based condition, even if earlier
-conditions in that rule do not match.
+performed unconditionally just before evaluation of the first rule that contains a roster-based
+condition, even if earlier conditions in that rule do not match.
 
 #### IN ROSTER
 
