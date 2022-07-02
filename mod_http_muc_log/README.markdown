@@ -103,6 +103,6 @@ http_muc_log_list_order = {
 Compatibility
 =============
 
-Requires Prosody 0.10 or above and a storage backend with support for
+Requires Prosody 0.11 or later and a storage backend with support for
 stanza archives. See [mod\_storage\_muc\_log] for using legacy data from
 [mod\_muc\_log].

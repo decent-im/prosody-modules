@@ -2,7 +2,6 @@ local mt = require"util.multitable";
 local datetime = require"util.datetime";
 local jid_split = require"util.jid".split;
 local nodeprep = require"util.encodings".stringprep.nodeprep;
-local it = require"util.iterators";
 local url = require"socket.url";
 local os_time, os_date = os.time, os.date;
 local httplib = require "util.http";
@@ -11,18 +10,10 @@ local render = require"util.interpolation".new("%b{}", require"util.stanza".xml_
 
 local archive = module:open_store("muc_log", "archive");
 
--- Support both old and new MUC code
+-- Prosody 0.11+ MUC API
 local mod_muc = module:depends"muc";
-local rooms = rawget(mod_muc, "rooms");
-local each_room = rawget(mod_muc, "each_room") or function() return it.values(rooms); end;
-local new_muc = not rooms;
-if new_muc then
-	rooms = module:shared"muc/rooms";
-end
-local get_room_from_jid = rawget(mod_muc, "get_room_from_jid") or
-	function (jid)
-		return rooms[jid];
-	end
+local each_room = mod_muc.each_room;
+local get_room_from_jid = mod_muc.get_room_from_jid;
 
 local function get_room(name)
 	local jid = name .. '@' .. module.host;
