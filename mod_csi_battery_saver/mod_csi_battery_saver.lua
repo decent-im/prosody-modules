@@ -106,6 +106,7 @@ local function is_important(stanza, session)
 
 		-- XEP-0353: Jingle Message Initiation incoming call messages
 		if stanza:child_with_ns("urn:xmpp:jingle-message:0") then return true; end
+		if stanza:child_with_ns("urn:xmpp:jingle-message:1") then return true; end
 
 		-- carbon copied outgoing messages are important (some clients update their notifications upon receiving those) --> don't return false here
 		--if carbon and stanza_direction == "out" then return false; end
