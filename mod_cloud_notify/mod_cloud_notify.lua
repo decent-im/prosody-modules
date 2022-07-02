@@ -11,6 +11,7 @@ local dataform = require"util.dataforms".new;
 local hashes = require"util.hashes";
 local random = require"util.random";
 local cache = require"util.cache";
+local watchdog = require "util.watchdog";
 
 local xmlns_push = "urn:xmpp:push:0";
 
@@ -20,6 +21,7 @@ local include_sender = module:get_option_boolean("push_notification_with_sender"
 local max_push_errors = module:get_option_number("push_max_errors", 16);
 local max_push_devices = module:get_option_number("push_max_devices", 5);
 local dummy_body = module:get_option_string("push_notification_important_body", "New Message!");
+local extended_hibernation_timeout = module:get_option_number("push_max_hibernation_timeout", 72*24*3600);		-- use same timeout like ejabberd
 
 local host_sessions = prosody.hosts[module.host].sessions;
 local push_errors = module:shared("push_errors");
@@ -98,6 +100,12 @@ function handle_push_error(event)
 								session.push_identifier = nil;
 								session.push_settings = nil;
 								session.first_hibernated_push = nil;
+								-- check for prosody 0.12 mod_smacks
+								if session.hibernating_watchdog and session.original_smacks_callback and session.original_smacks_timeout then
+									-- restore old smacks watchdog
+									session.hibernating_watchdog:cancel();
+									session.hibernating_watchdog = watchdog.new(session.original_smacks_timeout, session.original_smacks_callback);
+								end
 							end
 						end
 					end
@@ -230,6 +238,12 @@ local function push_disable(event)
 				origin.push_identifier = nil;
 				origin.push_settings = nil;
 				origin.first_hibernated_push = nil;
+				-- check for prosody 0.12 mod_smacks
+				if session.hibernating_watchdog and session.original_smacks_callback and session.original_smacks_timeout then
+					-- restore old smacks watchdog
+					session.hibernating_watchdog:cancel();
+					session.hibernating_watchdog = watchdog.new(session.original_smacks_timeout, session.original_smacks_callback);
+				end
 			end
 			user_push_services[key] = nil;
 			push_errors[key] = nil;
@@ -446,6 +460,12 @@ local function process_stanza_queue(queue, session, queue_type)
 						-- timeout based on the value of session.first_hibernated_push
 						if not dummy_body or (dummy_body and is_important(stanza)) then
 							session.first_hibernated_push = os_time();
+							-- check for prosody 0.12 mod_smacks
+							if session.hibernating_watchdog and session.original_smacks_callback and session.original_smacks_timeout then
+								-- restore old smacks watchdog (--> the start of our original timeout will be delayed until first push)
+								session.hibernating_watchdog:cancel();
+								session.hibernating_watchdog = watchdog.new(session.original_smacks_timeout, session.original_smacks_callback);
+							end
 						end
 					end
 					session.log("debug", "Cloud handle_notify_request() > 0, not notifying for other %s queued stanzas of type %s", queue_type, stanza_type);
@@ -494,6 +514,20 @@ local function hibernate_session(event)
 	local session = event.origin;
 	local queue = event.queue;
 	session.first_hibernated_push = nil;
+	if session.hibernating_watchdog then		-- check for prosody 0.12 mod_smacks
+		-- save old watchdog callback and timeout
+		session.original_smacks_callback = session.hibernating_watchdog.callback;
+		session.original_smacks_timeout = session.hibernating_watchdog.timeout;
+		-- cancel old watchdog and create a new watchdog with extended timeout
+		session.hibernating_watchdog:cancel();
+		session.hibernating_watchdog = watchdog.new(extended_hibernation_timeout, function()
+			session.log("debug", "Push-extended smacks watchdog triggered");
+			if session.original_smacks_callback then
+				session.log("debug", "Calling original smacks watchdog handler");
+				session.original_smacks_callback();
+			end
+		end);
+	end
 	-- process unacked stanzas
 	process_stanza_queue(queue, session, "smacks");
 end
@@ -507,6 +541,7 @@ local function restore_session(event)
 			session.awaiting_push_timer = nil;
 		end
 		session.first_hibernated_push = nil;
+		-- the extended smacks watchdog will be canceled by the smacks module, no need to anything here
 	end
 end
 
@@ -594,8 +629,14 @@ function module.unload()
 		for _, session in pairs(host_sessions[user].sessions) do
 			if session.awaiting_push_timer then session.awaiting_push_timer:stop(); end
 			session.awaiting_push_timer = nil;
-			session.first_hibernated_push = nil;
 			session.push_queue = nil;
+			session.first_hibernated_push = nil;
+			-- check for prosody 0.12 mod_smacks
+			if session.hibernating_watchdog and session.original_smacks_callback and session.original_smacks_timeout then
+				-- restore old smacks watchdog
+				session.hibernating_watchdog:cancel();
+				session.hibernating_watchdog = watchdog.new(session.original_smacks_timeout, session.original_smacks_callback);
+			end
 		end
 	end
 	module:log("info", "Module unloaded");

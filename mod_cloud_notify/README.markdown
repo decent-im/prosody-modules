@@ -55,6 +55,7 @@ Configuration
   `push_max_errors`                    `16`              How much persistent push errors are tolerated before notifications for the identifier in question are disabled
   `push_notification_important_body`   `New Message!`    The body text to use when the stanza is important (see above), no message body is sent if this is empty
   `push_max_devices`                   `5`               The number of allowed devices per user (the oldest devices are automatically removed if this threshold is reached)
+  `push_max_hibernation_timeout`       `6220800`         Number of seconds to extend the smacks timeout if no push was triggered yet (default: 72 hours)
 
 There are privacy implications for enabling these options because
 plaintext content and metadata will be shared with centralized servers
@@ -75,6 +76,7 @@ Compatibility
 
 ------ -----------------------------------------------------------------------------
   trunk  Works
+  0.12   Works
   0.11   Works
   0.10   Works
   0.9    Support dropped, use last supported version [675726ab06d3](//hg.prosody.im/prosody-modules/raw-file/675726ab06d3/mod_cloud_notify/mod_cloud_notify.lua)
