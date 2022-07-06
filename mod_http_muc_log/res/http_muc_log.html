@@ -48,6 +48,7 @@ li:hover .time{opacity:1;}
 form{text-align:right}
 li.edited{display:none}
 li:target{outline:1px gray dotted;display:inherit}
+figure img{max-height:9em;max-width:16em}
 @media (prefers-color-scheme: dark) {
 html{color:#eee}
 body{background-color:#161616}
@@ -115,7 +116,7 @@ td{color:#444}
 <em class="verb">{item.verb?}</em>
 <q class="body">{item.edited&<del>}{item.body?}{item.edited&</del> <a href="#{item.edited}">&#9998;</a>}{item.edit& <a href="#{item.edit}">&#9999;</a>}</q>
 {item.reactions%<span class="reaction">{idx} {item}</span>}
-{item.oob.url&<figure><a rel="nofollow" href="{item.oob.url?}"><img style="max-height:9em;max-width:16em" alt="{item.oob.desc?}" src="{item.oob.url?}"/></a><figcaption>{item.oob.desc?}</figcaption></figure>}
+{item.oob.url&<figure><a rel="nofollow" href="{item.oob.url?}"><img alt="{item.oob.desc?}" src="{item.oob.url?}"/></a><figcaption>{item.oob.desc?}</figcaption></figure>}
 </li>}
 </ol>
 </main>
