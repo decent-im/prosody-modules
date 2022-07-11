@@ -1,4 +1,4 @@
-local pack = require "util.table".pack;
+local pack = table.pack or require "util.table".pack;
 local json = require "util.json";
 local array = require "util.array";
 local datetime = require "util.datetime".datetime;
