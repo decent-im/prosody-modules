@@ -49,11 +49,15 @@ local function check_credentials(request)
 		end
 		return { username = username, host = module.host };
 	elseif auth_type == "Bearer" then
-		local token_info = tokens.get_token_info(auth_data);
-		if not token_info or not token_info.session then
-			return false;
+		if tokens.get_token_session then
+			return tokens.get_token_session(auth_data);
+		else -- COMPAT w/0.12
+			local token_info = tokens.get_token_info(auth_data);
+			if not token_info or not token_info.session then
+				return false;
+			end
+			return token_info.session;
 		end
-		return token_info.session;
 	end
 	return nil;
 end
