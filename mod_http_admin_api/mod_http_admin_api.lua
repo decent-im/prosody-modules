@@ -33,14 +33,12 @@ local function check_credentials(request)
 	end
 
 	if auth_type == "Bearer" then
-		local token_info = tokens.get_token_info(auth_data);
-		if not token_info or not token_info.session then
-			return false;
-		end
-		return token_info.session;
+		return tokens.get_token_session(auth_data);
 	end
 	return nil;
 end
+
+module:default_permission("prosody:admin", ":access-admin-api");
 
 function check_auth(routes)
 	local function check_request_auth(event)
@@ -48,10 +46,11 @@ function check_auth(routes)
 		if not session then
 			event.response.headers.authorization = www_authenticate_header;
 			return false, 401;
-		elseif session.auth_scope ~= "prosody:scope:admin" then
-			return false, 403;
 		end
 		event.session = session;
+		if not module:may(":access-admin-api", event) then
+			return false, 403;
+		end
 		return true;
 	end
 
@@ -179,15 +178,10 @@ local function get_user_info(username)
 		end
 	end
 
-	local roles = nil;
-	if usermanager.get_roles then
-		local roles_map = usermanager.get_roles(username.."@"..module.host, module.host)
-		roles = array()
-		if roles_map then
-			for role in pairs(roles_map) do
-				roles:push(role)
-			end
-		end
+	local roles = array();
+	local roles_map = usermanager.get_user_roles(username, module.host);
+	for role_name in pairs(roles_map) do
+		roles:push(role_name);
 	end
 
 	return {
@@ -416,7 +410,7 @@ function update_user(event, username)
 	end
 
 	if new_user.roles then
-		if not usermanager.set_roles then
+		if not usermanager.set_user_roles then
 			return 500, "feature-not-implemented"
 		end
 
@@ -425,7 +419,7 @@ function update_user(event, username)
 			backend_roles[role] = true;
 		end
 		local jid = username.."@"..module.host;
-		if not usermanager.set_roles(jid, module.host, backend_roles) then
+		if not usermanager.set_user_roles(username, module.host, backend_roles) then
 			module:log("error", "failed to set roles %q for %s", backend_roles, jid)
 			return 500
 		end
