@@ -14,13 +14,21 @@ local tokens = module:depends("tokenauth");
 
 local clients = module:open_store("oauth2_clients", "map");
 
-local function filter_scopes(request_jid, requested_scope_string) --luacheck: ignore 212/requested_scope_string
-	-- We currently don't really support scopes, so override
-	-- to whatever real permissions the user has
-	if usermanager.is_admin(request_jid, module.host) then
-		return "prosody:scope:admin";
+local function filter_scopes(username, host, requested_scope_string)
+	if host ~= module.host then
+		return usermanager.get_jid_role(username.."@"..host, module.host).name;
 	end
-	return "prosody:scope:default";
+
+	if requested_scope_string then -- Specific role requested
+		-- TODO: The requested scope string is technically a space-delimited list
+		-- of scopes, but for simplicity we're mapping this slot to role names.
+		local user_roles = usermanager.get_user_roles(username, module.host);
+		if user_roles[requested_scope_string] then
+			return requested_scope_string;
+		end
+	end
+
+	return usermanager.get_user_default_role(username, module.host).name;
 end
 
 local function code_expires_in(code)
@@ -81,7 +89,7 @@ function grant_type_handlers.password(params)
 	end
 
 	local granted_jid = jid.join(request_username, request_host, request_resource);
-	local granted_scopes = filter_scopes(granted_jid, params.scope);
+	local granted_scopes = filter_scopes(request_username, request_host, params.scope);
 	return json.encode(new_access_token(granted_jid, granted_scopes, nil));
 end
 
@@ -99,7 +107,7 @@ function response_type_handlers.code(params, granted_jid)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	local granted_scopes = filter_scopes(granted_jid, params.scope);
+	local granted_scopes = filter_scopes(client_owner, client_host, params.scope);
 
 	local code = uuid.generate();
 	local ok = codes:set(params.client_id .. "#" .. code, {
