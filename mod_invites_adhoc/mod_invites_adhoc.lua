@@ -13,8 +13,18 @@ local allow_user_invites = module:get_option_boolean("allow_user_invites", false
 -- on the server, use the option above instead.
 local allow_contact_invites = module:get_option_boolean("allow_contact_invites", true);
 
+-- These options are deprecated since module:may()
 local allow_user_invite_roles = module:get_option_set("allow_user_invites_by_roles");
 local deny_user_invite_roles = module:get_option_set("deny_user_invites_by_roles");
+
+if module.may then
+	if allow_user_invites then
+		module:default_permission("prosody:user", ":invite-new-users");
+	end
+	if not allow_user_invite_roles:empty() or not deny_user_invite_roles:empty() then
+		return error("allow_user_invites_by_roles and deny_user_invites_by_roles are deprecated options");
+	end
+end
 
 local invites;
 if prosody.shutdown then -- COMPAT hack to detect prosodyctl
@@ -42,8 +52,10 @@ local invite_result_form = dataforms.new({
 
 -- This is for checking if the specified JID may create invites
 -- that allow people to register accounts on this host.
-local function may_invite_new_users(jid)
-	if usermanager.get_roles then
+local function may_invite_new_users(jid, context)
+	if module.may then
+		return module:may(":invite-new-users", context);
+	elseif usermanager.get_roles then -- COMPAT w/0.12
 		local user_roles = usermanager.get_roles(jid, module.host);
 		if not user_roles then return; end
 		if user_roles["prosody:admin"] then
@@ -87,7 +99,7 @@ module:provides("adhoc", new_adhoc("Create new contact invite", "urn:xmpp:invite
 					};
 				};
 			end
-			local invite = invites.create_contact(username, may_invite_new_users(data.from), {
+			local invite = invites.create_contact(username, may_invite_new_users(data.from, data), {
 				source = data.from
 			});
 			--TODO: check errors
