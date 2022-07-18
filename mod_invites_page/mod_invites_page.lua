@@ -33,7 +33,11 @@ if not external_only then
 	-- Load HTTP-serving dependencies
 	if prosody.shutdown then -- not if running under prosodyctl
 		module:depends("http");
-		http_files = module:depends("http_files");
+		if not pcall(function ()
+			http_files = require "net.http.files";
+		end) then
+			http_files = module:depends"http_files";
+		end
 	end
 	-- Calculate automatic base_url default
 	base_url = module.http_url and module:http_url();

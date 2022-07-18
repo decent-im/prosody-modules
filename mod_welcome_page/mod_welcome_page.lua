@@ -61,7 +61,14 @@ local function handle_submit(event)
 	return 303;
 end
 
-local http_files = module:depends("http_files");
+local http_files
+if not pcall(function()
+	-- Prosody >= 0.12
+	http_files = require "net.http.files";
+end) then
+	-- Prosody <= 0.11
+	http_files = module:depends "http_files";
+end
 
 module:provides("http", {
 	default_path = "/";
