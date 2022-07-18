@@ -29,11 +29,11 @@ local serve_dist = nil;
 local resources = module:get_option_path("conversejs_resources");
 if resources then
 	local serve;
-	if not pcall(function()
+	if prosody.process_type == "prosody" then
 		-- Prosody >= trunk / 0.12
 		local http_files = require "net.http.files";
 		serve = http_files.serve;
-	end) then
+	else
 		-- Prosody <= 0.11
 		serve = module:depends "http_files".serve;
 	end

@@ -62,10 +62,10 @@ local function handle_submit(event)
 end
 
 local http_files
-if not pcall(function()
+if prosody.process_type == "prosody" then
 	-- Prosody >= 0.12
 	http_files = require "net.http.files";
-end) then
+else
 	-- Prosody <= 0.11
 	http_files = module:depends "http_files";
 end

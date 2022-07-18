@@ -4,10 +4,10 @@ local mime_map = module:shared("/*/http_files/mime").types or {
 };
 
 local serve;
-if not pcall(function ()
+if prosody.process_type == "prosody" then
 	local http_files = require "net.http.files";
 	serve = http_files.serve;
-end) then
+else
 	serve = module:depends"http_files".serve;
 end
 

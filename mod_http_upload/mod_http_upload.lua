@@ -57,9 +57,9 @@ end
 
 local http_files;
 
-if not pcall(function ()
+if prosody.process_type == "prosody" then
 	http_files = require "net.http.files";
-end) then
+else
 	http_files = module:depends"http_files";
 end
 

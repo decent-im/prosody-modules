@@ -13,10 +13,10 @@ local invite_storage = module:open_store();
 local inviter_storage = module:open_store("inviter");
 
 local serve;
-if not pcall(function ()
+if prosody.process_type == "prosody" then
 	local http_files = require "net.http.files";
 	serve = http_files.serve;
-end) then
+else
 	serve = module:depends"http_files".serve;
 end
 
