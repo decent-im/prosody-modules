@@ -1,4 +1,4 @@
-Addmodule:set_global();
+module:set_global();
 
 local http = require "net.http";
 local codes = require "net.http.codes";
