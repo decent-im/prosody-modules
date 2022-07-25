@@ -80,6 +80,9 @@ if mod_bookmarks_available then
 			end
 			local service = mod_pep.get_pep_service(session.username);
 			local bookmarks = module:get_option_array("default_bookmarks");
+			if not bookmarks or #bookmarks == 0 then
+				return;
+			end
 			local ns = event.version or "urn:xmpp:bookmarks:1";
 			for i, bookmark in ipairs(bookmarks) do
 				local bm_jid = jid.prep(bookmark.jid);
