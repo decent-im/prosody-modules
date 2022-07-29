@@ -85,6 +85,9 @@ if mod_bookmarks_available then
 			end
 			local ns = event.version or "urn:xmpp:bookmarks:1";
 			for i, bookmark in ipairs(bookmarks) do
+				if type(bookmark) ~= "table" then -- assume it's only a jid
+					bookmark = { jid = bookmark, name = jid.split(bookmark) };
+				end
 				local bm_jid = jid.prep(bookmark.jid);
 				if not bm_jid then
 					module:log("error", "Invalid JID in default_bookmarks[%d].jid = %q", i, bookmark.jid);
