@@ -239,10 +239,10 @@ local function push_disable(event)
 				origin.push_settings = nil;
 				origin.first_hibernated_push = nil;
 				-- check for prosody 0.12 mod_smacks
-				if session.hibernating_watchdog and session.original_smacks_callback and session.original_smacks_timeout then
+				if origin.hibernating_watchdog and origin.original_smacks_callback and origin.original_smacks_timeout then
 					-- restore old smacks watchdog
-					session.hibernating_watchdog:cancel();
-					session.hibernating_watchdog = watchdog.new(session.original_smacks_timeout, session.original_smacks_callback);
+					origin.hibernating_watchdog:cancel();
+					origin.hibernating_watchdog = watchdog.new(origin.original_smacks_timeout, origin.original_smacks_callback);
 				end
 			end
 			user_push_services[key] = nil;
