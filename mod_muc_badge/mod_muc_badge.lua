@@ -23,6 +23,7 @@
 module:depends"http";
 
 local jid_prep = require "util.jid".prep;
+local jid_split = require "util.jid".split;
 
 -- Support both old and new MUC code
 local mod_muc = module:depends"muc";
@@ -76,7 +77,7 @@ module:provides("http", {
 			for _ in pairs(room._occupants) do
 				count = count + 1;
 			end
-			local badge_label = (" %s "):format(room:get_name());
+			local badge_label = (" %s "):format(room:get_name() or jid_split(jid));
 			local badge_count = (" %s "):format(string.format(number, count));
 
 			local response = event.response;
