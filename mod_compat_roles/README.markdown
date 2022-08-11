@@ -1,8 +1,8 @@
 ---
 labels:
 - Stage-Alpha
-summary: 'Compatibility layer for Prosody's future roles API'
-...
+summary: Compatibility layer for Prosody's future roles API
+---
 
 Introduction
 ============
