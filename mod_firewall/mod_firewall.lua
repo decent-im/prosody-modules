@@ -6,6 +6,9 @@ local logger = require "util.logger".init;
 local it = require "util.iterators";
 local set = require "util.set";
 
+local have_features, features = pcall(require, "core.features");
+features = have_features and features.available or set.new();
+
 -- [definition_type] = definition_factory(param)
 local definitions = module:shared("definitions");
 
@@ -181,7 +184,8 @@ local available_deps = {
 	group_contains = {
 		global_code = [[local group_contains = module:depends("groups").group_contains]];
 	};
-	is_admin = { global_code = [[local is_admin = require "core.usermanager".is_admin;]]};
+	is_admin = features:contains("permissions") and { global_code = [[local is_admin = require "core.usermanager".is_admin;]]} or nil;
+	get_jid_role = require "core.usermanager".get_jid_role and { global_code = [[local get_jid_role = require "core.usermanager".get_jid_role;]] } or nil;
 	core_post_stanza = { global_code = [[local core_post_stanza = prosody.core_post_stanza;]] };
 	zone = { global_code = function (zone)
 		local var = zone;
