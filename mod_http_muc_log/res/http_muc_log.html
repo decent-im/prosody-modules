@@ -114,7 +114,7 @@ td{color:#444}
 <a class="time" href="#{item.key}"><time id="{item.time}" datetime="{item.datetime}">{item.time}</time></a>
 <b class="nick">{item.nick}</b>
 <em class="verb">{item.verb?}</em>
-<q class="body">{item.edited&<del>}{item.body?}{item.edited&</del> <a href="#{item.edited}" title="jump to corrected version">&#9998;</a>}{item.edit& <a href="#{item.edit}" title="jump to previous version">&#9999;</a>}</q>
+<q class="body">{item.edited&<del>}{item.body?}{item.edited&</del> <a href="#{item.edited}" title="jump to corrected version">&#9998;</a>}{item.edit& <a href="#{item.edit}" title="jump to previous version">&#9999;</a>}{item.reply& <a href="#{item.reply}" title="jump to message responded to">&#8634;</a>}</q>
 {item.reactions%<span class="reaction">{idx} {item}</span>}
 {item.oob.url&<figure><a rel="nofollow" href="{item.oob.url?}"><img alt="{item.oob.desc?}" src="{item.oob.url?}"/></a><figcaption>{item.oob.desc?}</figcaption></figure>}
 </li>}

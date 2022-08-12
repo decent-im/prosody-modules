@@ -388,6 +388,9 @@ local function logs_page(event, path)
 			end
 		end
 
+		-- XEP-0461: Message Replies
+		local reply = item:get_child("reply", "urn:xmpp:reply:0");
+
 		if body or verb or oob then
 			local line = {
 				id = item.attr.id,
@@ -401,6 +404,7 @@ local function logs_page(event, path)
 				st_name = item.name;
 				st_type = item.attr.type;
 				edit = edit;
+				reply = reply and reply.attr.id;
 			};
 			if oob then
 				line.oob = {
