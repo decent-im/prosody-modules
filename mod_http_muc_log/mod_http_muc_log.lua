@@ -323,8 +323,11 @@ local function logs_page(event, path)
 		end
 
 		local nick = select(3, jid_split(item.attr.from));
+
+		-- XEP-0066: Out of Band Data
 		local oob = use_oob and item:get_child("x", "jabber:x:oob");
 
+		-- XEP-0425: Message Moderation
 		local moderated = item:get_child("moderated", "urn:xmpp:message-moderate:0");
 		if moderated then
 			local actor = moderated.attr.by;
@@ -340,6 +343,7 @@ local function logs_page(event, path)
 			body = moderation:get_child_text("reason") or "";
 		end
 
+		-- XEP-0308: Last Message Correction
 		local edit = item:find("{urn:xmpp:message-correct:0}replace/@id");
 		if edit then
 			local found = false;
@@ -359,6 +363,7 @@ local function logs_page(event, path)
 			end
 		end
 
+		-- XEP-0444: Message Reactions
 		local reactions = item:get_child("reactions", "urn:xmpp:reactions:0");
 		if reactions then
 			-- COMPAT Movim uses an @to attribute instead of the correct @id
