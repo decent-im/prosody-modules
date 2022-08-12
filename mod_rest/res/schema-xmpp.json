@@ -942,6 +942,29 @@
                   "x_single_attribute" : "id"
                }
             },
+            "reply" : {
+               "description" : "Reference a message being replied to",
+               "properties" : {
+                  "id" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
+                  "to" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  }
+               },
+               "title" : "XEP-0461: Message Replies",
+               "type" : "object",
+               "xml" : {
+                  "name" : "reply",
+                  "namespace" : "urn:xmpp:reply:0"
+               }
+            },
             "rsm" : {
                "$ref" : "#/_common/rsm"
             },
