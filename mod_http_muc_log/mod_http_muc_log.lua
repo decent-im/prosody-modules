@@ -326,6 +326,7 @@ local function logs_page(event, path)
 		end
 
 		local nick = select(3, jid_split(item.attr.from));
+		local occupant_id = item:find("{urn:xmpp:occupant-id:0}occupant-id@id") or nick;
 
 		-- XEP-0066: Out of Band Data
 		local oob = use_oob and item:get_child("x", "jabber:x:oob");
@@ -351,7 +352,7 @@ local function logs_page(event, path)
 		if edit then
 			local found = false;
 			for n = i-1, 1, -1 do
-				if logs[n].message_id == edit and nick == logs[n].nick then
+				if logs[n].message_id == edit and occupant_id == logs[n].occupant_id then
 					found = true;
 					logs[n].edited = archive_id;
 					edit = logs[n].archive_id;
@@ -394,6 +395,7 @@ local function logs_page(event, path)
 			local line = {
 				message_id = message_id;
 				archive_id = archive_id;
+				occupant_id = occupant_id;
 				datetime = datetime.datetime(when);
 				time = datetime.time(when);
 				verb = verb;
