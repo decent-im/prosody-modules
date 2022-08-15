@@ -305,7 +305,7 @@ local function logs_page(event, path)
 	end
 
 	local first, last;
-	for key, item, when in iter do
+	for archive_id, item, when in iter do
 		local body_tag = item:get_child("body");
 		local body = body_tag and body_tag:get_text();
 		local subject = item:get_child_text("subject");
@@ -348,10 +348,10 @@ local function logs_page(event, path)
 		if edit then
 			local found = false;
 			for n = i-1, 1, -1 do
-				if logs[n].id == edit and nick == logs[n].nick then
+				if logs[n].message_id == edit and nick == logs[n].nick then
 					found = true;
-					logs[n].edited = key;
-					edit = logs[n].key;
+					logs[n].edited = archive_id;
+					edit = logs[n].archive_id;
 					break;
 				end
 			end
@@ -367,7 +367,7 @@ local function logs_page(event, path)
 			-- COMPAT Movim uses an @to attribute instead of the correct @id
 			local target_id = reactions.attr.id or reactions.attr.to;
 			for n = i - 1, 1, -1 do
-				if logs[n].key == target_id then
+				if logs[n].archive_id == target_id then
 					local react_map = logs[n].reactions; -- { string : integer }
 					if not react_map then
 						react_map = {};
@@ -389,8 +389,8 @@ local function logs_page(event, path)
 
 		if body or verb or oob then
 			local line = {
-				id = item.attr.id,
-				key = key;
+				message_id = item.attr.id;
+				archive_id = archive_id;
 				datetime = datetime.datetime(when);
 				time = datetime.time(when);
 				verb = verb;
@@ -401,6 +401,8 @@ local function logs_page(event, path)
 				st_type = item.attr.type;
 				edit = edit;
 				reply = reply and reply.attr.id;
+				-- COMPAT
+				key = archive_id;
 			};
 			if oob then
 				line.oob = {
@@ -411,8 +413,8 @@ local function logs_page(event, path)
 			logs[i], i = line, i + 1;
 		end
 
-		first = first or key;
-		last = key;
+		first = first or archive_id;
+		last = archive_id;
 	end
 	if i == 1 and not lazy then return end -- No items
 

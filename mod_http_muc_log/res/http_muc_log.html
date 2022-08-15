@@ -110,8 +110,8 @@ td{color:#444}
 </div>
 
 <ol class="chat-logs">{lines#
-<li {item.lang&lang="{item.lang}"} class="{item.st_name} {item.st_type?} {item.edited&edited}" id="{item.key}">
-<a class="time" href="#{item.key}"><time id="{item.time}" datetime="{item.datetime}">{item.time}</time></a>
+<li {item.lang&lang="{item.lang}"} class="{item.st_name} {item.st_type?} {item.edited&edited}" id="{item.archive_id}">
+<a class="time" href="#{item.archive_id}"><time id="{item.time}" datetime="{item.datetime}">{item.time}</time></a>
 <b class="nick">{item.nick}</b>
 <em class="verb">{item.verb?}</em>
 <q class="body">{item.edited&<del>}{item.body?}{item.edited&</del> <a href="#{item.edited}" title="jump to corrected version">&#9998;</a>}{item.edit& <a href="#{item.edit}" title="jump to previous version">&#9999;</a>}{item.reply& <a href="#{item.reply}" title="jump to message responded to">&#8634;</a>}</q>
