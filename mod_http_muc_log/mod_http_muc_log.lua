@@ -312,6 +312,9 @@ local function logs_page(event, path)
 		local verb = nil;
 		local lang = body_tag and body_tag.attr["xml:lang"] or item.attr["xml:lang"];
 
+		-- XEP-0359: Unique and Stable Stanza IDs
+		local message_id = item:find("{urn:xmpp:sid:0}origin-id@id") or item.attr.id;
+
 		if subject then
 			verb, body = "set the topic to", subject;
 		elseif body and body:sub(1,4) == "/me " then
@@ -389,7 +392,7 @@ local function logs_page(event, path)
 
 		if body or verb or oob then
 			local line = {
-				message_id = item.attr.id;
+				message_id = message_id;
 				archive_id = archive_id;
 				datetime = datetime.datetime(when);
 				time = datetime.time(when);
