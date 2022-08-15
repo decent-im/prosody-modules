@@ -1,6 +1,5 @@
 local jid = require "util.jid";
-local jid_bare, jid_split = jid.bare, jid.split;
-local is_admin = require "core.usermanager".is_admin;
+local jid_bare, jid_host = jid.bare, jid.host;
 local set = require "util.set";
 local st = require "util.stanza";
 
@@ -10,10 +9,14 @@ local jid_types = set.new{"bare", "full", "host"};
 local except_domains = module:get_option_inherited_set("isolate_except_domains", {});
 local except_users = module:get_option_inherited_set("isolate_except_users", {});
 
+if not module.may then
+	module:depends("compat_roles");
+end
+
 function check_stanza(event)
 	local origin, stanza = event.origin, event.stanza;
 	if origin.no_host_isolation then return; end
-	local to_user, to_host = jid_split(event.stanza.attr.to);
+	local to_host = jid_host(event.stanza.attr.to);
 	if to_host and to_host ~= origin.host and not except_domains:contains(to_host) then
 		if to_host:match("^[^.]+%.(.+)$") == origin.host then -- Permit subdomains
 			except_domains:add(to_host);
@@ -31,10 +34,12 @@ for stanza_type in stanza_types do
 	end
 end
 
+module:default_permission("prosody:admin", "xmpp:federate");
+
 function check_user_isolated(event)
 	local session = event.session;
 	local bare_jid = jid_bare(session.full_jid);
-	if is_admin(bare_jid, module.host) or except_users:contains(bare_jid) then
+	if module:may("xmpp:federate") or except_users:contains(bare_jid) then
 		session.no_host_isolation = true;
 	end
 	module:log("debug", "%s is %sisolated", session.full_jid or "[?]", session.no_host_isolation and "" or "not ");
