@@ -389,7 +389,7 @@ local function logs_page(event, path)
 		end
 
 		-- XEP-0461: Message Replies
-		local reply = item:get_child("reply", "urn:xmpp:reply:0");
+		local reply = item:find("{urn:xmpp:reply:0}reply@id");
 
 		if body or verb or oob then
 			local line = {
@@ -405,7 +405,7 @@ local function logs_page(event, path)
 				st_name = item.name;
 				st_type = item.attr.type;
 				edit = edit;
-				reply = reply and reply.attr.id;
+				reply = reply;
 				-- COMPAT
 				key = archive_id;
 			};
