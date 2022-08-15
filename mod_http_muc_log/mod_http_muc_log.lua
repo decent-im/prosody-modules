@@ -348,9 +348,7 @@ local function logs_page(event, path)
 		if edit then
 			local found = false;
 			for n = i-1, 1, -1 do
-				if not logs[n] then
-					break; -- Probably reached logs[0]
-				elseif logs[n].id == edit and nick == logs[n].nick then
+				if logs[n].id == edit and nick == logs[n].nick then
 					found = true;
 					logs[n].edited = key;
 					edit = logs[n].key;
@@ -369,9 +367,7 @@ local function logs_page(event, path)
 			-- COMPAT Movim uses an @to attribute instead of the correct @id
 			local target_id = reactions.attr.id or reactions.attr.to;
 			for n = i - 1, 1, -1 do
-				if not logs[n] then
-					break -- Probably reached logs[0]
-				elseif logs[n].key == target_id then
+				if logs[n].key == target_id then
 					local react_map = logs[n].reactions; -- { string : integer }
 					if not react_map then
 						react_map = {};
