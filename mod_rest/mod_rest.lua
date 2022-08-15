@@ -262,17 +262,17 @@ local function encode(type, s)
 end
 
 local post_errors = errors.init("mod_rest", {
-	noauthz = { code = 401, type = "auth", condition = "not-authorized", text = "No credentials provided" },
-	unauthz = { code = 403, type = "auth", condition = "not-authorized", text = "Credentials not accepted" },
-	parse = { code = 400, condition = "not-well-formed", text = "Failed to parse payload", },
-	xmlns = { code = 422, condition = "invalid-namespace", text = "'xmlns' attribute must be empty", },
-	name = { code = 422, condition = "unsupported-stanza-type", text = "Invalid stanza, must be 'message', 'presence' or 'iq'.", },
-	to = { code = 422, condition = "improper-addressing", text = "Invalid destination JID", },
-	from = { code = 422, condition = "invalid-from", text = "Invalid source JID", },
-	from_auth = { code = 403, condition = "not-authorized", text = "Not authorized to send stanza with requested 'from'", },
-	iq_type = { code = 422, condition = "invalid-xml", text = "'iq' stanza must be of type 'get' or 'set'", },
-	iq_tags = { code = 422, condition = "bad-format", text = "'iq' stanza must have exactly one child tag", },
-	mediatype = { code = 415, condition = "bad-format", text = "Unsupported media type" },
+	noauthz = { code = 401; type = "auth"; condition = "not-authorized"; text = "No credentials provided" };
+	unauthz = { code = 403; type = "auth"; condition = "not-authorized"; text = "Credentials not accepted" };
+	parse = { code = 400; type = "modify"; condition = "not-well-formed"; text = "Failed to parse payload" };
+	xmlns = { code = 422; type = "modify"; condition = "invalid-namespace"; text = "'xmlns' attribute must be empty" };
+	name = { code = 422; type = "modify"; condition = "unsupported-stanza-type"; text = "Invalid stanza, must be 'message', 'presence' or 'iq'." };
+	to = { code = 422; type = "modify"; condition = "improper-addressing"; text = "Invalid destination JID" };
+	from = { code = 422; type = "modify"; condition = "invalid-from"; text = "Invalid source JID" };
+	from_auth = { code = 403; type = "auth"; condition = "not-authorized"; text = "Not authorized to send stanza with requested 'from'" };
+	iq_type = { code = 422; type = "modify"; condition = "invalid-xml"; text = "'iq' stanza must be of type 'get' or 'set'" };
+	iq_tags = { code = 422; type = "modify"; condition = "bad-format"; text = "'iq' stanza must have exactly one child tag" };
+	mediatype = { code = 415; type = "cancel"; condition = "bad-format"; text = "Unsupported media type" };
 });
 
 -- GET → iq-get
