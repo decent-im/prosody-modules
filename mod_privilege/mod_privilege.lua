@@ -393,11 +393,17 @@ module:hook("message/host", function(event)
             and privilege_elt.tags[1].attr.xmlns==_FORWARDED_NS then
             local message_elt = privilege_elt.tags[1]:get_child('message', 'jabber:client')
             if message_elt ~= nil then
-                local _, from_host, from_resource = jid.split(message_elt.attr.from)
+                local username, from_host, from_resource = jid.split(message_elt.attr.from)
                 if from_resource == nil and hosts[from_host] then -- we only accept bare jids from one of the server hosts
                     clean_xmlns(message_elt);  -- needed do to proper routing
+                    local session = {
+                        username = username;
+                        host = from_host;
+                        type = "c2s";
+                        log = module._log;
+                    }
                     -- at this point everything should be alright, we can send the message
-                    prosody.core_route_stanza(nil, message_elt)
+                    prosody.core_post_stanza(session, message_elt, true)
                 else -- trying to send a message from a forbidden entity
                     module:log("warn", "Entity "..tostring(session.full_jid).." try to send a message from "..tostring(message_elt.attr.from))
                     session.send(st.error_reply(stanza, 'auth', 'forbidden'))
@@ -618,17 +624,6 @@ module:hook("iq/bare/".._PRIV_ENT_NS..":privileged_iq", function(event)
 
     wrapped_iq.attr.from = stanza.attr.to
 
-    if wrapped_iq.attr.to == nil then
-        session.send(
-            st.error_reply(
-                stanza,
-                "auth",
-                "forbidden",
-                'wrapped <IQ> "to" attribute is missing'
-            )
-        )
-        return true
-    end
 
     if wrapped_iq.attr.type ~= iq_type then
         session.send(
@@ -655,8 +650,16 @@ module:hook("iq/bare/".._PRIV_ENT_NS..":privileged_iq", function(event)
     end
 
     -- at this point, wrapped_iq is considered valid, and privileged entity is allowed to send it
+    local username, from_host, _ = jid.split(wrapped_iq.attr.from)
+    local newsession = {
+        username = username;
+        host = from_host;
+	    full_jid = stanza.attr.to;
+        type = "c2s";
+        log = module._log;
+    }
 
-    module:send_iq(wrapped_iq)
+    module:send_iq(wrapped_iq,newsession)
         :next(function (response)
             local reply = st.reply(stanza);
             response.stanza.attr.xmlns = 'jabber:client'
