@@ -1,5 +1,6 @@
 local usermanager = require "core.usermanager";
 
+local it = require "util.iterators";
 local json = require "util.json";
 local st = require "util.stanza";
 local array = require "util.array";
@@ -178,16 +179,24 @@ local function get_user_info(username)
 		end
 	end
 
-	local roles = array();
-	local roles_map = usermanager.get_user_roles(username, module.host);
-	for role_name in pairs(roles_map) do
-		roles:push(role_name);
+	local primary_role, secondary_roles, legacy_roles;
+	if usermanager.get_user_role then
+		primary_role = usermanager.get_user_role(username, module.host);
+		secondary_roles = array.collect(it.keys(usermanager.get_user_secondary_roles(username, module.host)));
+	elseif usermanager.get_user_roles then -- COMPAT w/0.12
+		legacy_roles = array();
+		local roles_map = usermanager.get_user_roles(username, module.host);
+		for role_name in pairs(roles_map) do
+			legacy_roles:push(role_name);
+		end
 	end
 
 	return {
 		username = username;
 		display_name = display_name;
-		roles = roles;
+		role = primary_role and primary_role.name or nil;
+		secondary_roles = secondary_roles;
+		roles = legacy_roles; -- COMPAT w/0.12
 	};
 end
 
@@ -303,7 +312,7 @@ local function get_user_debug_info(username)
 	};
 	-- Online sessions
 	do
-		local user_sessions = hosts[module.host].sessions[username];
+		local user_sessions = prosody.hosts[module.host].sessions[username];
 		if user_sessions then
 			user_sessions = user_sessions.sessions
 		end
@@ -409,7 +418,17 @@ function update_user(event, username)
 		end
 	end
 
-	if new_user.roles then
+	if new_user.role then
+		if not usermanager.set_user_role then
+			return 500, "feature-not-implemented";
+		end
+		if not usermanager.set_user_role(username, module.host, new_user.role) then
+			module:log("error", "failed to set role %s for %s", new_user.role, username);
+			return 500;
+		end
+	end
+
+	if new_user.roles then -- COMPAT w/0.12
 		if not usermanager.set_user_roles then
 			return 500, "feature-not-implemented"
 		end
