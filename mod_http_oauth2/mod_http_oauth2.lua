@@ -22,13 +22,12 @@ local function filter_scopes(username, host, requested_scope_string)
 	if requested_scope_string then -- Specific role requested
 		-- TODO: The requested scope string is technically a space-delimited list
 		-- of scopes, but for simplicity we're mapping this slot to role names.
-		local user_roles = usermanager.get_user_roles(username, module.host);
-		if user_roles[requested_scope_string] then
+		if usermanager.user_can_assume_role(username, module.host, requested_scope_string) then
 			return requested_scope_string;
 		end
 	end
 
-	return usermanager.get_user_default_role(username, module.host).name;
+	return usermanager.get_user_role(username, module.host).name;
 end
 
 local function code_expires_in(code)
