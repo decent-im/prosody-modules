@@ -72,3 +72,11 @@ Set someones account details:
 ### TODO
 
 -   Use `Accept` header.
+
+Compatibility
+=============
+
+  ------- --------------
+  trunk   Doesn't work (uses is_admin)
+  0.12    Works?
+  ------- --------------
