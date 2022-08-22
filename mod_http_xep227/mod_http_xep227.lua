@@ -346,11 +346,7 @@ local function check_credentials(request)
 	end
 
 	if auth_type == "Bearer" then
-		local token_info = tokens.get_token_info(auth_data);
-		if not token_info or not token_info.session then
-			return false;
-		end
-		return token_info.session;
+		return tokens.get_token_session(auth_data);
 	end
 	return nil;
 end

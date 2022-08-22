@@ -221,6 +221,7 @@ local function resolve_sentry_response(response)
 		local data = json.decode(response.body);
 		return data;
 	end
+	module:log("warn", "Unexpected response from server: %d: %s", response.code, response.body);
 	return promise.reject(response);
 end
 

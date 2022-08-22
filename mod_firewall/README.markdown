@@ -435,7 +435,39 @@ This condition does not take a parameter - end the condition name with a questio
     NOT SENT DIRECTED PRESENCE TO SENDER?
     BOUNCE=service-unavailable
 
+### Permissions
+
+Rules can consult Prosody's internal role and permissions system to check whether a certain action may
+be performed. The acting entity, their role, and appropriate context is automatically inferred. All you
+need to do is provide the identifier of the permission that should be checked.
+
+  Condition               Description
+  ----------------------- --------------------------------------------------------------------
+  `MAY=permission`        Checks whether 'permission' is allowed in the current context.
+
+As with all other conditions, `MAY` can be combined with `NOT` to negate the result of the check.
+
+Example, blocking outgoing stanzas from users with roles that do not allow the 'xmpp:federate' permission:
+
+```
+::deliver_remote
+MAY NOT: xmpp:federate
+BOUNCE=policy-violation (You are not allowed access to the federation)
+```
+
+### Roles
+
+  Condition        Matches
+  ---------------- -------------------------------------------------------------------------------------
+  `TO ROLE`       When the recipient JID of the stanza has the named role
+  `FROM ROLE`     When the sender JID of the stanza has the named role
+
+**Note:** In most cases, you should avoid checking for specific roles, and instead check for
+permissions granted by those roles (using the 'MAY' condition).
+
 ### Admins
+
+**Deprecated:** These conditions should no longer be used. Prefer 'MAY', 'TO ROLE' or 'FROM ROLE'.
 
 Prosody allows certain JIDs to be declared as administrators of a host, component or the whole server.
 

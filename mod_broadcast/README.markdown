@@ -32,4 +32,5 @@ Compatibility
   ------ -------
   0.9    Works
   0.10   Works
+  trunk  Doesn't work (uses is_admin)
   ------ -------

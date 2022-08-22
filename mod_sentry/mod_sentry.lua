@@ -29,6 +29,8 @@ local log_filters = {
 	end;
 };
 
+local serialize = require "util.serialization".serialize;
+
 local function sentry_error_handler(e)
 	module:log("error", "Failed to submit event to sentry: %s", e);
 end

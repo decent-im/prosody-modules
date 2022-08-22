@@ -26,3 +26,13 @@ block_outgoing_stanzas = { "message", "iq", "presence" }
 ```
 
 block_outgoing_stanzas defaults to "message" if not specified.
+
+Compatibility
+=============
+
+  ------- --------------
+  trunk   Doesn't work (uses is_admin)
+  0.12    Works
+  0.11    Works
+  ------- --------------
+

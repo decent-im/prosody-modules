@@ -49,6 +49,7 @@ Compatibility
 =============
 
   ----- -------------
+  trunk Doesn't work (uses is_admin)
   0.9   Works
   0.8   Should work
   ----- -------------

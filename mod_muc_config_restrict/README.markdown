@@ -57,7 +57,6 @@ Compatibility
 =============
 
   ------- --------------
-  trunk   Works
-  0.9     Doesn't work
-  0.8     Doesn't work
+  trunk   Doesn't work (uses is_admin)
+  0.12    Works?
   ------- --------------
