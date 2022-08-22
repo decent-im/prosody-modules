@@ -80,6 +80,8 @@ module:hook("pre-iq/bare", function (event)
 	elseif proto == "carbons" then
 		-- This allows access to live messages
 		proto, action = "messages", "read";
+	elseif proto == "history" then
+		action = "read";
 	end
 	local permission_name = "xmpp:account:"..(proto and (proto..":") or "")..action;
 	if not module:may(permission_name, event) then
