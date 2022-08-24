@@ -195,7 +195,7 @@ function method:process(message)
 	log("debug", "Received %d bytes from socket: %s", #line, line);
 
 	while line and line:match("^%* ") do
-		line, err = self.conn:receive("*l");
+		line = self.conn:receive("*l");
 	end
 
 	if line:match("^%+") and #line > 2 then
