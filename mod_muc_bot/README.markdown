@@ -47,4 +47,4 @@ curl https://xmpp.example.com/rest/message/groupchat/room@muc.example.com \
 
 # Compatibility
 
-Prosody **trunk** required.
+Works with Prosody 0.12 or later.
