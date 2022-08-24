@@ -3,6 +3,11 @@ labels:
 - 'Stage-Alpha'
 - 'Type-Auth'
 summary: IMAP authentication module
+rockspec:
+  build:
+    modules:
+      mod_auth_imap: auth_imap/mod_auth_imap.lua
+      mod_auth_imap.sasl_imap: auth_imap/sasl_imap.lib.lua
 ...
 
 Introduction
