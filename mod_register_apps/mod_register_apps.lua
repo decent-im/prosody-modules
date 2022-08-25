@@ -110,6 +110,40 @@ local app_config = module:get_option("site_apps", {
 			};
 		};
 	};
+	{
+		name  = "Monal";
+		text  = [[A modern open-source chat client for iPhone and iPad. It is easy to use and has a clean user interface.]];
+		image = "assets/logos/monal.svg";
+		link  = "https://monal-im.org/";
+		platforms = { "iOS" };
+		supports_preauth_uri = true;
+		download = {
+			buttons = {
+				{
+					image = "https://linkmaker.itunes.apple.com/en-us/badge-lrg.svg?releaseDate=2017-05-31&kind=iossoftware&bubble=ios_apps";
+					url = "https://apps.apple.com/app/id317711500";
+					target = "_blank";
+				};
+			};
+		};
+	};
+	{
+		name  = "Monal";
+		text  = [[A modern open-source chat client for Mac. It is easy to use and has a clean user interface.]];
+		image = "assets/logos/monal.svg";
+		link  = "https://monal-im.org/";
+		platforms = { "macOS" };
+		supports_preauth_uri = true;
+		download = {
+			buttons = {
+				{
+					image = "https://linkmaker.itunes.apple.com/en-us/badge-lrg.svg?releaseDate=2017-05-31&kind=macossoftware&bubble=macos_apps";
+					url = "https://apps.apple.com/app/id1637078500";
+					target = "_blank";
+				};
+			};
+		};
+	};
 });
 
 local show_apps = module:get_option_set("site_apps_show");
