@@ -1,17 +1,32 @@
 module:set_global();
 
-local jid_bare = require "util.jid".bare;
+local jid_bare, jid_host = require "util.jid".bare, require "util.jid".host;
 local st = require "util.stanza";
 local xmlns_muc_user = "http://jabber.org/protocol/muc#user";
 
+local trusted_services = module:get_option_inherited_set("muc_ban_ip_trusted_services", {});
+local trust_local_restricted_services = module:get_option_boolean("muc_ban_ip_trust_local_restricted_services", true);
+
 local ip_bans = module:shared("bans");
 local full_sessions = prosody.full_sessions;
+
+local function is_local_restricted_service(host)
+	local muc_service = prosody.hosts[host] and prosody.hosts[host].modules.muc;
+	if muc_service and module:context(host):get_option("restrict_room_creation") ~= nil then -- COMPAT: May need updating post-0.12
+		return true;
+	end
+	return false;
+end
 
 local function ban_ip(session, from)
 	local ip = session.ip;
 	if not ip then
 		module:log("warn", "Failed to ban IP (IP unknown) for %s", session.full_jid);
 		return;
+	end
+	local from_host = jid_host(from);
+	if trusted_services:contains(from_host) or (trust_local_restricted_services and is_local_restricted_service(from_host)) then
+		from = from_host; -- Ban from entire host
 	end
 	local banned_from = ip_bans[ip];
 	if not banned_from then
@@ -45,8 +60,8 @@ end
 local function check_for_ban(event)
 	local origin, stanza = event.origin, event.stanza;
 	local ip = origin.ip;
-	local to = jid_bare(stanza.attr.to);
-	if ip_bans[ip] and ip_bans[ip][to] then
+	local to, to_host = jid_bare(stanza.attr.to), jid_host(stanza.attr.to);
+	if ip_bans[ip] and (ip_bans[ip][to] or ip_bans[ip][to_host]) then
 		(origin.log or module._log)("debug", "IP banned: %s is banned from %s", ip, to)
 		if stanza.attr.type ~= "error" then
 			origin.send(st.error_reply(stanza, "auth", "forbidden")
