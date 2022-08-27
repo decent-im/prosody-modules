@@ -17,7 +17,7 @@ local usermanager = require "core.usermanager";
 local admins;
 if usermanager.get_jids_with_role then
 	local set = require "util.set";
-	admins = set.new(usermanager.get_jids_with_role("prosody:admin"), module.host);
+	admins = set.new(usermanager.get_jids_with_role("prosody:admin", module.host));
 else -- COMPAT w/pre-0.12
 	admins = module:get_option_inherited_set("admins", {});
 end
