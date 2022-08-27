@@ -2,7 +2,7 @@
 --
 -- If a local admin has blocked a domain, don't allow s2s to that domain
 --
--- Copyright (C) 2015-2021 Kim Alvefur
+-- Copyright (C) 2015-2022 Kim Alvefur
 --
 -- This file is MIT/X11 licensed.
 --
@@ -17,7 +17,12 @@ local usermanager = require "core.usermanager";
 local admins;
 if usermanager.get_jids_with_role then
 	local set = require "util.set";
-	admins = set.new(usermanager.get_jids_with_role("prosody:admin", module.host));
+	local include_roles = module:get_option_set("admin_blocklist_roles", { "prosody:operator"; "prosody:admin" });
+
+	admins = set.new();
+	for role in include_roles do
+		admins:include(set.new(usermanager.get_jids_with_role(role, module.host)));
+	end
 else -- COMPAT w/pre-0.12
 	admins = module:get_option_inherited_set("admins", {});
 end
