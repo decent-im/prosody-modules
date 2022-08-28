@@ -6,7 +6,7 @@ local host = module.host;
 
 local admins;
 if usermanager.get_jids_with_role then
-	admins = set.new(usermanager.get_jids_with_role("prosody:admin"), host);
+	admins = set.new(usermanager.get_jids_with_role("prosody:admin", host));
 else -- COMPAT w/pre-0.12
 	admins = module:get_option_inherited_set("admins");
 end
