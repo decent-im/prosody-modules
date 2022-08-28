@@ -94,6 +94,9 @@ module:hook("sasl2/c2s/success", function (event)
 		return true;
 	end
 	event.success = st.stanza("success", { xmlns = xmlns_sasl2 });
+	if event.message then
+		event.success:text_tag("additional-data", base64.encode(event.message));
+	end
 end, 1000);
 
 module:hook("sasl2/c2s/success", function (event)
