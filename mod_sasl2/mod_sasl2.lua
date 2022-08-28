@@ -83,6 +83,7 @@ module:hook("sasl2/c2s/challenge", function (event)
 	local session = event.session;
 	session.send(st.stanza("challenge", { xmlns = xmlns_sasl2 })
 		:text(base64.encode(event.message)));
+	return true;
 end);
 
 module:hook("sasl2/c2s/success", function (event)
