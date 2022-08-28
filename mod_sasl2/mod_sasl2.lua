@@ -65,7 +65,7 @@ local function handle_status(session, status, ret, err_msg)
 		end
 	end
 
-	module:fire_event("sasl2/"..session.base_type.."/"..status, {
+	return module:fire_event("sasl2/"..session.base_type.."/"..status, {
 			session = session,
 			message = ret;
 			error = err;
