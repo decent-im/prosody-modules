@@ -105,6 +105,14 @@ module:hook("sasl2/c2s/success", function (event)
 	session.send(features);
 end, -1000);
 
+-- The gap here is to allow modules to do stuff to the stream after the stanza
+-- is sent, but before we proceed with anything else. This is expected to be
+-- a common pattern with SASL2, which allows atomic negotiation of a bunch of
+-- stream features.
+module:hook("sasl2/c2s/success", function (event) --luacheck: ignore 212/event
+	return true;
+end, -2000);
+
 local function process_cdata(session, cdata)
 	if cdata then
 		cdata = base64.decode(cdata);
