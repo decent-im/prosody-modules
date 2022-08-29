@@ -18,7 +18,7 @@ end);
 
 module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 	-- Cache action for future processing (after auth success)
-	session.sasl2_sm_action = auth:get_child_with_namespace(xmlns_sm);
+	session.sasl2_sm_action = auth:child_with_ns(xmlns_sm);
 end, 100);
 
 module:hook("sasl2/c2s/success", function (event)
