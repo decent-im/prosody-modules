@@ -69,13 +69,25 @@ local function handle_status(session, status, ret, err_msg)
 			session = session,
 			message = ret;
 			error = err;
+			error_text = err_msg;
 		});
 end
 
 module:hook("sasl2/c2s/failure", function (event)
+	local session, condition, text = event.session, event.message, event.error_text;
+	local failure = st.stanza("failure", { xmlns = xmlns_sasl2 })
+		:tag(condition):up();
+	if text then
+		failure:text_tag("text", text);
+	end
+	session.send(failure);
+	return true;
+end);
+
+module:hook("sasl2/c2s/error", function (event)
 	local session = event.session
 	session.send(st.stanza("failure", { xmlns = xmlns_sasl2 })
-		:tag(event.error.condition));
+		:tag(event.error and event.error.condition));
 	return true;
 end);
 
@@ -120,7 +132,7 @@ local function process_cdata(session, cdata)
 	if cdata then
 		cdata = base64.decode(cdata);
 		if not cdata then
-			return handle_status(session, "failure");
+			return handle_status(session, "failure", "incorrect-encoding");
 		end
 	end
 	return handle_status(session, session.sasl_handler:process(cdata));
@@ -134,7 +146,7 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 	end
 	local mechanism = assert(auth.attr.mechanism);
 	if not sasl_handler:select(mechanism) then
-		return handle_status(session, "failure");
+		return handle_status(session, "failure", "invalid-mechanism");
 	end
 	local initial = auth:get_child_text("initial-response");
 	return process_cdata(session, initial);
@@ -143,7 +155,7 @@ end);
 module:hook_tag(xmlns_sasl2, "response", function (session, response)
 	local sasl_handler = session.sasl_handler;
 	if not sasl_handler or not sasl_handler.selected then
-		return handle_status(session, "failure");
+		return handle_status(session, "failure", "invalid-mechanism");
 	end
 	return process_cdata(session, response:get_text());
 end);
