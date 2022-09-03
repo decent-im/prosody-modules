@@ -67,7 +67,7 @@ module:hook("enable-bind-features", function (event)
 			:add_error(err);
 	else
 		event.sasl2_sm_success = enabled; -- To be called after sending final SASL response
-		sm_result = st.stanze("enabled", {
+		sm_result = st.stanza("enabled", {
 			xmlns = xmlns_sm;
 			id = enabled.id;
 			resume = enabled.id and "1" or nil;
