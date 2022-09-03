@@ -53,7 +53,7 @@ end
 local function enable_features(session, bind_request, bind_result)
 	local features = bind_request:get_child("features");
 	if not features then return; end
-	module:fire_event("process-bind-features", {
+	module:fire_event("enable-bind-features", {
 		session = session;
 		features = features;
 		result = bind_result;
