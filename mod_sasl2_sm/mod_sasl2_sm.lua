@@ -74,7 +74,7 @@ module:hook("enable-bind-features", function (event)
 			max = enabled.resume_max;
 		});
 	end
-	event.bind_result:add_child(sm_result);
+	event.result:add_child(sm_result);
 end, 100);
 
 -- Finish and/or clean up after SASL 2 completed
