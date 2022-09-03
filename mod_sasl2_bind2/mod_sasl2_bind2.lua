@@ -31,7 +31,7 @@ local function do_bind(session, bind_request)
 	local resource;
 
 	local client_id_tag = bind_request:get_child("client-id");
-	local client_id = client_id_tag and client_id_tag:text() or session.client_id;
+	local client_id = client_id_tag and client_id_tag:get_text() or session.client_id;
 	if client_id and client_id ~= "" then
 		local tag = client_id_tag and client_id_tag.attr.tag or "client";
 		resource = ("%s~%s"):format(tag, base64.encode(sha1(client_id):sub(1, 9)));
