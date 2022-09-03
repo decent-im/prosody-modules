@@ -102,7 +102,10 @@ module:hook("enable-bind-features", function (event)
 	local session, features = event.session, event.features;
 
 	-- Carbons
-	session.want_carbons = not not features:get_child("enable", "urn:xmpp:carbons:2");
+	if features:get_child("enable", "urn:xmpp:carbons:2") then
+		session.want_carbons = true;
+		event.result:tag("enabled", { xmlns = "urn:xmpp:carbons:2" }):up();
+	end
 
 	-- CSI
 	local csi_state_tag = features:child_with_ns("urn:xmpp:csi:0");
