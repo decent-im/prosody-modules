@@ -39,7 +39,7 @@ module:hook("sasl2/c2s/success", function (event)
 			:add_error(err);
 	else
 		event.session = resumed.session; -- Update to resumed session
-		event.sasl2_sm_success = resumed; -- To be called after sending final SASL response
+		event.session.sasl2_sm_success = resumed; -- To be called after sending final SASL response
 		sm_result = st.stanza("resumed", { xmlns = xmlns_sm,
 			h = ("%d"):format(event.session.handled_stanza_count);
 			previd = resumed.id; });
@@ -66,7 +66,7 @@ module:hook("enable-bind-features", function (event)
 		sm_result = st.stanza("failed", { xmlns = xmlns_sm })
 			:add_error(err);
 	else
-		event.sasl2_sm_success = enabled; -- To be called after sending final SASL response
+		event.session.sasl2_sm_success = enabled; -- To be called after sending final SASL response
 		sm_result = st.stanza("enabled", {
 			xmlns = xmlns_sm;
 			id = enabled.id;
@@ -81,7 +81,7 @@ end, 100);
 
 module:hook("sasl2/c2s/success", function (event)
 	-- The authenticate response has already been sent at this point
-	local success = event.sasl2_sm_success;
+	local success = event.session.sasl2_sm_success;
 	if success then
 		success.finish(); -- Finish enable/resume and sync stanzas
 	end

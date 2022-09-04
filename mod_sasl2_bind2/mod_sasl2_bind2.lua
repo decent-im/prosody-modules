@@ -74,7 +74,7 @@ module:hook("sasl2/c2s/success", function (event)
 	if not bind_request then return; end -- No bind requested
 	session.sasl2_bind_request = nil;
 
-	local sm_success = event.sasl2_sm_success;
+	local sm_success = session.sasl2_sm_success;
 	if sm_success and sm_success.type == "resumed" then
 		return; -- No need to bind a resource
 	end
