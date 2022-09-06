@@ -11,6 +11,7 @@ local st = require "util.stanza";
 local errors = require "util.error";
 local base64 = require "util.encodings".base64;
 local jid_join = require "util.jid".join;
+local set = require "util.set";
 
 local usermanager_get_sasl_handler = require "core.usermanager".get_sasl_handler;
 local sm_make_authenticated = require "core.sessionmanager".make_authenticated;
@@ -22,6 +23,19 @@ local insecure_mechanisms = module:get_option_set("insecure_sasl_mechanisms", al
 local disabled_mechanisms = module:get_option_set("disable_sasl_mechanisms", { "DIGEST-MD5" });
 
 local host = module.host;
+
+local function tls_unique(self)
+	return self.userdata["tls-unique"]:ssl_peerfinished();
+end
+
+local function tls_exporter(conn)
+	if not conn.ssl_exportkeyingmaterial then return end
+	return conn:ssl_exportkeyingmaterial("EXPORTER-Channel-Binding", 32, "");
+end
+
+local function sasl_tls_exporter(self)
+	return tls_exporter(self.userdata["tls-exporter"]);
+end
 
 module:hook("stream-features", function(event)
 	local origin, features = event.origin, event.features;
@@ -35,8 +49,33 @@ module:hook("stream-features", function(event)
 	local sasl_handler = usermanager_get_sasl_handler(host, origin)
 	origin.sasl_handler = sasl_handler;
 
-	if sasl_handler.add_cb_handler then -- luacheck: ignore 542
-		-- FIXME bring back channel binding
+	local channel_bindings = set.new()
+	if origin.encrypted then
+		-- check whether LuaSec has the nifty binding to the function needed for tls-unique
+		-- FIXME: would be nice to have this check only once and not for every socket
+		if sasl_handler.add_cb_handler then
+			local info = origin.conn:ssl_info();
+			if info and info.protocol == "TLSv1.3" then
+				log("debug", "Channel binding 'tls-unique' undefined in context of TLS 1.3");
+				if tls_exporter(origin.conn) then
+					log("debug", "Channel binding 'tls-exporter' supported");
+					sasl_handler:add_cb_handler("tls-exporter", sasl_tls_exporter);
+					channel_bindings:add("tls-exporter");
+				end
+			elseif origin.conn.ssl_peerfinished and origin.conn:ssl_peerfinished() then
+				log("debug", "Channel binding 'tls-unique' supported");
+				sasl_handler:add_cb_handler("tls-unique", tls_unique);
+				channel_bindings:add("tls-unique");
+			else
+				log("debug", "Channel binding 'tls-unique' not supported (by LuaSec?)");
+			end
+			sasl_handler["userdata"] = {
+				["tls-unique"] = origin.conn;
+				["tls-exporter"] = origin.conn;
+			};
+		else
+			log("debug", "Channel binding not supported by SASL handler");
+		end
 	end
 
 	local mechanisms = st.stanza("mechanisms", { xmlns = xmlns_sasl2 });
