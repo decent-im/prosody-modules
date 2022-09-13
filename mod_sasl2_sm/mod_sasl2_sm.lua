@@ -2,7 +2,7 @@ local st = require "util.stanza";
 
 local mod_smacks = module:depends("smacks");
 
-local xmlns_sasl2 = "urn:xmpp:sasl:1";
+local xmlns_sasl2 = "urn:xmpp:sasl:2";
 local xmlns_sm = "urn:xmpp:sm:3";
 
 -- Advertise what we can do

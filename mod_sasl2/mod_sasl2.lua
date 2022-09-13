@@ -16,7 +16,7 @@ local set = require "util.set";
 local usermanager_get_sasl_handler = require "core.usermanager".get_sasl_handler;
 local sm_make_authenticated = require "core.sessionmanager".make_authenticated;
 
-local xmlns_sasl2 = "urn:xmpp:sasl:1";
+local xmlns_sasl2 = "urn:xmpp:sasl:2";
 
 local allow_unencrypted_plain_auth = module:get_option_boolean("allow_unencrypted_plain_auth", false)
 local insecure_mechanisms = module:get_option_set("insecure_sasl_mechanisms", allow_unencrypted_plain_auth and {} or {"PLAIN", "LOGIN"});
@@ -78,7 +78,7 @@ module:hook("stream-features", function(event)
 		end
 	end
 
-	local mechanisms = st.stanza("mechanisms", { xmlns = xmlns_sasl2 });
+	local mechanisms = st.stanza("authentication", { xmlns = xmlns_sasl2 });
 
 	local available_mechanisms = sasl_handler:mechanisms()
 	for mechanism in pairs(available_mechanisms) do

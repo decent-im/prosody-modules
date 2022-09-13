@@ -5,7 +5,7 @@ local st = require "util.stanza";
 local sm_bind_resource = require "core.sessionmanager".bind_resource;
 
 local xmlns_bind2 = "urn:xmpp:bind2:1";
-local xmlns_sasl2 = "urn:xmpp:sasl:1";
+local xmlns_sasl2 = "urn:xmpp:sasl:2";
 
 -- Advertise what we can do
 
