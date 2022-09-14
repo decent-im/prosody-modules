@@ -14,8 +14,8 @@ local allow_user_invites = module:get_option_boolean("allow_user_invites", false
 local allow_contact_invites = module:get_option_boolean("allow_contact_invites", true);
 
 -- These options are deprecated since module:may()
-local allow_user_invite_roles = module:get_option_set("allow_user_invites_by_roles");
-local deny_user_invite_roles = module:get_option_set("deny_user_invites_by_roles");
+local allow_user_invite_roles = module:get_option_set("allow_user_invites_by_roles", {});
+local deny_user_invite_roles = module:get_option_set("deny_user_invites_by_roles", {});
 
 if module.may then
 	if allow_user_invites then
