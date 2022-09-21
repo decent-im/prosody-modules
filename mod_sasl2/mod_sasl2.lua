@@ -119,7 +119,7 @@ end
 module:hook("sasl2/c2s/failure", function (event)
 	local session, condition, text = event.session, event.message, event.error_text;
 	local failure = st.stanza("failure", { xmlns = xmlns_sasl2 })
-		:tag(condition):up();
+		:tag(condition, { xmlns = "urn:ietf:params:xml:ns:xmpp-sasl" }):up();
 	if text then
 		failure:text_tag("text", text);
 	end
