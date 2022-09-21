@@ -12,7 +12,7 @@ local xmlns_sasl2 = "urn:xmpp:sasl:2";
 module:hook("advertise-sasl-features", function(event)
 	local bind = st.stanza("bind", { xmlns = xmlns_bind2 });
 	local inline = st.stanza("inline");
-	module:fire_event("advertise-bind-features", { origin = event.session, features = inline });
+	module:fire_event("advertise-bind-features", { origin = event.origin, features = inline });
 	bind:add_direct_child(inline);
 
 	event.features:add_direct_child(bind);

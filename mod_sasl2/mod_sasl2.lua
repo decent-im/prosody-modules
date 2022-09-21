@@ -95,7 +95,7 @@ module:hook("stream-features", function(event)
 	features:add_direct_child(mechanisms);
 
 	local inline = st.stanza("inline");
-	module:fire_event("advertise-sasl-features", { session = origin, features = inline });
+	module:fire_event("advertise-sasl-features", { origin = origin, features = inline });
 	mechanisms:add_direct_child(inline);
 end, 1);
 
