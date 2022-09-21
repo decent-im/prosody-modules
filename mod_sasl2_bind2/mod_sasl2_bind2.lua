@@ -9,20 +9,13 @@ local xmlns_sasl2 = "urn:xmpp:sasl:2";
 
 -- Advertise what we can do
 
-module:hook("stream-features", function(event)
-	local origin, features = event.origin, event.features;
-
-	if origin.type ~= "c2s_unauthed" then
-		return;
-	end
-
-	local inline = st.stanza("inline", { xmlns = xmlns_bind2 });
-	module:fire_event("advertise-bind-features", { origin = origin, features = inline });
-	features:add_direct_child(inline);
-end, 1);
-
 module:hook("advertise-sasl-features", function(event)
-	event.features:tag("bind", { xmlns = xmlns_bind2 }):up();
+	local bind = st.stanza("bind", { xmlns = xmlns_bind2 });
+	local inline = st.stanza("inline");
+	module:fire_event("advertise-bind-features", { origin = event.session, features = inline });
+	bind:add_direct_child(inline);
+
+	event.features:add_direct_child(bind);
 end, 1);
 
 -- Helper to actually bind a resource to a session
