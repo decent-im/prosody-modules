@@ -37,8 +37,7 @@ local function do_bind(session, bind_request)
 	end
 
 	session.log("debug", "Resource bound: %s", session.full_jid);
-	return st.stanza("bound", { xmlns = xmlns_bind2 })
-		:text_tag("jid", session.full_jid)
+	return st.stanza("bound", { xmlns = xmlns_bind2 });
 end
 
 -- Enable inline features requested by the client
