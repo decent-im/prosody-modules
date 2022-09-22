@@ -1,4 +1,5 @@
 local base64 = require "util.encodings".base64;
+local id = require "util.id";
 local sha1 = require "util.hashes".sha1;
 local st = require "util.stanza";
 
@@ -23,11 +24,11 @@ end, 1);
 local function do_bind(session, bind_request)
 	local resource;
 
-	local client_id_tag = bind_request:get_child("client-id");
-	local client_id = client_id_tag and client_id_tag:get_text() or session.client_id;
-	if client_id and client_id ~= "" then
-		local tag = client_id_tag and client_id_tag.attr.tag or "client";
-		resource = ("%s~%s"):format(tag, base64.encode(sha1(client_id):sub(1, 9)));
+	local client_name_tag = bind_request:get_child_text("tag");
+	if client_name_tag then
+		local client_id = session.client_id;
+		local tag_suffix = client_id and base64.encode(sha1(client_id):sub(1, 9)) or id.medium();
+		resource = ("%s~%s"):format(client_name_tag, tag_suffix);
 	end
 
 	local success, err_type, err, err_msg = sm_bind_resource(session, resource);
