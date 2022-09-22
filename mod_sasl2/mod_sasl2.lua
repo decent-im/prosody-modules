@@ -158,10 +158,14 @@ module:hook("sasl2/c2s/success", function (event)
 	local session = event.session
 	event.success:text_tag("authorization-identifier", jid_join(session.username, session.host, session.resource));
 	session.send(event.success);
+end, -1000);
+
+module:hook("sasl2/c2s/success", function (event)
+	local session = event.session;
 	local features = st.stanza("stream:features");
 	module:fire_event("stream-features", { origin = session, features = features });
 	session.send(features);
-end, -1000);
+end, -1500);
 
 -- The gap here is to allow modules to do stuff to the stream after the stanza
 -- is sent, but before we proceed with anything else. This is expected to be
