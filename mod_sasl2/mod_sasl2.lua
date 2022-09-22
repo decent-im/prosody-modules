@@ -191,6 +191,10 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 	if not sasl_handler:select(mechanism) then
 		return handle_status(session, "failure", "invalid-mechanism");
 	end
+	local user_agent = auth:get_child("user-agent");
+	if user_agent then
+		session.client_id = user_agent.attr.id;
+	end
 	local initial = auth:get_child_text("initial-response");
 	return process_cdata(session, initial);
 end);
