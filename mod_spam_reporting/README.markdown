@@ -1,9 +1,6 @@
 ---
 labels:
 - 'Stage-Beta'
-rockspec:
-  dependencies:
-  - mod_blocklist
 summary: 'XEP-0377: Spam Reporting'
 ---
 
