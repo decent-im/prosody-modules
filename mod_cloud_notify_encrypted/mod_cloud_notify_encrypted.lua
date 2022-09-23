@@ -52,6 +52,8 @@ function handle_register(event)
 		return false;
 	end
 
+	module:log("debug", "Encrypted push notifications enabled");
+
 	event.push_info.encryption = {
 		algorithm = algorithm;
 		key_base64 = key_base64;
@@ -60,7 +62,10 @@ end
 
 function handle_push(event)
 	local encryption = event.push_info.encryption;
-	if not encryption then return; end
+	if not encryption then
+		module:log("debug", "Encryption not enabled for this notification");
+		return;
+	end
 
 	if encryption.algorithm ~= "aes-128-gcm" then
 		event.reason = "Unsupported encryption algorithm: "..tostring(encryption.algorithm);
