@@ -5,9 +5,9 @@ summary: Synchronise bookmarks between Private XML, legacy PEP, and PEP
 ...
 
 ::: {.alert .alert-info}
-This module has been merged into Prosody as
-[mod_bookmarks][doc:modules:mod_bookmarks]. Users of Prosody **trunk**
-should switch to that.
+**Deprecatation notice:** This module has been merged into Prosody as
+[mod_bookmarks][doc:modules:mod_bookmarks]. Users of Prosody **0.12**
+and later should switch to that.
 :::
 
 Introduction
@@ -30,7 +30,7 @@ Compatibility
 -------------
 
   ------- -----------------------------------------
-  trunk   [Merged][doc:modules:mod_bookmarks]
+  0.12    [Use the official mod_bookmarks module instead][doc:modules:mod_bookmarks]
   0.11    Works
   0.10    Does not work
   0.9     Does not work
