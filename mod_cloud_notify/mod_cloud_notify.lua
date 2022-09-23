@@ -21,7 +21,7 @@ local include_sender = module:get_option_boolean("push_notification_with_sender"
 local max_push_errors = module:get_option_number("push_max_errors", 16);
 local max_push_devices = module:get_option_number("push_max_devices", 5);
 local dummy_body = module:get_option_string("push_notification_important_body", "New Message!");
-local extended_hibernation_timeout = module:get_option_number("push_max_hibernation_timeout", 72*24*3600);		-- use same timeout like ejabberd
+local extended_hibernation_timeout = module:get_option_number("push_max_hibernation_timeout", 72*3600);  -- use same timeout like ejabberd
 
 local host_sessions = prosody.hosts[module.host].sessions;
 local push_errors = module:shared("push_errors");
