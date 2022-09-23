@@ -514,7 +514,7 @@ local function hibernate_session(event)
 	local session = event.origin;
 	local queue = event.queue;
 	session.first_hibernated_push = nil;
-	if session.hibernating_watchdog then		-- check for prosody 0.12 mod_smacks
+	if session.push_identifier and session.hibernating_watchdog then -- check for prosody 0.12 mod_smacks
 		-- save old watchdog callback and timeout
 		session.original_smacks_callback = session.hibernating_watchdog.callback;
 		session.original_smacks_timeout = session.hibernating_watchdog.timeout;
