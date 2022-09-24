@@ -140,6 +140,8 @@ function handle_push(event)
 	event.notification_payload
 		:remove_children("x", "jabber:x:data")
 		:add_child(encrypted_element);
+
+	module:log("debug", "Encrypted '%s' push notification using %s", push_payload.type, encryption.algorithm);
 end
 
 module:hook("cloud_notify/registration", handle_register);
