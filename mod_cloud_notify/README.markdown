@@ -50,8 +50,8 @@ Configuration
 
   Option                               Default           Description
   ------------------------------------ ----------------- -------------------------------------------------------------------------------------------------------------------
-  `push_notification_with_body`        `false`           Whether or not to send the message body to remote pubsub node.
-  `push_notification_with_sender`      `false`           Whether or not to send the message sender to remote pubsub node.
+  `push_notification_with_body`        `false`           Whether or not to send the real message body to remote pubsub node. Without end-to-end encryption, enabling this may expose your message contents to your client developers and OS vendor. Not recommended.
+  `push_notification_with_sender`      `false`           Whether or not to send the real message sender to remote pubsub node.  Enabling this may expose your contacts to your client developers and OS vendor. Not recommended.
   `push_max_errors`                    `16`              How much persistent push errors are tolerated before notifications for the identifier in question are disabled
   `push_notification_important_body`   `New Message!`    The body text to use when the stanza is important (see above), no message body is sent if this is empty
   `push_max_devices`                   `5`               The number of allowed devices per user (the oldest devices are automatically removed if this threshold is reached)
