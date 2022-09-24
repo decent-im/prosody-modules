@@ -79,13 +79,17 @@ function handle_push_error(event)
 	local error_type, condition, error_text = stanza:get_error();
 	local node = id2node[stanza.attr.id];
 	local identifier = id2identifier[stanza.attr.id];
-	if node == nil then return false; end		-- unknown stanza? Ignore for now!
+	if node == nil then
+		module:log("warn", "Received push error with unrecognised id: %s", stanza.attr.id);
+		return false; -- unknown stanza? Ignore for now!
+	end
 	local from = stanza.attr.from;
 	local user_push_services = push_store:get(node);
-	local changed = false;
+	local found, changed = false, false;
 
 	for push_identifier, _ in pairs(user_push_services) do
 		if push_identifier == identifier then
+			found = true;
 			if user_push_services[push_identifier] and user_push_services[push_identifier].jid == from and error_type ~= "wait" then
 				push_errors[push_identifier] = push_errors[push_identifier] + 1;
 				module:log("info", "Got error <%s:%s:%s> for identifier '%s': "
@@ -122,11 +126,17 @@ function handle_push_error(event)
 			elseif user_push_services[push_identifier] and user_push_services[push_identifier].jid == from and error_type == "wait" then
 				module:log("debug", "Got error <%s:%s:%s> for identifier '%s': "
 					.."NOT increasing error count for this identifier", error_type, condition, error_text or "", push_identifier);
+			else
+				module:log("debug", "Unhandled push error <%s:%s:%s> from %s for identifier '%s'",
+					error_type, condition, error_text or "", from, push_identifier
+				);
 			end
 		end
 	end
 	if changed then
 		push_store:flush_to_disk(node);
+	elseif not found then
+		module:log("warn", "Unable to find matching registration for push error <%s:%s:%s> from %s", error_type, condition, error_text or "", from);
 	end
 	return true;
 end
