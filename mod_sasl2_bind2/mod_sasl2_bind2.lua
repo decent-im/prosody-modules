@@ -44,11 +44,9 @@ end
 -- Enable inline features requested by the client
 
 local function enable_features(session, bind_request, bind_result)
-	local features = bind_request:get_child("features");
-	if not features then return; end
 	module:fire_event("enable-bind-features", {
 		session = session;
-		features = features;
+		request = bind_request;
 		result = bind_result;
 	});
 end
@@ -92,16 +90,16 @@ module:hook("advertise-bind-features", function (event)
 end);
 
 module:hook("enable-bind-features", function (event)
-	local session, features = event.session, event.features;
+	local session, request = event.session, event.request;
 
 	-- Carbons
-	if features:get_child("enable", "urn:xmpp:carbons:2") then
+	if request:get_child("enable", "urn:xmpp:carbons:2") then
 		session.want_carbons = true;
 		event.result:tag("enabled", { xmlns = "urn:xmpp:carbons:2" }):up();
 	end
 
 	-- CSI
-	local csi_state_tag = features:child_with_ns("urn:xmpp:csi:0");
+	local csi_state_tag = request:child_with_ns("urn:xmpp:csi:0");
 	if csi_state_tag then
 		session.state = csi_state_tag.name;
 	end

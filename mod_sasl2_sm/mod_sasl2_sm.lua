@@ -57,7 +57,7 @@ module:hook("advertise-bind-features", function (event)
 end);
 
 module:hook("enable-bind-features", function (event)
-	local sm_enable = event.features:get_child("enable", xmlns_sm);
+	local sm_enable = event.request:get_child("enable", xmlns_sm);
 	if not sm_enable then return; end
 
 	local sm_result;
