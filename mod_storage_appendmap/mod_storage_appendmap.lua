@@ -106,7 +106,7 @@ end
 
 function keyval:set(user, keyvalues)
 	local data = serialize_map(keyvalues);
-	return dm.store_raw(user, module.host, self.store, "map", data);
+	return dm.store_raw(dm.getpath(user, module.host, self.store, "map"), data);
 end
 
 -- TODO some kind of periodic compaction thing?
