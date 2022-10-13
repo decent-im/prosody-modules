@@ -172,6 +172,7 @@ end, -1500);
 -- a common pattern with SASL2, which allows atomic negotiation of a bunch of
 -- stream features.
 module:hook("sasl2/c2s/success", function (event) --luacheck: ignore 212/event
+	event.session.sasl_handler = nil;
 	return true;
 end, -2000);
 
