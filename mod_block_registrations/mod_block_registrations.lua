@@ -1,7 +1,12 @@
 local st = require "util.stanza";
 local nodeprep = require "util.encodings".stringprep.nodeprep;
 
-local block_users = module:get_option_set("block_registrations_users", { "admin" });
+local block_users = module:get_option_set("block_registrations_users", {
+	"abuse", "admin", "administrator", "hostmaster", "info", "news",
+	"noc", "operator", "owner", "postmaster", "register", "registration",
+	"root", "security", "service", "signup", "support", "sysadmin",
+	"sysop", "system", "test", "trouble", "webmaster", "www", "xmpp",
+});
 local block_patterns = module:get_option_set("block_registrations_matching", {});
 local require_pattern = module:get_option_string("block_registrations_require");
 
