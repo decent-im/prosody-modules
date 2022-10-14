@@ -62,7 +62,7 @@ end
 
 function get_sasl_handler(username)
 	local token_auth_profile = {
-		ht_256 = new_token_tester(username, hash.hmac_sha256);
+		ht_sha_256 = new_token_tester(username, hash.hmac_sha256);
 		token_test = function (_, client_id, token, mech_name, counter) --luacheck: ignore
 			return false; -- FIXME
 		end;
@@ -175,7 +175,7 @@ local function register_ht_mechanism(name, backend_profile_name, cb_name)
 	));
 end
 
-register_ht_mechanism("HT-SHA-256-NONE", "ht_sha256", nil);
-register_ht_mechanism("HT-SHA-256-UNIQ", "ht_sha256", "tls-unique");
-register_ht_mechanism("HT-SHA-256-ENDP", "ht_sha256", "tls-endpoint");
-register_ht_mechanism("HT-SHA-256-EXPR", "ht_sha256", "tls-exporter");
+register_ht_mechanism("HT-SHA-256-NONE", "ht_sha_256", nil);
+register_ht_mechanism("HT-SHA-256-UNIQ", "ht_sha_256", "tls-unique");
+register_ht_mechanism("HT-SHA-256-ENDP", "ht_sha_256", "tls-endpoint");
+register_ht_mechanism("HT-SHA-256-EXPR", "ht_sha_256", "tls-exporter");
