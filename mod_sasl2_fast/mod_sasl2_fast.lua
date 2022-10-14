@@ -1,6 +1,7 @@
 local sasl = require "util.sasl";
 local dt = require "util.datetime";
 local id = require "util.id";
+local jid = require "util.jid";
 local st = require "util.stanza";
 local now = require "util.time".now;
 local hash = require "util.hashes";
@@ -59,8 +60,7 @@ local function new_token_tester(username, hmac_f)
 	end
 end
 
-function get_sasl_handler(session)
-	local username = session.username;
+function get_sasl_handler(username)
 	local token_auth_profile = {
 		ht_256 = new_token_tester(username, hash.hmac_sha256);
 		token_test = function (_, client_id, token, mech_name, counter) --luacheck: ignore
@@ -73,7 +73,12 @@ end
 -- Advertise FAST to connecting clients
 module:hook("advertise-sasl-features", function (event)
 	local session = event.origin;
-	local sasl_handler = get_sasl_handler(session);
+	local username = session.username;
+	if not username then
+		username = jid.node(event.stream.from);
+		if not username then return; end
+	end
+	local sasl_handler = get_sasl_handler(username);
 	if not sasl_handler then return; end
 	session.fast_sasl_handler = sasl_handler;
 	local fast = st.stanza("fast", { xmlns = xmlns_fast });
@@ -89,10 +94,19 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 	local fast_auth = auth:get_child(xmlns_fast, "fast");
 	if fast_auth then
 		-- Client says it is using FAST auth, so set our SASL handler
-		session.log("debug", "Client is authenticating using FAST");
 		local fast_sasl_handler = session.fast_sasl_handler;
-		fast_sasl_handler.profile._client_id = session.client_id;
-		session.sasl_handler = fast_sasl_handler;
+		if fast_sasl_handler then
+			session.log("debug", "Client is authenticating using FAST");
+			fast_sasl_handler.profile._client_id = session.client_id;
+			session.sasl_handler = fast_sasl_handler;
+		else
+			session.log("warn", "Client asked to auth via FAST, but no SASL handler available");
+			local failure = st.stanza("failure", { xmlns = xmlns_sasl2 })
+				:tag("malformed-request"):up()
+				:text_tag("text", "FAST is not available on this stream");
+			session.send(failure);
+			return true;
+		end
 	end
 	session.fast_sasl_handler = nil;
 	local fast_token_request = auth:get_child(xmlns_fast, "request-token");
@@ -111,9 +125,8 @@ module:hook("sasl2/c2s/success", function (event)
 
 	local token_request = session.fast_token_request;
 	local client_id = session.client_id;
-	local stream_from = event.stream.from;
 	if token_request then
-		if not client_id or not stream_from then
+		if not client_id then
 			session.log("warn", "FAST token requested, but missing client id");
 			return;
 		end
