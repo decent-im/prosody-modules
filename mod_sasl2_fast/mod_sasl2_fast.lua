@@ -1,15 +1,68 @@
-local tokenauth = module:depends("tokenauth");
 local sasl = require "util.sasl";
 local dt = require "util.datetime";
+local id = require "util.id";
 local st = require "util.stanza";
+local now = require "util.time".now;
+local hash = require "util.hashes";
 
 local fast_token_ttl = module:get_option_number("sasl2_fast_token_ttl", 86400*21);
 
 local xmlns_fast = "urn:xmpp:fast:0";
 local xmlns_sasl2 = "urn:xmpp:sasl:2";
 
-function get_sasl_handler(session) --luacheck: ignore session
+local token_store = module:open_store("fast_tokens", "map");
+
+local function make_token(username, client_id, mechanism)
+	local new_token = "secret-token:fast-"..id.long();
+	local key = hash.sha256(client_id, true).."-new";
+	local issued_at = now();
+	token_store:set(username, key, {
+		mechanism = mechanism;
+		secret = new_token;
+		issued_at = issued_at;
+		expires_at = issued_at + fast_token_ttl;
+	});
+end
+
+local function new_token_tester(username, hmac_f)
+	return function (mechanism, client_id, token_hash, cb_data)
+		local tried_current_token = false;
+		local key = hash.sha256(client_id, true).."-new";
+		local token;
+		repeat
+			token = token_store:get(username, key);
+			if token and token.mechanism == mechanism then
+				local expected_hash = hmac_f(token.secret, "Initiator"..cb_data);
+				if hash.equals(expected_hash, token_hash) then
+					if token.expires_at < now() then
+						token_store:set(username, key, nil);
+						return nil, "credentials-expired";
+					end
+					if not tried_current_token then
+						-- The new token is becoming the current token
+						token_store:set_keys(username, {
+							[key] = token_store.remove;
+							[key:sub(1, -4).."-cur"] = token;
+						});
+					end
+					return true, username, hmac_f(token.secret, "Responder"..cb_data);
+				end
+			end
+			if not tried_current_token then
+				-- Try again with the current token instead
+				tried_current_token = true;
+				key = key:sub(1, -4).."-cur";
+			else
+				return nil;
+			end
+		until false;
+	end
+end
+
+function get_sasl_handler(session)
+	local username = session.username;
 	local token_auth_profile = {
+		ht_256 = new_token_tester(username, hash.hmac_sha256);
 		token_test = function (_, client_id, token, mech_name, counter) --luacheck: ignore
 			return false; -- FIXME
 		end;
@@ -19,11 +72,12 @@ end
 
 -- Advertise FAST to connecting clients
 module:hook("advertise-sasl-features", function (event)
-	local sasl_handler = get_sasl_handler(event.session);
+	local session = event.origin;
+	local sasl_handler = get_sasl_handler(session);
 	if not sasl_handler then return; end
-	event.session.fast_sasl_handler = sasl_handler;
+	session.fast_sasl_handler = sasl_handler;
 	local fast = st.stanza("fast", { xmlns = xmlns_fast });
-	for mech in sasl_handler:mechanisms() do
+	for mech in pairs(sasl_handler:mechanisms()) do
 		fast:text_tag("mechanism", mech);
 	end
 	event.features:add_child(fast);
@@ -36,7 +90,9 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 	if fast_auth then
 		-- Client says it is using FAST auth, so set our SASL handler
 		session.log("debug", "Client is authenticating using FAST");
-		session.sasl_handler = session.fast_sasl_handler;
+		local fast_sasl_handler = session.fast_sasl_handler;
+		fast_sasl_handler.profile._client_id = session.client_id;
+		session.sasl_handler = fast_sasl_handler;
 	end
 	session.fast_sasl_handler = nil;
 	local fast_token_request = auth:get_child(xmlns_fast, "request-token");
@@ -54,22 +110,19 @@ module:hook("sasl2/c2s/success", function (event)
 	local session = event.session;
 
 	local token_request = session.fast_token_request;
+	local client_id = session.client_id;
+	local stream_from = event.stream.from;
 	if token_request then
-		local token, token_info = tokenauth.create_jid_token(
-			session.full_jid,
-			session.full_jid,
-			session.role,
-			fast_token_ttl,
-			{
-				fast_token = true;
-				fast_mechanism = token_request.mechanism;
-			}
-		);
-		if token then
+		if not client_id or not stream_from then
+			session.log("warn", "FAST token requested, but missing client id");
+			return;
+		end
+		local token_info = make_token(session.username, client_id, token_request.mechanism)
+		if token_info then
 			event.success:tag("token", {
 				xmlns = xmlns_fast;
-				expiry = dt.datetime(token_info.expiry);
-				token = token;
+				expiry = dt.datetime(token_info.expires_at);
+				token = token_info.token;
 			}):up();
 		end
 	end
@@ -86,3 +139,30 @@ local function x_plain_token(self, message) --luacheck: ignore 212/self
 end
 
 sasl.registerMechanism("X-PLAIN-TOKEN", { "token_test" }, x_plain_token);
+
+
+-- HT-* mechanisms
+
+local function new_ht_mechanism(mechanism_name, backend_profile_name, cb_name)
+	return function (sasl_handler, message)
+		local backend = sasl_handler.profile[backend_profile_name];
+		local ok, status, response = backend(mechanism_name, sasl_handler._client_id, message, cb_name and sasl_handler.profile.cb[cb_name] or "");
+		if not ok then
+			return "failure", status or "not-authorized";
+		end
+		return "success", response;
+	end
+end
+
+local function register_ht_mechanism(name, backend_profile_name, cb_name)
+	return sasl.registerMechanism(name, { backend_profile_name }, new_ht_mechanism(
+		name,
+		backend_profile_name,
+		cb_name
+	));
+end
+
+register_ht_mechanism("HT-SHA-256-NONE", "ht_sha256", nil);
+register_ht_mechanism("HT-SHA-256-UNIQ", "ht_sha256", "tls-unique");
+register_ht_mechanism("HT-SHA-256-ENDP", "ht_sha256", "tls-endpoint");
+register_ht_mechanism("HT-SHA-256-EXPR", "ht_sha256", "tls-exporter");
