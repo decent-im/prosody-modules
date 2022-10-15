@@ -13,6 +13,8 @@ local xmlns_sasl2 = "urn:xmpp:sasl:2";
 
 local token_store = module:open_store("fast_tokens", "map");
 
+local log = module._log;
+
 local function make_token(username, client_id, mechanism)
 	local new_token = "secret-token:fast-"..id.long();
 	local key = hash.sha256(client_id, true).."-new";
@@ -35,6 +37,7 @@ local function new_token_tester(hmac_f)
 		local key = hash.sha256(client_id, true).."-new";
 		local token;
 		repeat
+			log("debug", "Looking for %s token %s/%s", mechanism, username, key);
 			token = token_store:get(username, key);
 			if token and token.mechanism == mechanism then
 				local expected_hash = hmac_f(token.secret, "Initiator"..cb_data);
@@ -54,10 +57,12 @@ local function new_token_tester(hmac_f)
 				end
 			end
 			if not tried_current_token then
+				log("debug", "Trying next token...");
 				-- Try again with the current token instead
 				tried_current_token = true;
 				key = key:sub(1, -4).."-cur";
 			else
+				log("debug", "No matching %s token found for %s/%s", mechanism, username, key);
 				return nil;
 			end
 		until false;
@@ -107,7 +112,7 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 			fast_sasl_handler.userdata = session.sasl_handler.userdata;
 			session.sasl_handler = fast_sasl_handler;
 		else
-			session.log("warn", "Client asked to auth via FAST, but no SASL handler available");
+			session.log("warn", "Client asked to auth via FAST, but SASL handler or client id missing");
 			local failure = st.stanza("failure", { xmlns = xmlns_sasl2 })
 				:tag("malformed-request"):up()
 				:text_tag("text", "FAST is not available on this stream");
