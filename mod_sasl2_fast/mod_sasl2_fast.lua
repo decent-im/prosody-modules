@@ -6,7 +6,10 @@ local st = require "util.stanza";
 local now = require "util.time".now;
 local hash = require "util.hashes";
 
+-- Tokens expire after 21 days by default
 local fast_token_ttl = module:get_option_number("sasl2_fast_token_ttl", 86400*21);
+-- Tokens are automatically rotated daily
+local fast_token_min_ttl = module:get_option_number("sasl2_fast_token_min_ttl", 86400);
 
 local xmlns_fast = "urn:xmpp:fast:0";
 local xmlns_sasl2 = "urn:xmpp:sasl:2";
@@ -32,7 +35,7 @@ local function make_token(username, client_id, mechanism)
 end
 
 local function new_token_tester(hmac_f)
-	return function (mechanism, username, client_id, token_hash, cb_data)
+	return function (mechanism, username, client_id, token_hash, cb_data, invalidate)
 		local tried_current_token = false;
 		local key = hash.sha256(client_id, true).."-new";
 		local token;
@@ -42,18 +45,25 @@ local function new_token_tester(hmac_f)
 			if token and token.mechanism == mechanism then
 				local expected_hash = hmac_f(token.secret, "Initiator"..cb_data);
 				if hash.equals(expected_hash, token_hash) then
-					if token.expires_at < now() then
+					local current_time = now();
+					if token.expires_at < current_time then
 						token_store:set(username, key, nil);
 						return nil, "credentials-expired";
 					end
-					if not tried_current_token then
+					if not tried_current_token and not invalidate then
 						-- The new token is becoming the current token
 						token_store:set_keys(username, {
 							[key] = token_store.remove;
 							[key:sub(1, -4).."-cur"] = token;
 						});
 					end
-					return true, username, hmac_f(token.secret, "Responder"..cb_data);
+					local rotation_needed;
+					if invalidate then
+						token_store:set(username, key, nil);
+					elseif current_time - token.issued_at > fast_token_min_ttl then
+						rotation_needed = true;
+					end
+					return true, username, hmac_f(token.secret, "Responder"..cb_data), token, rotation_needed;
 				end
 			end
 			if not tried_current_token then
@@ -73,7 +83,9 @@ function get_sasl_handler()
 	local token_auth_profile = {
 		ht_sha_256 = new_token_tester(hash.hmac_sha256);
 	};
-	return sasl.new(module.host, token_auth_profile);
+	local handler = sasl.new(module.host, token_auth_profile);
+	handler.fast = true;
+	return handler;
 end
 
 -- Advertise FAST to connecting clients
@@ -104,9 +116,12 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 		local client_id = auth:get_child_attr("user-agent", nil, "id");
 		if fast_sasl_handler and client_id then
 			session.log("debug", "Client is authenticating using FAST");
-			fast_sasl_handler.profile._client_id = client_id;
+			fast_sasl_handler.client_id = client_id;
 			fast_sasl_handler.profile.cb = session.sasl_handler.profile.cb;
 			fast_sasl_handler.userdata = session.sasl_handler.userdata;
+			local invalidate = fast_auth.attr.invalidate;
+			fast_sasl_handler.invalidate = invalidate == "1" or invalidate == "true";
+			-- Set our SASL handler as the session's SASL handler
 			session.sasl_handler = fast_sasl_handler;
 		else
 			session.log("warn", "Client asked to auth via FAST, but SASL handler or client id missing");
@@ -134,13 +149,16 @@ module:hook("sasl2/c2s/success", function (event)
 
 	local token_request = session.fast_token_request;
 	local client_id = session.client_id;
-	if token_request then
+	local sasl_handler = session.sasl_handler;
+	if token_request or sasl_handler.fast and sasl_handler.rotation_needed then
 		if not client_id then
 			session.log("warn", "FAST token requested, but missing client id");
 			return;
 		end
-		local token_info = make_token(session.username, client_id, token_request.mechanism)
+		local mechanism = token_request and token_request.mechanism or session.sasl_handler.selected;
+		local token_info = make_token(session.username, client_id, mechanism)
 		if token_info then
+			session.log("debug", "Provided new FAST token to client");
 			event.success:tag("token", {
 				xmlns = xmlns_fast;
 				expiry = dt.datetime(token_info.expires_at);
@@ -160,11 +178,19 @@ local function new_ht_mechanism(mechanism_name, backend_profile_name, cb_name)
 			return "failure", "malformed-request";
 		end
 		local cb_data = cb_name and sasl_handler.profile.cb[cb_name](sasl_handler) or "";
-		local ok, status, response = backend(mechanism_name, username, sasl_handler.profile._client_id, token_hash, cb_data);
+		local ok, status, response, rotation_needed = backend(
+			mechanism_name,
+			username,
+			sasl_handler.client_id,
+			token_hash,
+			cb_data,
+			sasl_handler.invalidate
+		);
 		if not ok then
 			return "failure", status or "not-authorized";
 		end
 		sasl_handler.username = status;
+		sasl_handler.rotation_needed = rotation_needed;
 		return "success", response;
 	end
 end
