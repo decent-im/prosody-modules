@@ -17,12 +17,16 @@ local function make_token(username, client_id, mechanism)
 	local new_token = "secret-token:fast-"..id.long();
 	local key = hash.sha256(client_id, true).."-new";
 	local issued_at = now();
-	token_store:set(username, key, {
+	local token_info = {
 		mechanism = mechanism;
 		secret = new_token;
 		issued_at = issued_at;
 		expires_at = issued_at + fast_token_ttl;
-	});
+	};
+	if not token_store:set(username, key, token_info) then
+		return nil;
+	end
+	return token_info;
 end
 
 local function new_token_tester(username, hmac_f)
