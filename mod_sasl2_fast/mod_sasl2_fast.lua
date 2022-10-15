@@ -142,7 +142,7 @@ module:hook("sasl2/c2s/success", function (event)
 			event.success:tag("token", {
 				xmlns = xmlns_fast;
 				expiry = dt.datetime(token_info.expires_at);
-				token = token_info.token;
+				token = token_info.secret;
 			}):up();
 		end
 	end
