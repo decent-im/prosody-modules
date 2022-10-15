@@ -95,13 +95,14 @@ end);
 -- Process any FAST elements in <authenticate/>
 module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 	-- Cache action for future processing (after auth success)
-	local fast_auth = auth:get_child(xmlns_fast, "fast");
+	local fast_auth = auth:get_child("fast", xmlns_fast);
 	if fast_auth then
 		-- Client says it is using FAST auth, so set our SASL handler
 		local fast_sasl_handler = session.fast_sasl_handler;
-		if fast_sasl_handler then
+		local client_id = auth:get_child_attr("user-agent", nil, "id");
+		if fast_sasl_handler and client_id then
 			session.log("debug", "Client is authenticating using FAST");
-			fast_sasl_handler.profile._client_id = session.client_id;
+			fast_sasl_handler.profile._client_id = client_id;
 			session.sasl_handler = fast_sasl_handler;
 		else
 			session.log("warn", "Client asked to auth via FAST, but no SASL handler available");
@@ -113,7 +114,7 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 		end
 	end
 	session.fast_sasl_handler = nil;
-	local fast_token_request = auth:get_child(xmlns_fast, "request-token");
+	local fast_token_request = auth:get_child("request-token", xmlns_fast);
 	if fast_token_request then
 		local mech = fast_token_request.attr.mechanism;
 		session.log("debug", "Client requested new FAST token for %s", mech);
