@@ -29,8 +29,8 @@ local function make_token(username, client_id, mechanism)
 	return token_info;
 end
 
-local function new_token_tester(username, hmac_f)
-	return function (mechanism, client_id, token_hash, cb_data)
+local function new_token_tester(hmac_f)
+	return function (mechanism, username, client_id, token_hash, cb_data)
 		local tried_current_token = false;
 		local key = hash.sha256(client_id, true).."-new";
 		local token;
@@ -64,9 +64,9 @@ local function new_token_tester(username, hmac_f)
 	end
 end
 
-function get_sasl_handler(username)
+function get_sasl_handler()
 	local token_auth_profile = {
-		ht_sha_256 = new_token_tester(username, hash.hmac_sha256);
+		ht_sha_256 = new_token_tester(hash.hmac_sha256);
 		token_test = function (_, client_id, token, mech_name, counter) --luacheck: ignore
 			return false; -- FIXME
 		end;
@@ -163,10 +163,16 @@ sasl.registerMechanism("X-PLAIN-TOKEN", { "token_test" }, x_plain_token);
 local function new_ht_mechanism(mechanism_name, backend_profile_name, cb_name)
 	return function (sasl_handler, message)
 		local backend = sasl_handler.profile[backend_profile_name];
-		local ok, status, response = backend(mechanism_name, sasl_handler._client_id, message, cb_name and sasl_handler.profile.cb[cb_name] or "");
+		local username, token_hash = message:match("^([^%z]+)%z(.+)$");
+		if not username then
+			return "failure", "malformed-request";
+		end
+		local cb_data = cb_name and sasl_handler.profile.cb[cb_name](sasl_handler) or "";
+		local ok, status, response = backend(mechanism_name, username, sasl_handler.profile._client_id, token_hash, cb_data);
 		if not ok then
 			return "failure", status or "not-authorized";
 		end
+		sasl_handler.username = status;
 		return "success", response;
 	end
 end
