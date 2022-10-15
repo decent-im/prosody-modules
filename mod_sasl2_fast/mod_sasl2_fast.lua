@@ -103,6 +103,8 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 		if fast_sasl_handler and client_id then
 			session.log("debug", "Client is authenticating using FAST");
 			fast_sasl_handler.profile._client_id = client_id;
+			fast_sasl_handler.profile.cb = session.sasl_handler.profile.cb;
+			fast_sasl_handler.userdata = session.sasl_handler.userdata;
 			session.sasl_handler = fast_sasl_handler;
 		else
 			session.log("warn", "Client asked to auth via FAST, but no SASL handler available");
