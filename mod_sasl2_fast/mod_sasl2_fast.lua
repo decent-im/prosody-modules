@@ -72,9 +72,6 @@ end
 function get_sasl_handler()
 	local token_auth_profile = {
 		ht_sha_256 = new_token_tester(hash.hmac_sha256);
-		token_test = function (_, client_id, token, mech_name, counter) --luacheck: ignore
-			return false; -- FIXME
-		end;
 	};
 	return sasl.new(module.host, token_auth_profile);
 end
@@ -152,19 +149,6 @@ module:hook("sasl2/c2s/success", function (event)
 		end
 	end
 end, 75);
-
-
--- X-PLAIN-TOKEN mechanism
-
-local function x_plain_token(self, message) --luacheck: ignore 212/self
-	if not message then
-		return nil, "malformed-request";
-	end
-	return nil, "temporary-auth-failure"; -- FIXME
-end
-
-sasl.registerMechanism("X-PLAIN-TOKEN", { "token_test" }, x_plain_token);
-
 
 -- HT-* mechanisms
 
