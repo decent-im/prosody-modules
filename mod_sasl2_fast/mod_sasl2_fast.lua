@@ -185,7 +185,8 @@ local function register_ht_mechanism(name, backend_profile_name, cb_name)
 		name,
 		backend_profile_name,
 		cb_name
-	));
+	),
+	{ cb_name });
 end
 
 register_ht_mechanism("HT-SHA-256-NONE", "ht_sha_256", nil);
