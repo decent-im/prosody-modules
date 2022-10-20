@@ -40,7 +40,7 @@ Configuration
 
   Option       Default    Description
   ------------ ---------- --------------------------------
-  vjud\_mode   "opt-in"   Defines how the module behaves
+  vjud\_mode   "opt-in"   Choose how users are listed in the directory ("opt-in" or "all")
 
 Compatibility
 =============
