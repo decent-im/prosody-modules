@@ -1096,6 +1096,7 @@ components:
       description: Message ID of a message that has been displayed
       xml:
         namespace: urn:xmpp:chat-markers:0
+        x_single_attribute: id
 
     idle_since:
       type: string

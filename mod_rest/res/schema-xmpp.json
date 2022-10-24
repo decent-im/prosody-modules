@@ -733,7 +733,8 @@
                "title" : "XEP-0333: Chat Markers",
                "type" : "string",
                "xml" : {
-                  "namespace" : "urn:xmpp:chat-markers:0"
+                  "namespace" : "urn:xmpp:chat-markers:0",
+                  "x_single_attribute" : "id"
                }
             },
             "encryption" : {
