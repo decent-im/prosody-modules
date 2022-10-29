@@ -2,6 +2,10 @@
 labels:
 - 'Stage-Alpha'
 summary: 'Enables users to reset their password via a link'
+rockspec:
+  build:
+    copy_directories:
+    - password_reset
 ...
 
 Introduction
