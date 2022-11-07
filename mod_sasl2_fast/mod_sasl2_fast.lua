@@ -47,6 +47,7 @@ local function new_token_tester(hmac_f)
 				if hash.equals(expected_hash, token_hash) then
 					local current_time = now();
 					if token.expires_at < current_time then
+						log("debug", "Token found, but it has expired (%ds ago). Cleaning up...", current_time - token.expires_at);
 						token_store:set(username, key, nil);
 						return nil, "credentials-expired";
 					end
@@ -61,6 +62,7 @@ local function new_token_tester(hmac_f)
 					if invalidate then
 						token_store:set(username, key, nil);
 					elseif current_time - token.issued_at > fast_token_min_ttl then
+						log("debug", "FAST token due for rotation (age: %d)", current_time - token.issued_at);
 						rotation_needed = true;
 					end
 					return true, username, hmac_f(token.secret, "Responder"..cb_data), rotation_needed;
