@@ -63,7 +63,7 @@ local function new_token_tester(hmac_f)
 					elseif current_time - token.issued_at > fast_token_min_ttl then
 						rotation_needed = true;
 					end
-					return true, username, hmac_f(token.secret, "Responder"..cb_data), token, rotation_needed;
+					return true, username, hmac_f(token.secret, "Responder"..cb_data), rotation_needed;
 				end
 			end
 			if not tried_current_token then
@@ -173,23 +173,24 @@ end, 75);
 local function new_ht_mechanism(mechanism_name, backend_profile_name, cb_name)
 	return function (sasl_handler, message)
 		local backend = sasl_handler.profile[backend_profile_name];
-		local username, token_hash = message:match("^([^%z]+)%z(.+)$");
-		if not username then
+		local authc_username, token_hash = message:match("^([^%z]+)%z(.+)$");
+		if not authc_username then
 			return "failure", "malformed-request";
 		end
 		local cb_data = cb_name and sasl_handler.profile.cb[cb_name](sasl_handler) or "";
-		local ok, status, response, rotation_needed = backend(
+		local ok, authz_username, response, rotation_needed = backend(
 			mechanism_name,
-			username,
+			authc_username,
 			sasl_handler.client_id,
 			token_hash,
 			cb_data,
 			sasl_handler.invalidate
 		);
 		if not ok then
-			return "failure", status or "not-authorized";
+			-- authz_username is error condition
+			return "failure", authz_username or "not-authorized";
 		end
-		sasl_handler.username = status;
+		sasl_handler.username = authz_username;
 		sasl_handler.rotation_needed = rotation_needed;
 		return "success", response;
 	end
