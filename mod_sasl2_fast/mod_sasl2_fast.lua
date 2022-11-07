@@ -98,6 +98,8 @@ module:hook("advertise-sasl-features", function (event)
 	end
 	local sasl_handler = get_sasl_handler(username);
 	if not sasl_handler then return; end
+	sasl_handler.profile.cb = session.sasl_handler.profile.cb;
+	sasl_handler.userdata = session.sasl_handler.userdata;
 	session.fast_sasl_handler = sasl_handler;
 	local fast = st.stanza("fast", { xmlns = xmlns_fast });
 	for mech in pairs(sasl_handler:mechanisms()) do
@@ -150,7 +152,7 @@ module:hook("sasl2/c2s/success", function (event)
 	local token_request = session.fast_token_request;
 	local client_id = session.client_id;
 	local sasl_handler = session.sasl_handler;
-	if token_request or sasl_handler.fast and sasl_handler.rotation_needed then
+	if token_request or (sasl_handler.fast and sasl_handler.rotation_needed) then
 		if not client_id then
 			session.log("warn", "FAST token requested, but missing client id");
 			return;
@@ -202,10 +204,10 @@ local function register_ht_mechanism(name, backend_profile_name, cb_name)
 		backend_profile_name,
 		cb_name
 	),
-	{ cb_name });
+	cb_name and { cb_name } or nil);
 end
 
 register_ht_mechanism("HT-SHA-256-NONE", "ht_sha_256", nil);
 register_ht_mechanism("HT-SHA-256-UNIQ", "ht_sha_256", "tls-unique");
-register_ht_mechanism("HT-SHA-256-ENDP", "ht_sha_256", "tls-endpoint");
+register_ht_mechanism("HT-SHA-256-ENDP", "ht_sha_256", "tls-server-end-point");
 register_ht_mechanism("HT-SHA-256-EXPR", "ht_sha_256", "tls-exporter");
