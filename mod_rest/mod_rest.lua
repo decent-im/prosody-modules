@@ -461,9 +461,7 @@ module:provides("http", {
 		};
 	});
 
--- Forward stanzas from XMPP to HTTP and return any reply
-local rest_url = module:get_option_string("rest_callback_url", nil);
-if rest_url then
+function new_webhook(rest_url, send_type)
 	local function get_url() return rest_url; end
 	if rest_url:find("%b{}") then
 		local httputil = require "util.http";
@@ -473,7 +471,6 @@ if rest_url then
 			return render_url(rest_url, { kind = stanza.name, type = at.type, to = at.to, from = at.from });
 		end
 	end
-	local send_type = module:get_option_string("rest_callback_content_type", "application/xmpp+xml");
 	if send_type == "json" then
 		send_type = "application/json";
 	end
@@ -600,6 +597,16 @@ if rest_url then
 
 		return true;
 	end
+
+	return handle_stanza;
+end
+
+-- Forward stanzas from XMPP to HTTP and return any reply
+local rest_url = module:get_option_string("rest_callback_url", nil);
+if rest_url then
+	local send_type = module:get_option_string("rest_callback_content_type", "application/xmpp+xml");
+
+	local handle_stanza = new_webhook(rest_url, send_type);
 
 	local send_kinds = module:get_option_set("rest_callback_stanzas", { "message", "presence", "iq" });
 
