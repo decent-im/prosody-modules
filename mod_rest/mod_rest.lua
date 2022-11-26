@@ -500,7 +500,7 @@ if rest_url then
 
 	local function handle_stanza(event)
 		local stanza, origin = event.stanza, event.origin;
-		local reply_allowed = stanza.attr.type ~= "error";
+		local reply_allowed = stanza.attr.type ~= "error" and stanza.attr.type ~= "result";
 		local reply_needed = reply_allowed and stanza.name == "iq";
 		local receipt;
 
