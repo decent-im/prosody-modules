@@ -1,10 +1,18 @@
 ---
 labels:
-- Stage-Alpha
+- Stage-Beta
 summary: "XEP-0388: Extensible SASL Profile"
 ---
 
-Experimental implementation of [XEP-0388: Extensible SASL Profile]
+Implementation of [XEP-0388: Extensible SASL Profile]. **Note: At the time of
+writing (Nov 2022) the version of the XEP implemented by this module is still
+working its way through the XSF standards process. See [PR #1214](https://github.com/xsf/xeps/pull/1214)
+for the current status.**
+
+## Configuration
+
+This module honours the same configuration options as Prosody's existing
+[mod_saslauth](https://prosody.im/doc/modules/mod_saslauth).
 
 ## Developers
 
