@@ -2,6 +2,9 @@
 labels:
 - Stage-Beta
 summary: "Bind 2 integration with SASL2"
+rockspec:
+  dependencies:
+  - mod_sasl2
 ---
 
 Add support for [XEP-0386: Bind 2], which is a new method for clients to bind

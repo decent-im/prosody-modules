@@ -8,6 +8,8 @@ local sm_bind_resource = require "core.sessionmanager".bind_resource;
 local xmlns_bind2 = "urn:xmpp:bind:0";
 local xmlns_sasl2 = "urn:xmpp:sasl:2";
 
+module:depends("sasl2");
+
 -- Advertise what we can do
 
 module:hook("advertise-sasl-features", function(event)
