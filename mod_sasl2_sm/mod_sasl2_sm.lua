@@ -5,6 +5,8 @@ local mod_smacks = module:depends("smacks");
 local xmlns_sasl2 = "urn:xmpp:sasl:2";
 local xmlns_sm = "urn:xmpp:sm:3";
 
+module:depends("sasl2");
+
 -- Advertise what we can do
 
 module:hook("advertise-sasl-features", function (event)
