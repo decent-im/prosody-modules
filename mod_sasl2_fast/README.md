@@ -2,6 +2,9 @@
 labels:
 - Stage-Beta
 summary: "Fast Authentication Streamlining Tokens"
+rockspec:
+  dependencies:
+  - mod_sasl2
 ---
 
 This module implements a mechanism via which clients can exchange a password

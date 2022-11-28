@@ -6,6 +6,8 @@ local st = require "util.stanza";
 local now = require "util.time".now;
 local hash = require "util.hashes";
 
+module:depends("sasl2");
+
 -- Tokens expire after 21 days by default
 local fast_token_ttl = module:get_option_number("sasl2_fast_token_ttl", 86400*21);
 -- Tokens are automatically rotated daily
