@@ -18,6 +18,7 @@ local sm_make_authenticated = require "core.sessionmanager".make_authenticated;
 
 local xmlns_sasl2 = "urn:xmpp:sasl:2";
 
+local secure_auth_only = module:get_option_boolean("c2s_require_encryption", module:get_option_boolean("require_encryption", true));
 local allow_unencrypted_plain_auth = module:get_option_boolean("allow_unencrypted_plain_auth", false)
 local insecure_mechanisms = module:get_option_set("insecure_sasl_mechanisms", allow_unencrypted_plain_auth and {} or {"PLAIN", "LOGIN"});
 local disabled_mechanisms = module:get_option_set("disable_sasl_mechanisms", { "DIGEST-MD5" });
@@ -44,6 +45,9 @@ module:hook("stream-features", function(event)
 	if origin.type ~= "c2s_unauthed" then
 		log("debug", "Already authenticated");
 		return
+	elseif secure_auth_only and not origin.secure then
+		log("debug", "Not offering authentication on insecure connection");
+		return;
 	end
 
 	local sasl_handler = usermanager_get_sasl_handler(host, origin)
@@ -187,6 +191,9 @@ local function process_cdata(session, cdata)
 end
 
 module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
+	if secure_auth_only and not session.secure then
+		return handle_status(session, "failure", "encryption-required");
+	end
 	local sasl_handler = session.sasl_handler;
 	if not sasl_handler then
 		sasl_handler = usermanager_get_sasl_handler(host, session);
