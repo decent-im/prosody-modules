@@ -39,7 +39,7 @@ module:default_permission("prosody:admin", "xmpp:federate");
 function check_user_isolated(event)
 	local session = event.session;
 	local bare_jid = jid_bare(session.full_jid);
-	if module:may("xmpp:federate") or except_users:contains(bare_jid) then
+	if module:may("xmpp:federate", event) or except_users:contains(bare_jid) then
 		session.no_host_isolation = true;
 	end
 	module:log("debug", "%s is %sisolated", session.full_jid or "[?]", session.no_host_isolation and "" or "not ");
