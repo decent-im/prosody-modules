@@ -83,10 +83,15 @@ function moduleapi.may(self, action, context)
 end
 
 function moduleapi.default_permission(self, role_name, permission)
-	local r = permissions[self.host][role_name];
+	local p = permissions[self.host];
+	if not p then
+		p = {};
+		permissions[self.host] = p;
+	end
+	local r = p[role_name];
 	if not r then
 		r = {};
-		permissions[self.host][role_name] = r;
+		p[role_name] = r;
 	end
 	r[permission] = true;
 end
