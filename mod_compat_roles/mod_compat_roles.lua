@@ -28,11 +28,15 @@ local function get_user_role_name(username, host)
 	return get_jid_role_name(username.."@"..host, host);
 end
 
--- permissions[host][permission_name] = permitted_role_name
+-- permissions[host][role_name][permission_name] = is_permitted
 local permissions = {};
 
-local function role_may(role_name, permission)
-	local role_permissions = permissions[role_name];
+local function role_may(host, role_name, permission)
+	local host_roles = permissions[host];
+	if not host_roles then
+		return false;
+	end
+	local role_permissions = host_roles[role_name];
 	if not role_permissions then
 		return false;
 	end
@@ -56,7 +60,7 @@ function moduleapi.may(self, action, context)
 			return false;
 		end
 
-		local permit = role_may(role, action);
+		local permit = role_may(self.host, role, action);
 		if not permit then
 			self:log("debug", "Access denied: JID <%s> may not %s (not permitted by role %s)", context, action, role.name);
 		end
@@ -74,7 +78,7 @@ function moduleapi.may(self, action, context)
 			self:log("debug", "Access denied: JID <%s> may not %s (no role found)", actor_jid, action);
 			return false;
 		end
-		local permit = role_may(role_name, action, context);
+		local permit = role_may(self.host, role_name, action, context);
 		if not permit then
 			self:log("debug", "Access denied: JID <%s> may not %s (not permitted by role %s)", actor_jid, action, role_name);
 		end
