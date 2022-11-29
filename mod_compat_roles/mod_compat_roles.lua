@@ -31,6 +31,12 @@ end
 -- permissions[host][role_name][permission_name] = is_permitted
 local permissions = {};
 
+local role_inheritance = {
+	["prosody:operator"] = "prosody:admin";
+	["prosody:admin"] = "prosody:user";
+	["prosody:user"] = "prosody:restricted";
+};
+
 local function role_may(host, role_name, permission)
 	local host_roles = permissions[host];
 	if not host_roles then
@@ -40,7 +46,8 @@ local function role_may(host, role_name, permission)
 	if not role_permissions then
 		return false;
 	end
-	return not not permissions[role_name][permission];
+	local next_role = role_inheritance[role_name];
+	return not not permissions[role_name][permission] or (next_role and role_may(host, next_role, permission));
 end
 
 function moduleapi.may(self, action, context)
