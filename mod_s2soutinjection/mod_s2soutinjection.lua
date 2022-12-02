@@ -1,9 +1,7 @@
 local st = require"util.stanza";
-local new_ip = require"util.ip".new_ip;
 local new_outgoing = require"core.s2smanager".new_outgoing;
 local bounce_sendq = module:depends"s2s".route_to_new_session.bounce_sendq;
 local initialize_filters = require "util.filters".initialize;
-local st = require "util.stanza";
 
 local portmanager = require "core.portmanager";
 
@@ -25,7 +23,7 @@ function proxy_listener.onconnect(conn)
 	-- Now the real s2s listener can take over the connection.
 	local listener = portmanager.get_service("s2s").listener;
 
-	local w, log = conn.send, session.log;
+	local log = session.log;
 
 	local filter = initialize_filters(session);
 
