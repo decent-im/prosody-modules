@@ -15,7 +15,7 @@ local injected = module:get_option("s2s_connect_overrides");
 
 -- The proxy_listener handles connection while still connecting to the proxy,
 -- then it hands them over to the normal listener (in mod_s2s)
-local proxy_listener = { default_port = port, default_mode = "*a", default_interface = "*" };
+local proxy_listener = { default_port = nil, default_mode = "*a", default_interface = "*" };
 
 function proxy_listener.onconnect(conn)
 	local session = sessions[conn];
