@@ -69,13 +69,13 @@ module:hook("route/remote", function(event)
 	local from_host, to_host, stanza = event.from_host, event.to_host, event.stanza;
 	local inject = injected and injected[to_host];
 	if not inject then return end
-	log("debug", "opening a new outgoing connection for this stanza");
+	module:log("debug", "opening a new outgoing connection for this stanza");
 	local host_session = new_outgoing(from_host, to_host);
 
 	-- Store in buffer
 	host_session.bounce_sendq = bounce_sendq;
 	host_session.sendq = { {tostring(stanza), stanza.attr.type ~= "error" and stanza.attr.type ~= "result" and st.reply(stanza)} };
-	log("debug", "stanza [%s] queued until connection complete", tostring(stanza.name));
+	module:log("debug", "stanza [%s] queued until connection complete", tostring(stanza.name));
 
 	local host, port = inject[1] or inject, tonumber(inject[2]) or 5269;
 
