@@ -75,7 +75,7 @@ module:hook("route/remote", function(event)
 	-- Store in buffer
 	host_session.bounce_sendq = bounce_sendq;
 	host_session.sendq = { {tostring(stanza), stanza.attr.type ~= "error" and stanza.attr.type ~= "result" and st.reply(stanza)} };
-	module:log("debug", "stanza [%s] queued until connection complete", tostring(stanza.name));
+	host_session.log("debug", "stanza [%s] queued until connection complete", tostring(stanza.name));
 
 	local host, port = inject[1] or inject, tonumber(inject[2]) or 5269;
 
