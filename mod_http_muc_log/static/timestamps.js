@@ -12,8 +12,10 @@ tag.textContent = date.toLocaleTimeString(navigator.language);
 tag.setAttribute("title", date.toString());
 }
 }
+if(document.forms.length>0){
 document.forms[0].elements.p.addEventListener("change", function() {
 document.forms[0].submit();
+}
 });
 })();
 
