@@ -6,6 +6,7 @@ rockspec:
   build:
     copy_directories:
       - res
+      - static
 ...
 
 Introduction
