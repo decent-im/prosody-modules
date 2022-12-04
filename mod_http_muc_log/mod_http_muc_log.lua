@@ -40,6 +40,8 @@ do
 	end
 end
 
+local resources = module:get_option_path(module.name .. "_resources", "static");
+
 -- local base_url = module:http_url() .. '/'; -- TODO: Generate links in a smart way
 local get_link do
 	local link, path = { path = '/' }, { "", "", is_directory = true };
@@ -248,6 +250,7 @@ local function years_page(event, path)
 	response.headers.content_type = "text/html; charset=utf-8";
 	local room_obj = get_room(room);
 	return render(template, {
+		static = "../@static";
 		room = room_obj._data;
 		jid = room_obj.jid;
 		jid_node = jid_split(room_obj.jid);
@@ -467,6 +470,7 @@ local function logs_page(event, path)
 	response.headers.content_type = "text/html; charset=utf-8";
 	local room_obj = get_room(room);
 	return render(template, {
+		static = "../@static";
 		date = date;
 		room = room_obj._data;
 		jid = room_obj.jid;
@@ -517,6 +521,7 @@ local function list_rooms(event)
 
 	response.headers.content_type = "text/html; charset=utf-8";
 	return render(template, {
+		static = "./@static";
 		title = module:get_option_string("name", "Prosody Chatrooms");
 		jid = module.host;
 		hide_presence = hide_presence(request);
@@ -524,6 +529,20 @@ local function list_rooms(event)
 		rooms = room_list;
 		dates = {}; -- COMPAT util.interpolation {nil|func#...} bug
 	});
+end
+
+local serve_static
+do
+	if prosody.process_type == "prosody" then
+		-- Prosody >= 0.12
+		local http_files = require "net.http.files";
+		serve = http_files.serve;
+	else
+		-- Prosody <= 0.11
+		serve = module:depends "http_files".serve;
+	end
+	local mime_map = module:shared("/*/http_files/mime").types or { css = "text/css"; js = "application/javascript" };
+	serve_static = serve({ path = resources; mime_map = mime_map });
 end
 
 module:provides("http", {
@@ -535,6 +554,10 @@ module:provides("http", {
 		-- thus:
 		-- GET /room --> years_page (via logs_page)
 		-- GET /room/yyyy-mm-dd --> logs_page (for real)
+
+		["GET /@static/*"] = serve_static;
+		-- There are not many ASCII characters that are safe to use in URLs but not
+		-- valid in JID localparts, '@' seemed the only option.
 	};
 });
 
