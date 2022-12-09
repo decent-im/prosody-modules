@@ -1,5 +1,9 @@
 ---
 summary: Subscribe to Atom and RSS feeds over pubsub
+rockspec:
+  build:
+    modules:
+      pubsub_feeds.feeds: feeds.lib.lua
 ---
 
 # Introduction
