@@ -54,7 +54,7 @@ function stream_mt:read_packet()
 	until bit.band(digit, 0x80) == 0;
 	packet.length = length;
 	if packet.type == "connect" then
-		if self:read_string() ~= "MQIsdp" then
+		if self:read_string() ~= "MQTT" then
 			module:log("warn", "Unexpected packet signature!");
 			packet.type = nil; -- Invalid packet
 		else
