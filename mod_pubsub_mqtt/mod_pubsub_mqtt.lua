@@ -8,7 +8,7 @@ local pubsub_subscribers = {};
 local packet_handlers = {};
 
 function handle_packet(session, packet)
-	module:log("warn", "MQTT packet received! Length: %d", packet.length);
+	module:log("debug", "MQTT packet received! Length: %d", packet.length);
 	for k,v in pairs(packet) do
 		module:log("debug", "MQTT %s: %s", tostring(k), tostring(v));
 	end
@@ -32,7 +32,7 @@ function packet_handlers.disconnect(session, packet)
 end
 
 function packet_handlers.publish(session, packet)
-	module:log("warn", "PUBLISH to %s", packet.topic);
+	module:log("info", "PUBLISH to %s", packet.topic);
 	local host, node = packet.topic:match("^([^/]+)/(.+)$");
 	local pubsub = pubsub_services[host];
 	if not pubsub then
@@ -51,7 +51,7 @@ end
 
 function packet_handlers.subscribe(session, packet)
 	for _, topic in ipairs(packet.topics) do
-		module:log("warn", "SUBSCRIBE to %s", topic);
+		module:log("info", "SUBSCRIBE to %s", topic);
 		local host, node = topic:match("^([^/]+)/(.+)$");
 		local pubsub = pubsub_subscribers[host];
 		if not pubsub then
