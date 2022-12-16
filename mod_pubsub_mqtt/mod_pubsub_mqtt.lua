@@ -41,8 +41,8 @@ function packet_handlers.publish(session, packet)
 	end
 	local id = "mqtt";
 	local ok, err = pubsub:publish(node, true, id,
-		st.stanza("data", { xmlns = "https://prosody.im/protocol/data" })
-			:text(packet.data)
+		st.stanza("item", { xmlns = "http://jabber.org/protocol/pubsub", id = id })
+		  :text_tag("data", packet.data, { xmlns = "https://prosody.im/protocol/data" })
 	);
 	if not ok then
 		module:log("warn", "Error publishing MQTT data: %s", tostring(err));
