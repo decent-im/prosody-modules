@@ -21,6 +21,7 @@ local function get_room(name)
 end
 
 local use_oob = module:get_option_boolean(module.name .. "_show_images", false);
+local show_presence_by_default = module:get_option_boolean(module.name .. "_show_presence_by_default", true);
 module:depends"http";
 
 local template;
@@ -136,7 +137,7 @@ local function hide_presence(request)
 			return data.p == "h"
 		end
 	end
-	return false;
+	return not show_presence_by_default;
 end
 
 local function get_dates(room) --> { integer, ... }
