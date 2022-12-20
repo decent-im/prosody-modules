@@ -16,13 +16,6 @@ local schema do
 				copyto.properties[key] = prop;
 			end
 		end
-		schema.properties.message.properties.archive.properties.forward = schema.properties.message.properties.forwarded;
-		schema.properties.message.properties.forwarded.properties.delay = schema._common.delay;
-		schema.properties.message.properties.forwarded.properties.message = schema.properties.message;
-		schema.properties.iq.properties.archive.properties.form = schema._common.dataform;
-		schema.properties.iq.properties.archive.properties.page = schema._common.rsm;
-		schema.properties.iq.properties.result.properties.page = schema._common.rsm;
-		schema._common = nil;
 	end
 end
 
@@ -406,9 +399,21 @@ local function st2json(s)
 		end
 		return { xmpp = result };
 	end
-	local t = map.parse(schema.properties[s.name], s);
 
-	t.kind = s.name;
+	local t;
+	do
+		local wrap_s = st.stanza("xmpp", { xmlns = "jabber:client" }):add_child(s);
+		local wrap_t = map.parse(schema, wrap_s);
+		if not wrap_t then
+			return nil, "parse";
+		end
+		local kind;
+		kind, t = next(wrap_t);
+		if kind == nil then
+			return nil, "parse";
+		end
+		t.kind = kind;
+	end
 
 	if s.name == "presence" and not s.attr.type then
 		t.type = "available";

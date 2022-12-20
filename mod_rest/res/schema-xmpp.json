@@ -406,6 +406,9 @@
                   "namespace" : "jabber:iq:oob"
                }
             },
+            "payload" : {
+               "$ref" : "#/_common/payload"
+            },
             "ping" : {
                "description" : "Test reachability of some XMPP address",
                "enum" : [
@@ -864,6 +867,9 @@
                   "name" : "x",
                   "namespace" : "jabber:x:oob"
                }
+            },
+            "payload" : {
+               "$ref" : "#/_common/payload"
             },
             "reactions" : {
                "properties" : {
