@@ -1,7 +1,7 @@
 ---
 labels:
-- 'Stage-Alpha'
-- 'Type-S2SAuth'
+- Stage-Broken
+- Type-S2SAuth
 summary: S2S authentication using DANE
 ...
 
@@ -77,18 +77,22 @@ Further reading
 
 -   [DANE Operational Guidance][rfc7671]
 
-Compatibility
-=============
+# Compatibility
 
-Works with Prosody 0.9 until 0.11.
+  version   status
+  --------- ------------
+  trunk     broken[^1]
+  0.12      broken
+  0.11      works
+  0.10      works
+  0.9       works
 
 **Broken** since [trunk revision 756b8821007a](https://hg.prosody.im/trunk/rev/756b8821007a).
 
-Known issues
-============
+# Known issues
 
 -   A race condition between the DANE lookup and completion of the TLS
     handshake may cause a crash. This does not happen in **trunk**
     thanks to better async support.
 
-
+[^1]: since [756b8821007a](https://hg.prosody.im/trunk/rev/756b8821007a)
