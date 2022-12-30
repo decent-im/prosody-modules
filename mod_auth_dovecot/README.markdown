@@ -6,8 +6,8 @@ summary: Dovecot authentication module
 rockspec:
   build:
     modules:
-      mod_auth_dovecot: mod_auth_dovecot/mod_auth_dovecot.lua
-      mod_auth_dovecot.sasl_dovecot: mod_auth_dovecot/sasl_dovecot.lib.lua
+      mod_auth_dovecot: auth_dovecot/mod_auth_dovecot.lua
+      mod_auth_dovecot.sasl_dovecot: auth_dovecot/sasl_dovecot.lib.lua
 ...
 
 Introduction
