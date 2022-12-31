@@ -54,7 +54,7 @@ curl https://prosody.example:5281/rest \
     -H 'Content-Type: application/xmpp+xml' \
     --data-binary '<message type="chat" to="user@example.org">
             <body>Hello!</body>
-        </body>'
+        </message>'
 ```
 
 or a JSON payload:
