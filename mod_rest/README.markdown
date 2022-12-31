@@ -116,10 +116,16 @@ curl https://prosody.example:5281/rest/version/example.com \
 
 The supported queries are
 
+-   `archive`
 -   `disco`
+-   `extdisco`
 -   `items`
--   `version`
+-   `lastactivity`
+-   `oob`
+-   `payload`
 -   `ping`
+-   `stats`
+-   `version`
 
 ## Receiving stanzas
 

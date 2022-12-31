@@ -203,6 +203,48 @@ paths:
         '200':
           $ref: '#/components/responses/success'
 
+  /rest/lastactivity/{to}:
+    get:
+      tags:
+      - query
+      summary: Query last activity of an entity. Sometimes used as "uptime" for servers.
+      security:
+      - basic: []
+      - token: []
+      parameters:
+      - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /rest/stats/{to}:
+    get:
+      tags:
+      - query
+      summary: Query an entity for statistics
+      security:
+      - basic: []
+      - token: []
+      parameters:
+      - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
+  /rest/upload_request/{to}:
+    get:
+      tags:
+      - query
+      summary: Lorem ipsum
+      security:
+      - basic: []
+      - token: []
+      parameters:
+      - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          $ref: '#/components/responses/success'
+
 components:
   schemas:
     stanza:
