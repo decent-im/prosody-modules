@@ -324,6 +324,8 @@ components:
           $ref: '#/components/schemas/stanza_ids'
         reference:
           $ref: '#/components/schemas/reference'
+        reply:
+          $ref: '#/components/schemas/reply'
         markable:
           $ref: '#/components/schemas/markable'
         displayed:
@@ -1137,6 +1139,23 @@ components:
       required:
       - type
       - uri
+
+    reply:
+      title: 'XEP-0461: Message Replies'
+      description: Reference a message being replied to
+      type: object
+      xml:
+        name: reply
+        namespace: urn:xmpp:reply:0
+      properties:
+        to:
+          type: string
+          xml:
+            attribute: true
+        id:
+          type: string
+          xml:
+            attribute: true
 
     markable:
       type: boolean
