@@ -296,6 +296,8 @@ components:
           $ref: '#/components/schemas/subject'
         thread:
           $ref: '#/components/schemas/thread'
+        invite:
+          $ref: '#/components/invite'
 
         state:
           $ref: '#/components/schemas/state'
@@ -328,6 +330,15 @@ components:
           $ref: '#/components/schemas/displayed'
         encryption:
           $ref: '#/components/schemas/encryption'
+
+        archive:
+          $ref: '#/components/schemas/archive_result'
+
+        dataform:
+          $ref: '#/components/schemas/dataform'
+
+        forwarded:
+          $ref: '#/components/schemas/forwarded'
 
         error:
           $ref: '#/components/schemas/error'
