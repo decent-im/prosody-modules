@@ -297,7 +297,7 @@ components:
         thread:
           $ref: '#/components/schemas/thread'
         invite:
-          $ref: '#/components/invite'
+          $ref: '#/components/schemas/invite'
 
         state:
           $ref: '#/components/schemas/state'
