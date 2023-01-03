@@ -21,10 +21,9 @@ modules_enabled = {
 
 # Compatibility
 
--   Should work with Prosody 0.11.x and later.
--   Tested with trunk rev `52c6dfa04dba`.
--   Message tombstones requires a compatible storage module implementing
-    a new message replacement API.
+-   Basic functionality with Prosody 0.11.x and later
+-   Full functionality with Prosody 0.12.x and `internal` or `sql`
+    storage^[Replacing moderated messages with tombstones requires new storage API methods.]
 
 ## Clients
 
