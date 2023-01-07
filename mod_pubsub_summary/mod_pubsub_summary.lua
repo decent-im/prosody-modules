@@ -40,7 +40,7 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 	for link in payload:childtags("link") do
 		if link and link.attr.href and link.attr.href ~= content then
 			summary = (summary and summary .. "\n" or "") .. link.attr.href;
-			if link.attr.rel then summary = summary .. " [" .. link.attr.rel .. "]" end
+			if link.attr.rel and link.attr.rel ~= "alternate" then summary = summary .. " [" .. link.attr.rel .. "]" end
 		end
 	end
 	return summary;
