@@ -23,6 +23,10 @@ prosodyctl install mod_ping_muc
 
 # Configuring
 
+No configuration.  Enable as a regular module in
+[`modules_enabled`][doc:modules_enabled] globally or under a
+`VirtualHost`:
+
 ```lua
 modules_enabled = {
 	-- other modules etc

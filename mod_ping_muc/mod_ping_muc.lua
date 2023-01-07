@@ -3,6 +3,11 @@ local jid = require "util.jid";
 local set = require "util.set";
 local st = require "util.stanza";
 
+if module:get_host_type() ~= "local" then
+	module:log("error", "mod_%s must be loaded as a regular module, not on Components", module.name);
+	return
+end
+
 module:depends "track_muc_joins";
 module:add_feature("https://modules.prosody.im/mod_" .. module.name);
 
