@@ -43,5 +43,11 @@ module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 			if link.attr.rel and link.attr.rel ~= "alternate" then summary = summary .. " [" .. link.attr.rel .. "]" end
 		end
 	end
+	for area in payload:childtags("area", "urn:oasis:names:tc:emergency:cap:1.2") do
+		local pos = area:get_child_text("circle");
+		if pos then
+			summary = summary .. "\n" .. "geo:"..pos:match("[%d.,]+");
+		end
+	end
 	return summary;
 end, 1);
