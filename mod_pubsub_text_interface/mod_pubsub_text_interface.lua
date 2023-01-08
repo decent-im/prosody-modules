@@ -18,6 +18,14 @@ Commands:
 if pubsub.get_last_item then -- COMPAT not available in 0.10
 	help = help ..  "\n- `last node` - send the last item (again)"
 end
+-- FIXME better word for "node"
+
+local friendly_pubsub_errors = {
+	["forbidden"] = "You are not allowed to do that";
+	["item-not-found"] = "That node does not exist";
+	["internal-server-error"] = "Something went wrong (see server logs)";
+	["not-subscribed"] = "You were not subscribed";
+};
 
 module:hook("message/host", function (event)
 	local stanza = event.stanza;
@@ -45,12 +53,12 @@ module:hook("message/host", function (event)
 			end
 			reply:body(table.concat(list, "\n"));
 		else
-			reply:body(nodes);
+			reply:body(friendly_pubsub_errors[nodes] or nodes);
 		end
 	elseif command == "subscriptions" then
 		local ok, subs = pubsub:get_subscriptions(nil, from, from);
 		if not ok then
-			reply:body(subs);
+			reply:body(friendly_pubsub_errors[subs] or subs);
 		elseif #subs == 0 then
 			reply:body("You are not subscribed to anything from this pubsub service");
 		else
@@ -64,16 +72,16 @@ module:hook("message/host", function (event)
 		end
 	elseif command == "subscribe" then
 		local ok, err = pubsub:add_subscription(node_arg, from, jid.bare(from), { ["pubsub#include_body"] = true });
-		reply:body(ok and "OK" or err);
+		reply:body(ok and "OK" or friendly_pubsub_errors[err] or err);
 	elseif command == "unsubscribe" then
 		local ok, err = pubsub:remove_subscription(node_arg, from, jid.bare(from));
-		reply:body(ok and "OK" or err);
+		reply:body(ok and "OK" or friendly_pubsub_errors[err] or err);
 	elseif command == "last" and pubsub.get_last_item then
 		local ok, item_id, item = pubsub:get_last_item(node_arg, from);
 		if not ok then
-			reply:body(item_id); -- err message
+			reply:body(friendly_pubsub_errors[item_id] or item_id);
 		elseif not item_id then
-			reply:body("node is empty");
+			reply:body("That node does not contain any items");
 		else
 			pubsub.config.broadcaster("items", node_arg, {
 				[from] = { ["pubsub#include_body"] = true }
