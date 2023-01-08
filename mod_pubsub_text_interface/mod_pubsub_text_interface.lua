@@ -13,10 +13,10 @@ Commands:
 - `help` - this help message
 - `list` - list available nodes
 - `subscriptions` - list nodes you are subscribed to
-- `subscribe node` - subscribe to a node
-- `unsubscribe node` - unsubscribe from a node]];
+- `subscribe NODE` - subscribe to a node
+- `unsubscribe NODE` - unsubscribe from a node]];
 if pubsub.get_last_item then -- COMPAT not available in 0.10
-	help = help ..  "\n- `last node` - send the last item (again)"
+	help = help ..  "\n- `last NODE` - send the last item (again)"
 end
 -- FIXME better word for "node"
 
