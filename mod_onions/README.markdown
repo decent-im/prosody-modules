@@ -13,7 +13,7 @@ without this module, this module is only necessary to allow Prosody to
 federate to hidden XMPP servers.
 
 For general info about creating a hidden service, see
-https://www.torproject.org/docs/tor-hidden-service.html.en.
+[https://community.torproject.org/onion-services/setup/](https://community.torproject.org/onion-services/setup/).
 
 Usage
 =====
