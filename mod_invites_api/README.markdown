@@ -2,9 +2,6 @@
 labels:
 - 'Stage-Beta'
 summary: 'Authenticated HTTP API to create invites'
-rockspec:
-  dependencies:
-  - mod_invites
 ...
 
 Introduction

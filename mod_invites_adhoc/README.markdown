@@ -1,9 +1,6 @@
 ---
 labels:
 - 'Stage-Beta'
-rockspec:
-  dependencies:
-  - mod_invites
 summary: 'Enable ad-hoc command for XMPP clients to create invitations'
 ...
 

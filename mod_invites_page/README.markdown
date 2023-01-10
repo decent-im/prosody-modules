@@ -4,7 +4,6 @@ labels:
 summary: 'Generate friendly web page for invitations'
 rockspec:
   dependencies:
-  - mod_invites
   - mod_register_apps
   build:
     copy_directories:
