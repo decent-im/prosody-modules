@@ -102,8 +102,10 @@ module:hook("advertise-sasl-features", function (event)
 	end
 	local sasl_handler = get_sasl_handler(username);
 	if not sasl_handler then return; end
+	-- Copy channel binding info from primary SASL handler
 	sasl_handler.profile.cb = session.sasl_handler.profile.cb;
 	sasl_handler.userdata = session.sasl_handler.userdata;
+	-- Store this handler, in case we later want to use it for authenticating
 	session.fast_sasl_handler = sasl_handler;
 	local fast = st.stanza("fast", { xmlns = xmlns_fast });
 	for mech in pairs(sasl_handler:mechanisms()) do
