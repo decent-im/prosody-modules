@@ -4,6 +4,7 @@
 module:hook("pubsub-summary/http://www.w3.org/2005/Atom", function (event)
 	local payload = event.payload;
 	local title = payload:get_child_text("title");
+	if title then title = title:gsub("^%s+", ""):gsub("%s+$", ""); end
 	-- Note: This prefers content over summary, it was made for a news feed where
 	-- the interesting stuff was in the content and the summary was .. meh.
 	local content_tag = payload:get_child("content") or payload:get_child("summary");
