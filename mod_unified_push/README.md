@@ -56,4 +56,5 @@ Component "notify.example.com" "unified_push"
 
 ## Compatibility
 
-Requires Prosody trunk (not compatible with 0.12).
+| trunk | Works |
+| 0.12  | Should work |

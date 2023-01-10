@@ -4,7 +4,7 @@ local push_registration_ttl = module:get_option_number("unified_push_registratio
 local base64 = require "util.encodings".base64;
 local datetime = require "util.datetime";
 local id = require "util.id";
-local jwt_sign, jwt_verify = require "util.jwt".init("HS256", unified_push_secret);
+local jwt = require "util.jwt";
 local st = require "util.stanza";
 local urlencode = require "util.http".urlencode;
 
@@ -21,6 +21,23 @@ local function check_sha256(s)
 	if not d then return nil, "invalid base64"; end
 	if #d ~= 32 then return nil, "incorrect decoded length, expected 32"; end
 	return s;
+end
+
+-- COMPAT w/0.12
+local function jwt_sign(data)
+	return jwt.sign(data, unified_push_secret);
+end
+
+-- COMPAT w/0.12: add expiry check
+local function jwt_verify(token)
+	local ok, result = jwt.verify(token, unified_push_secret);
+	if not ok then
+		return ok, result;
+	end
+	if result.exp and result.exp < os.time() then
+		return nil, "token-expired";
+	end
+	return ok, result;
 end
 
 -- Handle incoming registration from XMPP client
