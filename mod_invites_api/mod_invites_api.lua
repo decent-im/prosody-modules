@@ -15,7 +15,7 @@ local function get_api_user(request, params)
 	local auth_header = request.headers.authorization;
 
 	if not auth_header then
-		params = params or http_formdecode(request.url.query);
+		params = params or http_formdecode(request.url.query or "=");
 		combined_key = params.key;
 	else
 		local auth_type, value = auth_header:match("^(%S+)%s(%S+)$");
