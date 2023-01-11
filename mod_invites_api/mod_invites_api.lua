@@ -120,7 +120,7 @@ function module.command(arg)
 		api_key_store:set(nil, id, nil);
 	elseif command == "list" then
 		local api_key_store_kv = module:open_store("invite_api_keys");
-		for key_id, key_info in pairs(api_key_store_kv:get(nil)) do
+		for key_id, key_info in pairs(api_key_store_kv:get(nil) or {}) do
 			print(key_id, key_info.name or "<unknown>");
 		end
 	else
