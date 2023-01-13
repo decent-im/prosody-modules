@@ -25,12 +25,13 @@ end
 
 -- COMPAT w/0.12
 local function jwt_sign(data)
-	return jwt.sign(data, unified_push_secret);
+	return jwt.sign(unified_push_secret, data);
 end
 
 -- COMPAT w/0.12: add expiry check
 local function jwt_verify(token)
-	local ok, result = jwt.verify(token, unified_push_secret);
+	local ok, result = jwt.verify(unified_push_secret, token);
+
 	if not ok then
 		return ok, result;
 	end
