@@ -15,6 +15,19 @@ module:depends("disco");
 
 module:add_feature(xmlns_up);
 
+local acl = module:get_option_set("unified_push_acl", {
+	module:get_host_type() == "local" and module.host or module.host:match("^[^%.]%.(.+)$")
+});
+
+local function is_jid_permitted(user_jid)
+	for acl_entry in acl do
+		if jid.compare(user_jid, acl_entry) then
+			return true;
+		end
+	end
+	return false;
+end
+
 local function check_sha256(s)
 	if not s then return nil, "no value provided"; end
 	local d = base64.decode(s);
@@ -44,6 +57,9 @@ end
 -- Handle incoming registration from XMPP client
 function handle_register(event)
 	local origin, stanza = event.origin, event.stanza;
+	if not is_jid_permitted(stanza.attr.from) then
+		return st.error_reply(stanza, "auth", "forbidden");
+	end
 	local instance, instance_err = check_sha256(stanza.tags[1].attr.instance);
 	if not instance then
 		return st.error_reply(stanza, "modify", "bad-request", "instance: "..instance_err);
