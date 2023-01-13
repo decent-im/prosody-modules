@@ -4,6 +4,7 @@ local push_registration_ttl = module:get_option_number("unified_push_registratio
 local base64 = require "util.encodings".base64;
 local datetime = require "util.datetime";
 local id = require "util.id";
+local jid = require "util.jid";
 local jwt = require "util.jwt";
 local st = require "util.stanza";
 local urlencode = require "util.http".urlencode;
@@ -54,6 +55,19 @@ local function jwt_verify(token)
 	return ok, result;
 end
 
+local function register_route(params)
+	local expiry = os.time() + push_registration_ttl;
+	return {
+		url = module:http_url("push").."/"..urlencode(jwt_sign(unified_push_secret, {
+			instance = params.instance;
+			application = params.application;
+			sub = params.jid;
+			exp = expiry;
+		}));
+		expiry = expiry;
+	};
+end
+
 -- Handle incoming registration from XMPP client
 function handle_register(event)
 	local origin, stanza = event.origin, event.stanza;
@@ -68,17 +82,20 @@ function handle_register(event)
 	if not application then
 		return st.error_reply(stanza, "modify", "bad-request", "application: "..application_err);
 	end
-	local expiry = os.time() + push_registration_ttl;
-	local url = module:http_url("push").."/"..urlencode(jwt_sign({
+	local route = register_route({
 		instance = instance;
 		application = application;
-		sub = stanza.attr.from;
-		exp = expiry;
-	}));
+		jid = stanza.attr.from;
+	});
+
+	if not route then
+		return st.error_reply(stanza, "wait", "internal-server-error");
+	end
+
 	module:log("debug", "New push registration successful");
 	return origin.send(st.reply(stanza):tag("registered", {
-		expiration = datetime.datetime(expiry);
-		endpoint = url;
+		expiration = datetime.datetime(route.expiry);
+		endpoint = route.url;
 		xmlns = xmlns_up;
 	}));
 end
