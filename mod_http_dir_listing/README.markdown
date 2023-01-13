@@ -1,4 +1,10 @@
 ---
+rockspec:
+  build:
+    copy_directories:
+    - mod_http_dir_listing/http_dir_listing/resources
+    modules:
+      mod_http_dir_listing: mod_http_dir_listing/http_dir_listing/mod_http_dir_listing.lua
 summary: HTTP directory listing
 ...
 
