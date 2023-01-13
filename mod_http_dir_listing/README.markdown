@@ -37,8 +37,8 @@ module is loaded and the images are inlined in the CSS.
 Compatibility
 =============
 
-  ------- --------------
-  trunk   Works
-  0.9     Works
-  0.8     Doesn't work
-  ------- --------------
+  version   status
+  --------- --------
+  trunk     Works
+  0.12      Works
+  0.11      Works
