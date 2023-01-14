@@ -37,33 +37,67 @@ local function check_sha256(s)
 	return s;
 end
 
--- COMPAT w/0.12
-local function jwt_sign(data)
-	return jwt.sign(unified_push_secret, data);
+local push_store = module:open_store();
+
+local backends = {
+	jwt = {
+		sign = function (data)
+			return jwt.sign(unified_push_secret, data);
+		end;
+
+		verify = function (token)
+			local ok, result = jwt.verify(unified_push_secret, token);
+
+			if not ok then
+				return ok, result;
+			end
+			if result.exp and result.exp < os.time() then
+				return nil, "token-expired";
+			end
+			return ok, result;
+		end;
+	};
+
+	storage = {
+		sign = function (data)
+			local reg_id = id.long();
+			local user, host = jid.split(data.sub);
+			if host ~= module.host or not user then
+				return;
+			end
+			push_store:set(reg_id, data);
+			return reg_id;
+		end;
+		verify = function (token)
+			local data = push_store:get(token);
+			if not data then
+				return nil, "item-not-found";
+			elseif data.exp and data.exp < os.time() then
+				push_store:set(token, nil);
+				return nil, "token-expired";
+			end
+			return data;
+		end;
+	};
+};
+
+if pcall(require, "util.paseto") then
+	local sign, verify = require "util.paseto".init(unified_push_secret);
+	backends.paseto = { sign = sign, verify = verify };
 end
 
--- COMPAT w/0.12: add expiry check
-local function jwt_verify(token)
-	local ok, result = jwt.verify(unified_push_secret, token);
-
-	if not ok then
-		return ok, result;
-	end
-	if result.exp and result.exp < os.time() then
-		return nil, "token-expired";
-	end
-	return ok, result;
-end
+local backend = module:get_option_string("unified_push_backend", backends.paseto and "paseto" or "storage");
 
 local function register_route(params)
 	local expiry = os.time() + push_registration_ttl;
+	local token = backends[backend].sign({
+		instance = params.instance;
+		application = params.application;
+		sub = params.jid;
+		exp = expiry;
+	});
 	return {
-		url = module:http_url("push").."/"..urlencode(jwt_sign(unified_push_secret, {
-			instance = params.instance;
-			application = params.application;
-			sub = params.jid;
-			exp = expiry;
-		}));
+		url = module:http_url("push").."/"..urlencode(token);
 		expiry = expiry;
 	};
 end
@@ -105,7 +139,7 @@ module:hook("iq-set/host/"..xmlns_up..":register", handle_register);
 -- Handle incoming POST
 function handle_push(event, subpath)
 	module:log("debug", "Incoming push received!");
-	local ok, data = jwt_verify(subpath);
+	local ok, data = backends[backend].verify(subpath);
 	if not ok then
 		module:log("debug", "Received push to unacceptable token (%s)", data);
 		return 404;
