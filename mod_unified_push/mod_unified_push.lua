@@ -61,11 +61,10 @@ local backends = {
 	storage = {
 		sign = function (data)
 			local reg_id = id.long();
-			local user, host = jid.split(data.sub);
-			if host ~= module.host or not user then
-				return;
+			local ok, err = push_store:set(reg_id, data);
+			if not ok then
+				return nil, err;
 			end
-			push_store:set(reg_id, data);
 			return reg_id;
 		end;
 		verify = function (token)
@@ -77,7 +76,7 @@ local backends = {
 				push_store:set(token, nil);
 				return nil, "token-expired";
 			end
-			return data;
+			return true, data;
 		end;
 	};
 };
