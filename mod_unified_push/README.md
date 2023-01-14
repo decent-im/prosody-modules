@@ -26,14 +26,53 @@ that, see [mod_cloud_notify](https://modules.prosody.im/mod_cloud_notify).
 
 ## Configuration
 
-| Name                          | Description                                            | Default               |
-|-------------------------------|--------------------------------------------------------|-----------------------|
-| unified_push_secret           | A random secret string (32+ bytes), used for auth      |                       |
-| unified_push_registration_ttl | Maximum lifetime of a push registration (seconds)      | `86400` (1 day)       |
+| Name                          | Description                                             | Default                                     |
+|-------------------------------|---------------------------------------------------------|---------------------------------------------|
+| unified_push_acl              | A list of domains or users permitted to use the service | current host, or parent host if a component |
+| unified_push_backend          | Backend to use: "paseto", "storage" or "jwt"            | "paseto" (trunk), "storage" (0.12)          |
+| unified_push_registration_ttl | Maximum lifetime of a push registration (seconds)       | `86400` (1 day)                             |
+
+### Backends
+
+The module needs to track registrations, and be able to associate tokens with
+users. There are multiple ways to do this, but not every method is supported
+on every Prosody version.
+
+By default the module will automatically select the best backend that is
+supported on the current Prosody version you are using.
+
+#### storage backend
+
+This is the default backend on Prosody 0.12 and earlier. It stores tokens and
+their associated data in Prosody's configured data store.
+
+Supported by all Prosody versions.
+
+#### paseto backend
+
+This is a stateless (i.e. no storage required) backend that uses encrypted
+[PASETO tokens](https://paseto.io/) to store registration info. It is the
+default backend on Prosody trunk, as PASETO support is not available in
+Prosody 0.12 and earlier.
+
+#### jwt backend
+
+This is a stateless backend that uses [JWT tokens](https://jwt.io/) to store
+registration info. It is supported in Prosody 0.12 and higher.
+
+**Note:** The JWT tokens are **not encrypted**, which means the JID
+associated with a registration is visible to apps and services that send you
+push notifications. This can have privacy implications. If in doubt, do not
+use this backend.
+
+This backend requires you to set a secure random string in the config file,
+using the `unified_push_secret` option.
 
 A random push secret can be generated with the command
 `openssl rand -base64 32`. Changing the secret will invalidate all existing
 push registrations.
+
+### HTTP configuration
 
 This module exposes a HTTP endpoint (to receive push notifications from app
 servers). For more information on configuring HTTP services in Prosody, see
@@ -57,4 +96,4 @@ Component "notify.example.com" "unified_push"
 ## Compatibility
 
 | trunk | Works |
-| 0.12  | Should work |
+| 0.12  | Works |
