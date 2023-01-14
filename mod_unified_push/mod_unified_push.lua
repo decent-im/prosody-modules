@@ -90,7 +90,16 @@ if pcall(require, "util.paseto") and require "util.paseto".v3_local then
 		push_store:set("_private", { paseto_v3_local_key = key });
 	end
 	local sign, verify = paseto.init(key);
-	backends.paseto = { sign = sign, verify = verify };
+	backends.paseto = {
+		sign = sign;
+		verify = function (token)
+			local payload, err = verify(token);
+			if not payload then
+				return nil, err;
+			end
+			return true, payload;
+		end;
+	 };
 end
 
 local backend = module:get_option_string("unified_push_backend", backends.paseto and "paseto" or "storage");
