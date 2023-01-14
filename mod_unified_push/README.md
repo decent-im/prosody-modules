@@ -78,7 +78,25 @@ This module exposes a HTTP endpoint (to receive push notifications from app
 servers). For more information on configuring HTTP services in Prosody, see
 [Prosody HTTP documentation](https://prosody.im/doc/http).
 
-### Example configuration
+#### Example configuration
+
+##### Normal method
+
+Just add just add `"unified_push"` to your `modules_enabled` option.
+This is the easiest and **recommended** configuration.
+
+``` {.lua}
+  modules_enabled = {
+    ---
+    "unified_push";
+    ---
+  }
+```
+
+##### Component method
+
+This is an example of how to configure the module as an internal component,
+e.g. on a subdomain or other non-user domain.
 
 This example creates a push notification component called
 'notify.example.com'.
