@@ -17,7 +17,7 @@ module:depends("disco");
 module:add_feature(xmlns_up);
 
 local acl = module:get_option_set("unified_push_acl", {
-	module:get_host_type() == "local" and module.host or module.host:match("^[^%.]%.(.+)$")
+	module:get_host_type() == "local" and module.host or module.host:match("^[^%.]+%.(.+)$")
 });
 
 local function is_jid_permitted(user_jid)
