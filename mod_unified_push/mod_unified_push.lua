@@ -106,12 +106,13 @@ local backend = module:get_option_string("unified_push_backend", backends.paseto
 
 local function register_route(params)
 	local expiry = os.time() + push_registration_ttl;
-	local token = backends[backend].sign({
+	local token, err = backends[backend].sign({
 		instance = params.instance;
 		application = params.application;
 		sub = params.jid;
 		exp = expiry;
 	});
+	if not token then return nil, err; end
 	return {
 		url = module:http_url("push").."/"..urlencode(token);
 		expiry = expiry;
@@ -120,26 +121,30 @@ end
 
 -- Handle incoming registration from XMPP client
 function handle_register(event)
+	module:log("debug", "Push registration request received");
 	local origin, stanza = event.origin, event.stanza;
 	if not is_jid_permitted(stanza.attr.from) then
-		return st.error_reply(stanza, "auth", "forbidden");
+		module:log("debug", "Sender <%s> not permitted to register on this UnifiedPush service", stanza.attr.from);
+		return origin.send(st.error_reply(stanza, "auth", "forbidden"));
 	end
 	local instance, instance_err = check_sha256(stanza.tags[1].attr.instance);
 	if not instance then
-		return st.error_reply(stanza, "modify", "bad-request", "instance: "..instance_err);
+		return origin.send(st.error_reply(stanza, "modify", "bad-request", "instance: "..instance_err));
 	end
 	local application, application_err = check_sha256(stanza.tags[1].attr.application);
 	if not application then
-		return st.error_reply(stanza, "modify", "bad-request", "application: "..application_err);
+		return origin.send(st.error_reply(stanza, "modify", "bad-request", "application: "..application_err));
 	end
-	local route = register_route({
+
+	local route, register_err = register_route({
 		instance = instance;
 		application = application;
 		jid = stanza.attr.from;
 	});
 
 	if not route then
-		return st.error_reply(stanza, "wait", "internal-server-error");
+		module:log("warn", "Failed to create registration using %s backend: %s", backend, register_err);
+		return origin.send(st.error_reply(stanza, "wait", "internal-server-error"));
 	end
 
 	module:log("debug", "New push registration successful");
