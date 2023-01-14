@@ -69,6 +69,7 @@ local backends = {
 			return reg_id;
 		end;
 		verify = function (token)
+			if token == "_private" then return nil, "invalid-token"; end
 			local data = push_store:get(token);
 			if not data then
 				return nil, "item-not-found";
@@ -81,8 +82,15 @@ local backends = {
 	};
 };
 
-if pcall(require, "util.paseto") then
-	local sign, verify = require "util.paseto".init(unified_push_secret);
+if pcall(require, "util.paseto") and require "util.paseto".v3_local then
+	local paseto = require "util.paseto".v3_local;
+	local state = push_store:get("_private");
+	local key = state and state.paseto_v3_local_key;
+	if not key then
+		key = paseto.new_key();
+		push_store:set("_private", { paseto_v3_local_key = key });
+	end
+	local sign, verify = paseto.init(key);
 	backends.paseto = { sign = sign, verify = verify };
 end
 
