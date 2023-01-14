@@ -1,4 +1,4 @@
-local unified_push_secret = assert(module:get_option_string("unified_push_secret"), "required option: unified_push_secret");
+local unified_push_secret = module:get_option_string("unified_push_secret");
 local push_registration_ttl = module:get_option_number("unified_push_registration_ttl", 86400);
 
 local base64 = require "util.encodings".base64;
@@ -103,6 +103,8 @@ if pcall(require, "util.paseto") and require "util.paseto".v3_local then
 end
 
 local backend = module:get_option_string("unified_push_backend", backends.paseto and "paseto" or "storage");
+
+assert(backend ~= "jwt" or unified_push_secret, "required option missing: unified_push_secret");
 
 local function register_route(params)
 	local expiry = os.time() + push_registration_ttl;
