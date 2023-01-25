@@ -39,7 +39,8 @@ modules_enabled = {"http_oauth2"}
 ## OAuth2
 
 [mod_http_oauth2] can be used to grant bearer tokens which are
-accepted by mod_rest.
+accepted by mod_rest.  Tokens can be passed to `curl` like
+`--oauth2-bearer dmVyeSBzZWNyZXQgdG9rZW4K` as in some examples below.
 
 ## Sending stanzas
 
