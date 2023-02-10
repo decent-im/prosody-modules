@@ -122,7 +122,7 @@ end
 local function iq_handler(event)
 	local stanza, origin = event.stanza, event.origin;
 	local tag = stanza.tags[1];
-	if tag.name ~= "data" or tag.attr.xmlns ~= "urn:xmpp:bob" then
+	if not tag or tag.name ~= "data" or tag.attr.xmlns ~= "urn:xmpp:bob" then
 		return nil;
 	end
 	local log = origin.log or module._log;
