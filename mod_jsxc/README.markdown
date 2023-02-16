@@ -32,8 +32,8 @@ server or serve resources from Prosody's built-in HTTP server.
 Download a JSXC release archive and unpack it somewhere on your server.
 
 `jsxc_resources`
-:   String. Path to JSXC resources on the local file system. The target
-    directory should contain a `dist` directory. Disabled by default.
+:   String. Path to the `dist` directory containing JSXC resources on
+the local file system. Disabled by default.
 
 ## Other options
 
