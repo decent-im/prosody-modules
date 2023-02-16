@@ -1,4 +1,10 @@
 ---
+rockspec:
+  build:
+    copy_directories:
+    - templates
+  dependencies:
+  - mod_http_libjs
 summary: JSXC demo
 ---
 
