@@ -10,6 +10,9 @@ summary: JSXC demo
 
 Try out JSXC easily by serving it from Prosodys built-in HTTP server.
 
+Uses [mod_http_libjs] to serve jQuery, on Debian you can `apt install
+libjs-jquery`.
+
 # Configuration
 
 mod_jsxc can be set up to either use resources from a separate HTTP
