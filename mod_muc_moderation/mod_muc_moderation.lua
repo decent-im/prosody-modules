@@ -41,21 +41,23 @@ local function moderate(actor, room_jid, stanza_id, retract, reason)
 	local room_node = jid.split(room_jid);
 	local room = mod_muc.get_room_from_jid(room_jid);
 
-	-- Permissions
+	-- Permissions is based on role, which is a property of a current occupant,
+	-- so check if the actor is an occupant, otherwise if they have a reserved
+	-- nickname that can be used to retrieve the role.
 	local actor_nick = room:get_occupant_jid(actor);
-	local affiliation = room:get_affiliation(actor);
-	-- Retrieve their current role, iff they are in the room, otherwise what they
-	-- would have based on affiliation.
-	local role = room:get_role(actor_nick) or room:get_default_role(affiliation);
-	if valid_roles[role or "none"] < valid_roles.moderator then
-		return false, "auth", "forbidden", "You need a role of at least 'moderator'";
-	end
-
 	if not actor_nick then
 		local reserved_nickname = room:get_affiliation_data(jid.bare(actor), "reserved_nickname");
 		if reserved_nickname then
 			actor_nick = room.jid .. "/" .. reserved_nickname;
 		end
+	end
+
+	-- Retrieve their current role, iff they are in the room, otherwise what they
+	-- would have based on affiliation.
+	local affiliation = room:get_affiliation(actor);
+	local role = room:get_role(actor_nick) or room:get_default_role(affiliation);
+	if valid_roles[role or "none"] < valid_roles.moderator then
+		return false, "auth", "forbidden", "You need a role of at least 'moderator'";
 	end
 
 	-- Original stanza to base tombstone on
