@@ -48,6 +48,19 @@ module:hook("muc-disco#info", function (event)
 	formdata["{xmpp:prosody.im}muc#roomconfig_unaffiliated_media"] = allow_unaffiliated_media;
 end);
 
+local function strip_xhtml_img(tag)
+	if tag.attr.xmlns == "http://www.w3.org/1999/xhtml" and tag.name == "img" then
+		tag.name = "i";
+		tag:text(tag.attr.alt or "<image blocked>");
+		tag.attr = { xmlns = tag.attr.xmlns, title = tag.attr.title };
+		tag:maptags(strip_xhtml_img);
+	else
+		tag:maptags(strip_xhtml_img);
+	end
+
+	return tag;
+end
+
 local function filter_media_tags(tag)
 	local xmlns = tag.attr.xmlns;
 	if xmlns == "jabber:x:oob" then
@@ -56,6 +69,8 @@ local function filter_media_tags(tag)
 		if tag:get_child("media-sharing", "urn:xmpp:sims:1") then
 			return nil;
 		end
+	elseif xmlns == "http://jabber.org/protocol/xhtml-im" then
+		return strip_xhtml_img(tag);
 	end
 	return tag;
 end
