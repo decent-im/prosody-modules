@@ -92,14 +92,20 @@ end
 module:hook("iq-result/host/rtbl-request", update_list);
 
 function update_hashes(occupant)
+	local bare_hash, host_hash;
 	if not occupant.mod_muc_rtbl_bare_hash then
-		local bare_hash = sha256(jid.bare(event.stanza.attr.from), true);
+		bare_hash = sha256(jid.bare(event.stanza.attr.from), true);
 		occupant.mod_muc_rtbl_bare_hash = bare_hash;
+	else
+		bare_hash = occupant.mod_muc_rtbl_bare_hash;
 	end
 	if not occupant.mod_muc_rtbl_host_hash then
-		local host_hash = sha256(jid.host(event.stanza.attr.from), true);
+		host_hash = sha256(jid.host(event.stanza.attr.from), true);
 		event.occupant.mod_muc_rtbl_host_hash = host_hash;
+	else
+		host_hash = event.occupant.mod_muc_rtbl_host_hash;
 	end
+	return bare_hash, host_hash
 end
 
 module:hook("muc-occupant-pre-join", function (event)
@@ -113,8 +119,8 @@ module:hook("muc-occupant-pre-join", function (event)
 		return;
 	end
 
-	update_hashes(event.occupant);
-	if banned_hashes[event.occupant.mod_muc_rtbl_bare_hash] or banned_hashes[event.occupant.mod_muc_rtbl_host_hash] then
+	local bare_hash, host_hash = update_hashes(event.occupant);
+	if banned_hashes[bare_hash] or banned_hashes[host_hash] then
 		module:log("info", "Blocked user <%s> from room <%s> due to RTBL match", from_bare, event.stanza.attr.to);
 		local error_reply = st.error_reply(event.stanza, "cancel", "forbidden", "You are banned from this service", event.room.jid);
 		event.origin.send(error_reply);
@@ -123,8 +129,8 @@ module:hook("muc-occupant-pre-join", function (event)
 end);
 
 module:hook("muc-occupant-groupchat", function(event)
-	update_hashes(event.occupant);
-	if banned_hashes[event.occupant.mod_muc_rtbl_bare_hash] or banned_hashes[event.occupant.mod_muc_rtbl_host_hash] then
+	local bare_hash, host_hash = update_hashes(event.occupant);
+	if banned_hashes[bare_hash] or banned_hashes[host_hash] then
 		module:log("debug", "Blocked message from user <%s> to room <%s> due to RTBL match", event.stanza.attr.from, event.stanza.attr.to);
 		local error_reply = st.error_reply(event.stanza, "cancel", "forbidden", "You are banned from this service", event.room.jid);
 		event.origin.send(error_reply);
@@ -134,8 +140,8 @@ end);
 
 module:hook("muc-private-message", function(event)
 	local occupant = event.room:get_occupant_by_nick(event.stanza.attr.from);
-	update_hashes(occupant);
-	if banned_hashes[occupant.mod_muc_rtbl_bare_hash] or banned_hashes[occupant.mod_muc_rtbl_host_hash] then
+	local bare_hash, host_hash = update_hashes(occupant);
+	if banned_hashes[bare_hash] or banned_hashes[host_hash] then
 		module:log("debug", "Blocked private message from user <%s> from room <%s> due to RTBL match", occupant.bare_jid, event.stanza.attr.to);
 		local error_reply = st.error_reply(event.stanza, "cancel", "forbidden", "You are banned from this service", event.room.jid);
 		event.origin.send(error_reply);
