@@ -101,9 +101,9 @@ function update_hashes(occupant)
 	end
 	if not occupant.mod_muc_rtbl_host_hash then
 		host_hash = sha256(jid.host(occupant.bare_jid), true);
-		event.occupant.mod_muc_rtbl_host_hash = host_hash;
+		occupant.mod_muc_rtbl_host_hash = host_hash;
 	else
-		host_hash = event.occupant.mod_muc_rtbl_host_hash;
+		host_hash = occupant.mod_muc_rtbl_host_hash;
 	end
 	return bare_hash, host_hash
 end
