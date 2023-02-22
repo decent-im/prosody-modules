@@ -129,6 +129,12 @@ module:hook("muc-occupant-pre-join", function (event)
 end);
 
 module:hook("muc-occupant-groupchat", function(event)
+	local affiliation = event.room:get_affiliation(event.occupant.bare_jid);
+	if affiliation and affiliation ~= "none" then
+		-- Skip check for affiliated users
+		return;
+	end
+
 	local bare_hash, host_hash = update_hashes(event.occupant);
 	if banned_hashes[bare_hash] or banned_hashes[host_hash] then
 		module:log("debug", "Blocked message from user <%s> to room <%s> due to RTBL match", event.stanza.attr.from, event.stanza.attr.to);
@@ -140,6 +146,12 @@ end);
 
 module:hook("muc-private-message", function(event)
 	local occupant = event.room:get_occupant_by_nick(event.stanza.attr.from);
+	local affiliation = event.room:get_affiliation(event.occupant.bare_jid);
+	if affiliation and affiliation ~= "none" then
+		-- Skip check for affiliated users
+		return;
+	end
+
 	local bare_hash, host_hash = update_hashes(occupant);
 	if banned_hashes[bare_hash] or banned_hashes[host_hash] then
 		module:log("debug", "Blocked private message from user <%s> from room <%s> due to RTBL match", occupant.bare_jid, event.stanza.attr.to);
