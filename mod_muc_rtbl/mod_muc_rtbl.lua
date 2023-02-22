@@ -94,13 +94,13 @@ module:hook("iq-result/host/rtbl-request", update_list);
 function update_hashes(occupant)
 	local bare_hash, host_hash;
 	if not occupant.mod_muc_rtbl_bare_hash then
-		bare_hash = sha256(jid.bare(event.stanza.attr.from), true);
+		bare_hash = sha256(jid.bare(occupant.bare_jid), true);
 		occupant.mod_muc_rtbl_bare_hash = bare_hash;
 	else
 		bare_hash = occupant.mod_muc_rtbl_bare_hash;
 	end
 	if not occupant.mod_muc_rtbl_host_hash then
-		host_hash = sha256(jid.host(event.stanza.attr.from), true);
+		host_hash = sha256(jid.host(occupant.bare_jid), true);
 		event.occupant.mod_muc_rtbl_host_hash = host_hash;
 	else
 		host_hash = event.occupant.mod_muc_rtbl_host_hash;
