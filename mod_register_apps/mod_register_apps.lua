@@ -1,7 +1,7 @@
 -- luacheck: ignore 631
 module:depends("http");
 local http_files
-if prosody.process_type == "prosody" then
+if prosody.process_type then
 	-- Prosody >= 0.12
 	http_files = require "net.http.files";
 else
