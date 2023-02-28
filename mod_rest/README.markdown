@@ -38,9 +38,9 @@ modules_enabled = {"http_oauth2"}
 
 ## OAuth2
 
-[mod_http_oauth2] can be used to grant bearer tokens which are
-accepted by mod_rest.  Tokens can be passed to `curl` like
-`--oauth2-bearer dmVyeSBzZWNyZXQgdG9rZW4K` as in some examples below.
+[mod_http_oauth2] can be used to grant bearer tokens which are accepted
+by mod_rest.  Tokens can be passed to `curl` like `--oauth2-bearer
+dmVyeSBzZWNyZXQgdG9rZW4K` instead of using `--user`.
 
 ## Sending stanzas
 
@@ -62,7 +62,7 @@ or a JSON payload:
 
 ``` {.sh}
 curl https://prosody.example:5281/rest \
-    --oauth2-bearer dmVyeSBzZWNyZXQgdG9rZW4K \
+    --user username \
     -H 'Content-Type: application/json' \
     --data-binary '{
            "body" : "Hello!",
@@ -81,7 +81,7 @@ embedded in the path:
 
 ```
 curl https://prosody.example:5281/rest/message/chat/john@example.com \
-    --oauth2-bearer dmVyeSBzZWNyZXQgdG9rZW4K \
+    --user username \
     -H 'Content-Type: text/plain' \
     --data-binary 'Hello John!'
 ```
@@ -93,7 +93,7 @@ long-polling style.
 
 ``` {.sh}
 curl https://prosody.example:5281/rest \
-    --oauth2-bearer dmVyeSBzZWNyZXQgdG9rZW4K \
+    --user username \
     -H 'Content-Type: application/xmpp+xml' \
     --data-binary '<iq type="get" to="example.net">
             <ping xmlns="urn:xmpp:ping"/>
@@ -111,7 +111,7 @@ A subset of IQ stanzas can be sent as simple GET requests
 
 ```
 curl https://prosody.example:5281/rest/version/example.com \
-    --oauth2-bearer dmVyeSBzZWNyZXQgdG9rZW4K \
+    --user username \
     -H 'Accept: application/json'
 ```
 
