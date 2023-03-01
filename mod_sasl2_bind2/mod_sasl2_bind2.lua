@@ -24,13 +24,15 @@ end, 1);
 -- Helper to actually bind a resource to a session
 
 local function do_bind(session, bind_request)
-	local resource;
+	local resource = session.sasl_handler.resource;
 
-	local client_name_tag = bind_request:get_child_text("tag");
-	if client_name_tag then
-		local client_id = session.client_id;
-		local tag_suffix = client_id and base64.encode(sha1(client_id):sub(1, 9)) or id.medium();
-		resource = ("%s~%s"):format(client_name_tag, tag_suffix);
+	if not resource then
+		local client_name_tag = bind_request:get_child_text("tag");
+		if client_name_tag then
+			local client_id = session.client_id;
+			local tag_suffix = client_id and base64.encode(sha1(client_id):sub(1, 9)) or id.medium();
+			resource = ("%s~%s"):format(client_name_tag, tag_suffix);
+		end
 	end
 
 	local success, err_type, err, err_msg = sm_bind_resource(session, resource);
