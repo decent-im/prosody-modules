@@ -62,7 +62,7 @@ local function oauth_error(err_name, err_desc)
 end
 
 local function new_access_token(token_jid, scope, ttl)
-	local token = tokens.create_jid_token(token_jid, token_jid, scope, ttl);
+	local token = tokens.create_jid_token(token_jid, token_jid, scope, ttl, nil, "oauth2");
 	return {
 		token_type = "bearer";
 		access_token = token;
