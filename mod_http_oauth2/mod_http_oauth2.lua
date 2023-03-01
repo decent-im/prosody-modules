@@ -166,7 +166,7 @@ function grant_type_handlers.authorization_code(params)
 		module:log("debug", "authorization_code invalid or expired: %q", code);
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
-	assert(codes:set(client_owner, client_id .. "#" .. params.code, nil));
+	assert(codes:set(client_id .. "#" .. params.code, nil));
 
 	return json.encode(new_access_token(code.granted_jid, code.granted_scopes, nil));
 end
