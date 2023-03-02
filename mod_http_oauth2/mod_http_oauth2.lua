@@ -119,7 +119,20 @@ function response_type_handlers.code(params, granted_jid)
 		return {status_code = 429};
 	end
 
-	local redirect = url.parse(params.redirect_uri or client.redirect_uri);
+	local redirect_uri = params.redirect_uri or client.redirect_uri;
+	if redirect_uri == "urn:ietf:wg:oauth:2.0:oob" then
+		-- TODO some nicer template page
+		local response = { status_code = 200; headers = { content_type = "text/plain" } }
+		response.body = module:context("*"):fire_event("http-message", {
+			response = response;
+			title = "Your authorization code";
+			message = "Here's your authorization code, copy and paste it into your app:";
+			extra = code;
+		}) or ("Here's your authorization code:\n%s\n"):format(code);
+	end
+
+	local redirect = url.parse(redirect_uri);
+
 	local query = http.formdecode(redirect.query or "");
 	if type(query) ~= "table" then query = {}; end
 	table.insert(query, { name = "code", value = code })
