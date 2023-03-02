@@ -92,6 +92,8 @@ function grant_type_handlers.password(params)
 	return json.encode(new_access_token(granted_jid, granted_scopes, nil));
 end
 
+-- TODO response_type_handlers have some common boilerplate code, refactor?
+
 function response_type_handlers.code(params, granted_jid)
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
 
@@ -125,6 +127,35 @@ function response_type_handlers.code(params, granted_jid)
 		table.insert(query, { name = "state", value = params.state });
 	end
 	redirect.query = http.formencode(query);
+
+	return {
+		status_code = 302;
+		headers = {
+			location = url.build(redirect);
+		};
+	}
+end
+
+-- Implicit flow
+function response_type_handlers.token(params, granted_jid)
+	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
+
+	local client_owner, client_host, client_id = jid.prepped_split(params.client_id);
+	if client_host ~= module.host then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+	local client, err = clients:get(client_owner, client_id);
+	if err then error(err); end
+	if not client then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+
+	local granted_scopes = filter_scopes(client_owner, client_host, params.scope);
+	local token_info = new_access_token(granted_jid, granted_scopes, nil);
+
+	local redirect = url.parse(client.redirect_uri);
+	token_info.state = params.state;
+	redirect.fragment = http.formencode(token_info);
 
 	return {
 		status_code = 302;
@@ -217,6 +248,7 @@ if module:get_host_type() == "component" then
 	-- TODO How would this make sense with components?
 	-- Have an admin authenticate maybe?
 	response_type_handlers.code = nil;
+	response_type_handlers.token = nil;
 	grant_type_handlers.authorization_code = nil;
 	check_credentials = function () return false end
 end
