@@ -94,7 +94,6 @@ end
 
 function response_type_handlers.code(params, granted_jid)
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
-	if not params.redirect_uri then return oauth_error("invalid_request", "missing 'redirect_uri'"); end
 
 	local client_owner, client_host, client_id = jid.prepped_split(params.client_id);
 	if client_host ~= module.host then
@@ -118,7 +117,7 @@ function response_type_handlers.code(params, granted_jid)
 		return {status_code = 429};
 	end
 
-	local redirect = url.parse(params.redirect_uri);
+	local redirect = url.parse(params.redirect_uri or client.redirect_uri);
 	local query = http.formdecode(redirect.query or "");
 	if type(query) ~= "table" then query = {}; end
 	table.insert(query, { name = "code", value = code })
