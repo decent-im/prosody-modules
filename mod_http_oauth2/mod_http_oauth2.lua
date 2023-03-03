@@ -19,10 +19,11 @@ local registration_key = module:get_option_string("oauth2_registration_key");
 local registration_algo = module:get_option_string("oauth2_registration_algorithm", "HS256");
 local registration_options = module:get_option("oauth2_registration_options", { default_ttl = 60 * 60 * 24 * 90 });
 
+local verification_key;
 local jwt_sign, jwt_verify;
 if registration_key then
 	-- Tie it to the host if global
-	registration_key = hashes.hmac_sha256(registration_key, module.host);
+	verification_key = hashes.hmac_sha256(registration_key, module.host);
 	jwt_sign, jwt_verify = jwt.init(registration_algo, registration_key, registration_key, registration_options);
 end
 
@@ -196,7 +197,7 @@ function response_type_handlers.token(params, granted_jid)
 end
 
 local function make_secret(client_id) --> client_secret
-	return hashes.hmac_sha256(registration_key, client_id, true);
+	return hashes.hmac_sha256(verification_key, client_id, true);
 end
 
 local function verify_secret(client_id, client_secret)
