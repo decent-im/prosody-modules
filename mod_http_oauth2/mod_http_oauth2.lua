@@ -9,10 +9,24 @@ local url = require "socket.url";
 local uuid = require "util.uuid";
 local encodings = require "util.encodings";
 local base64 = encodings.base64;
+local schema = require "util.jsonschema";
+local jwt = require"util.jwt";
 
 local tokens = module:depends("tokenauth");
 
-local clients = module:open_store("oauth2_clients", "map");
+-- Used to derive client_secret from client_id, set to enable stateless dynamic registration.
+local registration_key = module:get_option_string("oauth2_registration_key");
+local registration_algo = module:get_option_string("oauth2_registration_algorithm", "HS256");
+local registration_options = module:get_option("oauth2_registration_options", { default_ttl = 60 * 60 * 24 * 90 });
+
+local jwt_sign, jwt_verify;
+if not registration_key then
+	module:log("error", "Missing required 'oauth2_registration_key', generate a strong key and configure it")
+else
+	-- Tie it to the host if global
+	registration_key = hashes.hmac_sha256(registration_key, module.host);
+	jwt_sign, jwt_verify = jwt.init(registration_algo, registration_key, registration_key, registration_options);
+end
 
 local function filter_scopes(username, host, requested_scope_string)
 	if host ~= module.host then
@@ -72,6 +86,14 @@ local function new_access_token(token_jid, scope, ttl)
 	};
 end
 
+local function get_redirect_uri(client, query_redirect_uri) -- record client, string : string
+	for _, redirect_uri in ipairs(client.redirect_uris) do
+		if query_redirect_uri == nil or query_redirect_uri == redirect_uri then
+			return redirect_uri
+		end
+	end
+end
+
 local grant_type_handlers = {};
 local response_type_handlers = {};
 
@@ -97,13 +119,9 @@ end
 function response_type_handlers.code(params, granted_jid)
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
 
-	local client_owner, client_host, client_id = jid.prepped_split(params.client_id);
-	if client_host ~= module.host then
-		return oauth_error("invalid_client", "incorrect credentials");
-	end
-	local client, err = clients:get(client_owner, client_id);
-	if err then error(err); end
-	if not client then
+	local ok, client = jwt_verify(params.client_id);
+
+	if not ok then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
@@ -120,7 +138,7 @@ function response_type_handlers.code(params, granted_jid)
 		return {status_code = 429};
 	end
 
-	local redirect_uri = params.redirect_uri or client.redirect_uri;
+	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
 	if redirect_uri == "urn:ietf:wg:oauth:2.0:oob" then
 		-- TODO some nicer template page
 		local response = { status_code = 200; headers = { content_type = "text/plain" } }
@@ -156,20 +174,17 @@ end
 function response_type_handlers.token(params, granted_jid)
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
 
-	local client_owner, client_host, client_id = jid.prepped_split(params.client_id);
-	if client_host ~= module.host then
-		return oauth_error("invalid_client", "incorrect credentials");
-	end
-	local client, err = clients:get(client_owner, client_id);
-	if err then error(err); end
+	local client = jwt_verify(params.client_id);
+
 	if not client then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	local granted_scopes = filter_scopes(client_owner, client_host, params.scope);
+	local request_username, request_host = jid.split(granted_jid);
+	local granted_scopes = filter_scopes(request_username, request_host, params.scope);
 	local token_info = new_access_token(granted_jid, granted_scopes, nil);
 
-	local redirect = url.parse(client.redirect_uri);
+	local redirect = url.parse(get_redirect_uri(client, params.redirect_uri));
 	token_info.state = params.state;
 	redirect.fragment = http.formencode(token_info);
 
@@ -181,10 +196,12 @@ function response_type_handlers.token(params, granted_jid)
 	}
 end
 
-local pepper = module:get_option_string("oauth2_client_pepper", "");
+local function make_secret(client_id) --> client_secret
+	return hashes.hmac_sha256(registration_key, client_id, true);
+end
 
-local function verify_secret(stored, salt, i, secret)
-	return base64.decode(stored) == hashes.pbkdf2_hmac_sha256(secret, salt .. pepper, i);
+local function verify_secret(client_id, client_secret)
+	return hashes.equals(make_secret(client_id), client_secret);
 end
 
 function grant_type_handlers.authorization_code(params)
@@ -195,14 +212,12 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
 
-	local client_owner, client_host, client_id = jid.prepped_split(params.client_id);
-	if client_host ~= module.host then
-		module:log("debug", "%q ~= %q", client_host, module.host);
+	local client = jwt_verify(params.client_id);
+	if not client then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
-	local client, err = clients:get(client_owner, client_id);
-	if err then error(err); end
-	if not client or not verify_secret(client.secret_hash, client.salt, client.iteration_count, params.client_secret) then
+
+	if not verify_secret(params.client_id, params.client_secret) then
 		module:log("debug", "client_secret mismatch");
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
@@ -212,7 +227,6 @@ function grant_type_handlers.authorization_code(params)
 		module:log("debug", "authorization_code invalid or expired: %q", code);
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
-	assert(codes:set(client_id .. "#" .. params.code, nil));
 
 	return json.encode(new_access_token(code.granted_jid, code.granted_scopes, nil));
 end
@@ -352,12 +366,84 @@ local function handle_revocation_request(event)
 	return 200;
 end
 
+local registration_schema = {
+	type = "object";
+	required = { "client_name"; "redirect_uris" };
+	properties = {
+		redirect_uris = { type = "array"; minLength = 1; items = { type = "string"; format = "uri" } };
+		token_endpoint_auth_method = { enum = { "none"; "client_secret_post"; "client_secret_basic" }; type = "string" };
+		grant_types = {
+			items = {
+				enum = {
+					"authorization_code";
+					"implicit";
+					"password";
+					"client_credentials";
+					"refresh_token";
+					"urn:ietf:params:oauth:grant-type:jwt-bearer";
+					"urn:ietf:params:oauth:grant-type:saml2-bearer";
+				};
+				type = "string";
+			};
+			type = "array";
+		};
+		response_types = { items = { enum = { "code"; "token" }; type = "string" }; type = "array" };
+		client_name = { type = "string" };
+		client_uri = { type = "string"; format = "uri" };
+		logo_uri = { type = "string"; format = "uri" };
+		scope = { type = "string" };
+		contacts = { items = { type = "string" }; type = "array" };
+		tos_uri = { type = "string" };
+		policy_uri = { type = "string"; format = "uri" };
+		jwks_uri = { type = "string"; format = "uri" };
+		jwks = { type = "object"; description = "JSON Web Key Set, RFC 7517" };
+		software_id = { type = "string"; format = "uuid" };
+		software_version = { type = "string" };
+	};
+}
+
+local function handle_register_request(event)
+	local request = event.request;
+	local client_metadata = json.decode(request.body);
+
+	if not schema.validate(registration_schema, client_metadata) then
+		return oauth_error("invalid_request", "Failed schema validation.");
+	end
+
+	-- Ensure each signed client_id JWT is unique
+	client_metadata.nonce = uuid.generate();
+
+	-- Do we want to keep everything?
+	local client_id = jwt_sign(client_metadata);
+	local client_secret = make_secret(client_id);
+
+	local client_desc = {
+		client_id = client_id;
+		client_secret = client_secret;
+		client_id_issued_at = os.time();
+		client_secret_expires_at = 0;
+	}
+
+	return {
+		status_code = 201;
+		headers = { content_type = "application/json" };
+		body = json.encode(client_desc);
+	};
+end
+
+if not registration_key then
+	module:log("info", "No 'oauth2_registration_key', dynamic client registration disabled")
+	handle_authorization_request = nil
+	handle_register_request = nil
+end
+
 module:depends("http");
 module:provides("http", {
 	route = {
 		["POST /token"] = handle_token_grant;
 		["GET /authorize"] = handle_authorization_request;
 		["POST /revoke"] = handle_revocation_request;
+		["POST /register"] = handle_register_request;
 	};
 });
 
@@ -386,7 +472,7 @@ module:provides("http", {
 				authorization_endpoint = module:http_url() .. "/authorize";
 				token_endpoint = module:http_url() .. "/token";
 				jwks_uri = nil; -- TODO?
-				registration_endpoint = nil; -- TODO
+				registration_endpoint = module:http_url() .. "/register";
 				scopes_supported = { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator" };
 				response_types_supported = { "code"; "token" };
 				authorization_response_iss_parameter_supported = true;
