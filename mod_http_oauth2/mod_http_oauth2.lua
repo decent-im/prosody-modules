@@ -137,7 +137,8 @@ function response_type_handlers.code(params, granted_jid)
 
 	local query = http.formdecode(redirect.query or "");
 	if type(query) ~= "table" then query = {}; end
-	table.insert(query, { name = "code", value = code })
+	table.insert(query, { name = "code", value = code });
+	table.insert(query, { name = "iss", value = module:http_url(nil, "/") });
 	if params.state then
 		table.insert(query, { name = "state", value = params.state });
 	end
@@ -388,6 +389,7 @@ module:provides("http", {
 				registration_endpoint = nil; -- TODO
 				scopes_supported = { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator" };
 				response_types_supported = { "code"; "token" };
+				authorization_response_iss_parameter_supported = true;
 			};
 		};
 	};
