@@ -20,9 +20,7 @@ local registration_algo = module:get_option_string("oauth2_registration_algorith
 local registration_options = module:get_option("oauth2_registration_options", { default_ttl = 60 * 60 * 24 * 90 });
 
 local jwt_sign, jwt_verify;
-if not registration_key then
-	module:log("error", "Missing required 'oauth2_registration_key', generate a strong key and configure it")
-else
+if registration_key then
 	-- Tie it to the host if global
 	registration_key = hashes.hmac_sha256(registration_key, module.host);
 	jwt_sign, jwt_verify = jwt.init(registration_algo, registration_key, registration_key, registration_options);
