@@ -291,8 +291,8 @@ end
 
 -- "token" aka implicit flow is considered insecure
 local allowed_response_type_handlers = module:get_option_set("allowed_oauth2_response_types", {"code"})
-for handler_type in pairs(allowed_response_type_handlers) do
-	if not allowed_grant_type_handlers:contains(handler_type) then
+for handler_type in pairs(response_type_handlers) do
+	if not allowed_response_type_handlers:contains(handler_type) then
 		grant_type_handlers[handler_type] = nil;
 	end
 end
