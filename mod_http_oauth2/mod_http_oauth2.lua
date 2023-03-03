@@ -146,7 +146,7 @@ function response_type_handlers.code(params, granted_jid)
 		response.body = module:context("*"):fire_event("http-message", {
 			response = response;
 			title = "Your authorization code";
-			message = "Here's your authorization code, copy and paste it into your app:";
+			message = "Here's your authorization code, copy and paste it into " .. (client.client_name or "your client");
 			extra = code;
 		}) or ("Here's your authorization code:\n%s\n"):format(code);
 		return response;
