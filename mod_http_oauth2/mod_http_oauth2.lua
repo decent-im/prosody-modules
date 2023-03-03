@@ -107,7 +107,8 @@ function response_type_handlers.code(params, granted_jid)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	local granted_scopes = filter_scopes(client_owner, client_host, params.scope);
+	local request_username, request_host = jid.split(granted_jid);
+	local granted_scopes = filter_scopes(request_username, request_host, params.scope);
 
 	local code = uuid.generate();
 	local ok = codes:set(params.client_id .. "#" .. code, {
