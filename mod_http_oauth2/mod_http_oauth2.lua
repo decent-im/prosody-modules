@@ -141,6 +141,7 @@ function response_type_handlers.code(params, granted_jid)
 	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
 	if redirect_uri == "urn:ietf:wg:oauth:2.0:oob" then
 		-- TODO some nicer template page
+		-- mod_http_errors will set content-type to text/plain if it catches this event
 		local response = { status_code = 200; headers = { content_type = "text/plain" } }
 		response.body = module:context("*"):fire_event("http-message", {
 			response = response;
