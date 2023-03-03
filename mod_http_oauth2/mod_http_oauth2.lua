@@ -369,3 +369,26 @@ module:hook_object_event(http_server, "http-error", function (event)
 	event.response.status_code = event.error.code or 400;
 	return json.encode(oauth2_response);
 end, 5);
+
+-- OIDC Discovery
+
+module:provides("http", {
+	name = "oauth2-discovery";
+	default_path = "/.well-known/oauth-authorization-server";
+	route = {
+		["GET"] = {
+			headers = { content_type = "application/json" };
+			body = json.encode {
+				issuer = module:http_url(nil, "/");
+				authorization_endpoint = module:http_url() .. "/authorize";
+				token_endpoint = module:http_url() .. "/token";
+				jwks_uri = nil; -- TODO?
+				registration_endpoint = nil; -- TODO
+				scopes_supported = { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator" };
+				response_types_supported = { "code"; "token" };
+			};
+		};
+	};
+});
+
+module:shared("tokenauth/oauthbearer_config").oidc_discovery_url = module:http_url("oauth2-discovery", "/.well-known/oauth-authorization-server");
