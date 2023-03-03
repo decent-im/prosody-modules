@@ -469,12 +469,12 @@ module:provides("http", {
 			headers = { content_type = "application/json" };
 			body = json.encode {
 				issuer = module:http_url(nil, "/");
-				authorization_endpoint = module:http_url() .. "/authorize";
-				token_endpoint = module:http_url() .. "/token";
+				authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
+				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
 				jwks_uri = nil; -- TODO?
-				registration_endpoint = module:http_url() .. "/register";
+				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
 				scopes_supported = { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator" };
-				response_types_supported = { "code"; "token" };
+				response_types_supported = { "code"; "token" }; -- TODO derive from active config
 				authorization_response_iss_parameter_supported = true;
 			};
 		};
