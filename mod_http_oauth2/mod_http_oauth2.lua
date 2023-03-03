@@ -129,6 +129,7 @@ function response_type_handlers.code(params, granted_jid)
 			message = "Here's your authorization code, copy and paste it into your app:";
 			extra = code;
 		}) or ("Here's your authorization code:\n%s\n"):format(code);
+		return response;
 	end
 
 	local redirect = url.parse(redirect_uri);
