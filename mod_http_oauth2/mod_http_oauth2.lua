@@ -156,7 +156,7 @@ function response_type_handlers.code(params, granted_jid)
 	local query = http.formdecode(redirect.query or "");
 	if type(query) ~= "table" then query = {}; end
 	table.insert(query, { name = "code", value = code });
-	table.insert(query, { name = "iss", value = module:http_url(nil, "/") });
+	table.insert(query, { name = "iss", value = module:http_url(nil, "/"):gsub("/$", "") });
 	if params.state then
 		table.insert(query, { name = "state", value = params.state });
 	end
@@ -468,7 +468,7 @@ module:provides("http", {
 		["GET"] = {
 			headers = { content_type = "application/json" };
 			body = json.encode {
-				issuer = module:http_url(nil, "/");
+				issuer = module:http_url(nil, "/"):gsub("/$", "");
 				authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
 				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
 				jwks_uri = nil; -- TODO?
