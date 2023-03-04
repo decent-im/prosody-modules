@@ -11,6 +11,8 @@ local encodings = require "util.encodings";
 local base64 = encodings.base64;
 local schema = require "util.jsonschema";
 local jwt = require"util.jwt";
+local it = require "util.iterators";
+local array = require "util.array";
 
 local tokens = module:depends("tokenauth");
 
@@ -477,7 +479,7 @@ module:provides("http", {
 				jwks_uri = nil; -- TODO?
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
 				scopes_supported = { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator" };
-				response_types_supported = { "code"; "token" }; -- TODO derive from active config
+				response_types_supported = array(it.keys(response_type_handlers));
 				authorization_response_iss_parameter_supported = true;
 			};
 		};
