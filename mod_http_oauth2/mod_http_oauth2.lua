@@ -90,18 +90,20 @@ local function filter_scopes(username, host, requested_scope_string)
 	return usermanager.get_user_role(username, module.host).name;
 end
 
-local function code_expires_in(code)
-	return os.difftime(os.time(), code.issued);
+local function code_expires_in(code) --> number, seconds until code expires
+	return os.difftime(code.expires, os.time());
 end
 
-local function code_expired(code)
-	return code_expires_in(code) > 120;
+local function code_expired(code) --> boolean, true: has expired, false: still valid
+	return code_expires_in(code) < 0;
 end
 
 local codes = cache.new(10000, function (_, code)
 	return code_expired(code)
 end);
 
+-- Periodically clear out unredeemed codes.  Does not need to be exact, expired
+-- codes are rejected if tried. Mostly just to keep memory usage in check.
 module:add_timer(900, function()
 	local k, code = codes:tail();
 	while code and code_expired(code) do
@@ -176,7 +178,7 @@ function response_type_handlers.code(client, params, granted_jid)
 
 	local code = uuid.generate();
 	local ok = codes:set(params.client_id .. "#" .. code, {
-		issued = os.time();
+		expires = os.time() + 600;
 		granted_jid = granted_jid;
 		granted_scopes = granted_scopes;
 	});
