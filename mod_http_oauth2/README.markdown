@@ -2,6 +2,10 @@
 labels:
 - Stage-Alpha
 summary: 'OAuth2 API'
+rockspec:
+  build:
+    copy_directories:
+    - html
 ...
 
 Introduction
