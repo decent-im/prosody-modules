@@ -9,10 +9,54 @@ local url = require "socket.url";
 local uuid = require "util.uuid";
 local encodings = require "util.encodings";
 local base64 = encodings.base64;
+local random = require "util.random";
 local schema = require "util.jsonschema";
 local jwt = require"util.jwt";
 local it = require "util.iterators";
 local array = require "util.array";
+local st = require "util.stanza";
+
+local function read_file(base_path, fn, required)
+	local f, err = io.open(base_path .. "/" .. fn);
+	if not f then
+		module:log(required and "error" or "debug", "Unable to load template file: %s", err);
+		if required then
+			return error("Failed to load templates");
+		end
+		return nil;
+	end
+	local data = assert(f:read("*a"));
+	assert(f:close());
+	return data;
+end
+
+local template_path = module:get_option_path("oauth2_template_path", "html");
+local templates = {
+	login = read_file(template_path, "login.html", true);
+	consent = read_file(template_path, "consent.html", true);
+	error = read_file(template_path, "error.html", true);
+	css = read_file(template_path, "style.css");
+	js = read_file(template_path, "script.js");
+};
+
+local site_name = module:get_option_string("site_name", module.host);
+
+local _render_html = require"util.interpolation".new("%b{}", st.xml_escape);
+local function render_page(template, data, sensitive)
+	data = data or {};
+	data.site_name = site_name;
+	local resp = {
+		code = 200;
+		headers = {
+			["Content-Type"] = "text/html; charset=utf-8";
+			["Content-Security-Policy"] = "default-src 'self'";
+			["X-Frame-Options"] = "DENY";
+			["Cache-Control"] = (sensitive and "no-store" or "no-cache")..", private";
+		};
+		body = _render_html(template, data);
+	};
+	return resp;
+end
 
 local tokens = module:depends("tokenauth");
 
@@ -119,17 +163,7 @@ function grant_type_handlers.password(params)
 	return json.encode(new_access_token(granted_jid, granted_scopes, nil));
 end
 
--- TODO response_type_handlers have some common boilerplate code, refactor?
-
-function response_type_handlers.code(params, granted_jid)
-	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
-
-	local ok, client = jwt_verify(params.client_id);
-
-	if not ok then
-		return oauth_error("invalid_client", "incorrect credentials");
-	end
-
+function response_type_handlers.code(client, params, granted_jid)
 	local request_username, request_host = jid.split(granted_jid);
 	local granted_scopes = filter_scopes(request_username, request_host, params.scope);
 
@@ -178,15 +212,7 @@ function response_type_handlers.code(params, granted_jid)
 end
 
 -- Implicit flow
-function response_type_handlers.token(params, granted_jid)
-	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
-
-	local client = jwt_verify(params.client_id);
-
-	if not client then
-		return oauth_error("invalid_client", "incorrect credentials");
-	end
-
+function response_type_handlers.token(client, params, granted_jid)
 	local request_username, request_host = jid.split(granted_jid);
 	local granted_scopes = filter_scopes(request_username, request_host, params.scope);
 	local token_info = new_access_token(granted_jid, granted_scopes, nil);
@@ -236,6 +262,60 @@ function grant_type_handlers.authorization_code(params)
 	end
 
 	return json.encode(new_access_token(code.granted_jid, code.granted_scopes, nil));
+end
+
+-- Used to issue/verify short-lived tokens for the authorization process below
+local new_user_token, verify_user_token = jwt.init("HS256", random.bytes(32), nil, { default_ttl = 600 });
+
+-- From the given request, figure out if the user is authenticated and has granted consent yet
+-- As this requires multiple steps (seek credentials, seek consent), we have a lot of state to
+-- carry around across requests. We also need to protect against CSRF and session mix-up attacks
+-- (e.g. the user may have multiple concurrent flows in progress, session cookies aren't unique
+--  to one of them).
+-- Our strategy here is to preserve the original query string (containing the authz request), and
+-- encode the rest of the flow in form POSTs.
+local function get_auth_state(request)
+	local form = request.method == "POST"
+	         and request.body
+	         and #request.body > 0
+	         and request.headers.content_type == "application/x-www-form-urlencoded"
+	         and http.formdecode(request.body);
+
+	if not form then return {}; end
+
+	if not form.user_token then
+		-- First step: login
+		local username = encodings.stringprep.nodeprep(form.username);
+		local password = encodings.stringprep.saslprep(form.password);
+		if not (username and password) or not usermanager.test_password(username, module.host, password) then
+			return {
+				error = "Invalid username/password";
+			};
+		end
+		return {
+			user = {
+				username = username;
+				host = module.host;
+				token = new_user_token({ username = username, host = module.host });
+			};
+		};
+	elseif form.user_token and form.consent then
+		-- Second step: consent
+		local ok, user = verify_user_token(form.user_token);
+		if not ok then
+			return {
+				error = user == "token-expired" and "Session expired - try again" or nil;
+			};
+		end
+
+		user.token = form.user_token;
+		return {
+			user = user;
+			consent = form.consent == "granted";
+		};
+	end
+
+	return {};
 end
 
 local function check_credentials(request, allow_token)
@@ -290,6 +370,32 @@ if module:get_host_type() == "component" then
 	check_credentials = function () return false end
 end
 
+-- OAuth errors should be returned to the client if possible, i.e. by
+-- appending the error information to the redirect_uri and sending the
+-- redirect to the user-agent. In some cases we can't do this, e.g. if
+-- the redirect_uri is missing or invalid. In those cases, we render an
+-- error directly to the user-agent.
+local function error_response(request, err)
+	local q = request.url.query and http.formdecode(request.url.query);
+	local redirect_uri = q and q.redirect_uri;
+	if not redirect_uri or not redirect_uri:match("^https://") then
+		module:log("warn", "Missing or invalid redirect_uri <%s>, rendering error to user-agent", redirect_uri or "");
+		return render_page(templates.error, { error = err });
+	end
+	local redirect_query = url.parse(redirect_uri);
+	local sep = redirect_query and "&" or "?";
+	redirect_uri = redirect_uri
+		.. sep .. http.formencode(err.extra.oauth2_response)
+		.. "&" .. http.formencode({ state = q.state, iss = get_issuer() });
+	module:log("warn", "Sending error response to client via redirect to %s", redirect_uri);
+	return {
+		status_code = 302;
+		headers = {
+			location = redirect_uri;
+		};
+	};
+end
+
 local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_types", {"authorization_code", "password"})
 for handler_type in pairs(grant_type_handlers) do
 	if not allowed_grant_type_handlers:contains(handler_type) then
@@ -309,42 +415,53 @@ function handle_token_grant(event)
 	event.response.headers.content_type = "application/json";
 	local params = http.formdecode(event.request.body);
 	if not params then
-		return oauth_error("invalid_request");
+		return error_response(event.request, oauth_error("invalid_request"));
 	end
 	local grant_type = params.grant_type
 	local grant_handler = grant_type_handlers[grant_type];
 	if not grant_handler then
-		return oauth_error("unsupported_grant_type");
+		return error_response(event.request, oauth_error("unsupported_grant_type"));
 	end
 	return grant_handler(params);
 end
 
 local function handle_authorization_request(event)
-	local request, response = event.request, event.response;
-	if not request.headers.authorization then
-		response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
-		return 401;
-	end
-	local user = check_credentials(request);
-	if not user then
-		return 401;
-	end
-	-- TODO ask user for consent here
+	local request = event.request;
+
 	if not request.url.query then
-		response.headers.content_type = "application/json";
-		return oauth_error("invalid_request");
+		return error_response(request, oauth_error("invalid_request"));
 	end
 	local params = http.formdecode(request.url.query);
 	if not params then
-		return oauth_error("invalid_request");
+		return error_response(request, oauth_error("invalid_request"));
 	end
+
+	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
+
+	local ok, client = jwt_verify(params.client_id);
+
+	if not ok then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+
+	local auth_state = get_auth_state(request);
+	if not auth_state.user then
+		-- Render login page
+		return render_page(templates.login, { state = auth_state, client = client });
+	elseif auth_state.consent == nil then
+		-- Render consent page
+		return render_page(templates.consent, { state = auth_state, client = client }, true);
+	elseif not auth_state.consent then
+		-- Notify client of rejection
+		return error_response(request, oauth_error("access_denied"));
+	end
+
 	local response_type = params.response_type;
 	local response_handler = response_type_handlers[response_type];
 	if not response_handler then
-		response.headers.content_type = "application/json";
-		return oauth_error("unsupported_response_type");
+		return error_response(request, oauth_error("unsupported_response_type"));
 	end
-	return response_handler(params, jid.join(user, module.host));
+	return response_handler(client, params, jid.join(auth_state.user.username, module.host));
 end
 
 local function handle_revocation_request(event)
@@ -452,8 +569,23 @@ module:provides("http", {
 	route = {
 		["POST /token"] = handle_token_grant;
 		["GET /authorize"] = handle_authorization_request;
+		["POST /authorize"] = handle_authorization_request;
 		["POST /revoke"] = handle_revocation_request;
 		["POST /register"] = handle_register_request;
+
+		-- Optional static content for templates
+		["GET /style.css"] = templates.css and {
+			headers = {
+				["Content-Type"] = "text/css";
+			};
+			body = _render_html(templates.css, module:get_option("oauth2_template_style"));
+		} or nil;
+		["GET /script.js"] = templates.js and {
+			headers = {
+				["Content-Type"] = "text/javascript";
+			};
+			body = templates.js;
+		} or nil;
 	};
 });
 

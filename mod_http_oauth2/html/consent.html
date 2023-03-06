@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{site_name} - Authorize {client.client_name}</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<main>
+	{state.error&<div class="error">
+		<p>{state.error}</p>
+	</div>}
+
+	<h1>{site_name}<h1>
+	<h2>Authorize new application</h2>
+	<p>A new application wants to connect to your account.</p>
+	<dl>
+		<dt>Name</dt>
+		<dd>{client.client_name}</dd>
+		<dt>Website</dt>
+		<dd><a href="{client.client_uri}">{client.client_uri}</a></dd>
+
+		{client.tos_uri&
+		<dt>Terms of Service</dt>
+		<dd><a href="{client.tos_uri}">View terms</a></dd>}
+
+		{client.policy_uri&
+		<dt>Policy</dt>
+		<dd><a href="{client.policy_uri}">View policy</a></dd>}
+	</dl>
+
+	<p>To allow <em>{client.client_name}</em> to access your account
+	   <em>{state.user.username}@{state.user.host}</em> and associated data,
+	   select 'Allow'. Otherwise, select 'Deny'.
+	</p>
+
+	<form method="post">
+		<input type="hidden" name="user_token" value="{state.user.token}">
+		<button type="submit" name="consent" value="denied">Deny</button>
+		<button type="submit" name="consent" value="granted">Allow</button>
+	</form>
+	</main>
+</body>
+</html>
