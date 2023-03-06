@@ -11,6 +11,7 @@ local encodings = require "util.encodings";
 local base64 = encodings.base64;
 local random = require "util.random";
 local schema = require "util.jsonschema";
+local set = require "util.set";
 local jwt = require"util.jwt";
 local it = require "util.iterators";
 local array = require "util.array";
@@ -112,6 +113,12 @@ end)
 
 local function get_issuer()
 	return (module:http_url(nil, "/"):gsub("/$", ""));
+end
+
+local loopbacks = set.new({ "localhost", "127.0.0.1", "::1" });
+local function is_secure_redirect(uri)
+	local u = url.parse(uri);
+	return u.scheme ~= "http" or loopbacks:contains(u.host);
 end
 
 local function oauth_error(err_name, err_desc)
@@ -378,7 +385,7 @@ end
 local function error_response(request, err)
 	local q = request.url.query and http.formdecode(request.url.query);
 	local redirect_uri = q and q.redirect_uri;
-	if not redirect_uri or not redirect_uri:match("^https://") then
+	if not redirect_uri or not is_safe_redirect(redirect_uri) then
 		module:log("warn", "Missing or invalid redirect_uri <%s>, rendering error to user-agent", redirect_uri or "");
 		return render_page(templates.error, { error = err });
 	end
