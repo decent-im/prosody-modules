@@ -265,6 +265,9 @@ function grant_type_handlers.authorization_code(params)
 	end
 	local code, err = codes:get(params.client_id .. "#" .. params.code);
 	if err then error(err); end
+	-- MUST NOT use the authorization code more than once, so remove it to
+	-- prevent a second attempted use
+	codes:set(params.client_id .. "#" .. params.code, nil);
 	if not code or type(code) ~= "table" or code_expired(code) then
 		module:log("debug", "authorization_code invalid or expired: %q", code);
 		return oauth_error("invalid_client", "incorrect credentials");
