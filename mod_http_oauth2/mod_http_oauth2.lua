@@ -66,6 +66,10 @@ module:add_timer(900, function()
 	return code and code_expires_in(code) + 1 or 900;
 end)
 
+local function get_issuer()
+	return (module:http_url(nil, "/"):gsub("/$", ""));
+end
+
 local function oauth_error(err_name, err_desc)
 	return errors.new({
 		type = "modify";
@@ -159,7 +163,7 @@ function response_type_handlers.code(params, granted_jid)
 	local query = http.formdecode(redirect.query or "");
 	if type(query) ~= "table" then query = {}; end
 	table.insert(query, { name = "code", value = code });
-	table.insert(query, { name = "iss", value = module:http_url(nil, "/"):gsub("/$", "") });
+	table.insert(query, { name = "iss", value = get_issuer() });
 	if params.state then
 		table.insert(query, { name = "state", value = params.state });
 	end
@@ -474,7 +478,7 @@ module:provides("http", {
 		["GET"] = {
 			headers = { content_type = "application/json" };
 			body = json.encode {
-				issuer = module:http_url(nil, "/"):gsub("/$", "");
+				issuer = get_issuer();
 				authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
 				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
 				jwks_uri = nil; -- TODO?
