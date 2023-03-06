@@ -211,7 +211,7 @@ function response_type_handlers.code(client, params, granted_jid)
 	redirect.query = http.formencode(query);
 
 	return {
-		status_code = 302;
+		status_code = 303;
 		headers = {
 			location = url.build(redirect);
 		};
@@ -229,7 +229,7 @@ function response_type_handlers.token(client, params, granted_jid)
 	redirect.fragment = http.formencode(token_info);
 
 	return {
-		status_code = 302;
+		status_code = 303;
 		headers = {
 			location = url.build(redirect);
 		};
@@ -396,7 +396,7 @@ local function error_response(request, err)
 		.. "&" .. http.formencode({ state = q.state, iss = get_issuer() });
 	module:log("warn", "Sending error response to client via redirect to %s", redirect_uri);
 	return {
-		status_code = 302;
+		status_code = 303;
 		headers = {
 			location = redirect_uri;
 		};
