@@ -27,11 +27,13 @@ end
 
 do
 	local f = module:load_resource("res/openapi.yaml");
+	local openapi = f:read("*a");
+	openapi = openapi:gsub("https://example%.com/oauth2", module:http_url("oauth2"));
 	_M.schema = {
 		headers = {
 			content_type = "text/x-yaml";
 		};
-		body = f:read("*a");
+		body = openapi;
 	}
 	f:close();
 end
