@@ -93,6 +93,9 @@ This is used by Chatsecure on iOS to send out high priority pushes in those case
 Compatibility
 =============
 
+**Note:** This module should be used with Lua 5.2 and higher. Using it with
+Lua 5.1 may cause push notifications to not be sent to some clients.
+
 ------ -----------------------------------------------------------------------------
   trunk  Works
   0.12   Works
