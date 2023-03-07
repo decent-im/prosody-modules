@@ -564,20 +564,19 @@ local function handle_register_request(event)
 	local client_id = jwt_sign(client_metadata);
 	local client_secret = make_secret(client_id);
 
-	local client_desc = {
-		client_id = client_id;
-		client_secret = client_secret;
-		client_id_issued_at = os.time();
-		client_secret_expires_at = 0;
-	}
+	client_metadata.client_id = client_id;
+	client_metadata.client_secret = client_secret;
+	client_metadata.client_id_issued_at = os.time();
+	client_metadata.client_secret_expires_at = 0;
+
 	if not registration_options.accept_expired then
-		client_desc.client_secret_expires_at = client_desc.client_id_issued_at + (registration_options.default_ttl or 3600);
+		client_metadata.client_secret_expires_at = client_metadata.client_id_issued_at + (registration_options.default_ttl or 3600);
 	end
 
 	return {
 		status_code = 201;
 		headers = { content_type = "application/json" };
-		body = json.encode(client_desc);
+		body = json.encode(client_metadata);
 	};
 end
 
