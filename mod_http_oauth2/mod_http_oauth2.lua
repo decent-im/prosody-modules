@@ -342,6 +342,8 @@ local function get_auth_state(request)
 end
 
 local function get_request_credentials(request)
+	if not request.headers.authorization then return; end
+
 	local auth_type, auth_data = string.match(request.headers.authorization, "^(%S+)%s(.+)$");
 
 	if auth_type == "Basic" then
