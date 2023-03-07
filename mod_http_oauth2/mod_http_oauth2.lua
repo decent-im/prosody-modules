@@ -466,7 +466,7 @@ function handle_token_grant(event)
 		return error_response(event.request, oauth_error("invalid_request"));
 	end
 
-	if credentials.type == "basic" then
+	if credentials and credentials.type == "basic" then
 		params.client_id = http.urldecode(credentials.username);
 		params.client_secret = http.urldecode(credentials.password);
 	end
