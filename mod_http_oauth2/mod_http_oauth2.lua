@@ -456,11 +456,19 @@ for handler_type in pairs(response_type_handlers) do
 end
 
 function handle_token_grant(event)
+	local credentials = get_request_credentials(event.request);
+
 	event.response.headers.content_type = "application/json";
 	local params = http.formdecode(event.request.body);
 	if not params then
 		return error_response(event.request, oauth_error("invalid_request"));
 	end
+
+	if credentials.type == "basic" then
+		params.client_id = http.urldecode(credentials.username);
+		params.client_secret = http.urldecode(credentials.password);
+	end
+
 	local grant_type = params.grant_type
 	local grant_handler = grant_type_handlers[grant_type];
 	if not grant_handler then
