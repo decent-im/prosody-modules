@@ -341,22 +341,43 @@ local function get_auth_state(request)
 	return {};
 end
 
-local function check_credentials(request, allow_token)
+local function get_request_credentials(request)
 	local auth_type, auth_data = string.match(request.headers.authorization, "^(%S+)%s(.+)$");
 
 	if auth_type == "Basic" then
 		local creds = base64.decode(auth_data);
-		if not creds then return false; end
+		if not creds then return; end
 		local username, password = string.match(creds, "^([^:]+):(.*)$");
-		if not username then return false; end
-		username, password = encodings.stringprep.nodeprep(username), encodings.stringprep.saslprep(password);
-		if not username then return false; end
+		if not username then return; end
+		return {
+			type = "basic";
+			username = username;
+			password = password;
+		};
+	elseif auth_type == "Bearer" then
+		return {
+			type = "bearer";
+			bearer_token = auth_data;
+		};
+	end
+
+	return nil;
+end
+
+local function check_credentials(request, allow_token)
+	local credentials = get_request_credentials(request);
+	if not credentials then return nil; end
+
+	if credentials.username and credentials.password then
+		local username = encodings.stringprep.nodeprep(credentials.username);
+		local password = encodings.stringprep.saslprep(credentials.password);
+		if not (username and password) then return false; end
 		if not usermanager.test_password(username, module.host, password) then
 			return false;
 		end
 		return username;
-	elseif auth_type == "Bearer" and allow_token then
-		local token_info = tokens.get_token_info(auth_data);
+	elseif allow_token and credentials.bearer_token then
+		local token_info = tokens.get_token_info(credentials.bearer_token);
 		if not token_info or not token_info.session or token_info.session.host ~= module.host then
 			return false;
 		end
