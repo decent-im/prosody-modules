@@ -145,8 +145,17 @@ local function new_access_token(token_jid, scope, ttl)
 end
 
 local function get_redirect_uri(client, query_redirect_uri) -- record client, string : string
+	if not query_redirect_uri then
+		if #client.redirect_uris ~= 1 then
+			-- Client registered multiple URIs, it needs specify which one to use
+			return;
+		end
+		-- When only a single URI is registered, that's the default
+		return client.redirect_uris[1];
+	end
+	-- Verify the client-provided URI matches one previously registered
 	for _, redirect_uri in ipairs(client.redirect_uris) do
-		if query_redirect_uri == nil or query_redirect_uri == redirect_uri then
+		if query_redirect_uri == redirect_uri then
 			return redirect_uri
 		end
 	end
@@ -199,6 +208,8 @@ function response_type_handlers.code(client, params, granted_jid)
 			extra = code;
 		}) or ("Here's your authorization code:\n%s\n"):format(code);
 		return response;
+	elseif not redirect_uri then
+		return {status_code = 400};
 	end
 
 	local redirect = url.parse(redirect_uri);
