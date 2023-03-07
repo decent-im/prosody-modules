@@ -68,6 +68,16 @@ button, input[type=submit]
 		background-color: #842029;
 	}
 
+
+	:link
+	{
+		color: #6197df;
+	}
+
+	:visited
+	{
+		color: #9a61df;
+	}
 }
 
 @media(min-width: 768px)
