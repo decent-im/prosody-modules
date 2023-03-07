@@ -47,7 +47,7 @@ local function render_page(template, data, sensitive)
 	data = data or {};
 	data.site_name = site_name;
 	local resp = {
-		code = 200;
+		status_code = 200;
 		headers = {
 			["Content-Type"] = "text/html; charset=utf-8";
 			["Content-Security-Policy"] = "default-src 'self'";
