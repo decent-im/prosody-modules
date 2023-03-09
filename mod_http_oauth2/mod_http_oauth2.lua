@@ -617,6 +617,33 @@ if not registration_key then
 	handle_register_request = nil
 end
 
+local function handle_userinfo_request(event)
+	local request = event.request;
+	local credentials = get_request_credentials(request);
+	if not credentials or not credentials.bearer_token then
+		return 400;
+	end
+	local token_info = tokens.get_token_info(credentials.bearer_token);
+	if not token_info then
+		return 403;
+	end
+	-- TODO check that they actually have access to the userinfo endpoint, aka
+	-- the 'openid' scope. Tokens currently contain the JID in plain text so
+	-- we're not really returning anything they did not know already.
+
+	local user_info = {
+		iss = get_issuer();
+		sub = url.build({ scheme = "xmpp"; path = token_info.jid });
+		-- Additional UserInfo fields could be pulled from vcard4, depending on
+		-- permissions and scopes granted.
+	}
+	return {
+		status_code = 201;
+		headers = { content_type = "application/json" };
+		body = json.encode(user_info);
+	};
+end
+
 module:depends("http");
 module:provides("http", {
 	route = {
@@ -625,6 +652,7 @@ module:provides("http", {
 		["POST /authorize"] = handle_authorization_request;
 		["POST /revoke"] = handle_revocation_request;
 		["POST /register"] = handle_register_request;
+		["GET /userinfo"] = handle_userinfo_request;
 
 		-- Optional static content for templates
 		["GET /style.css"] = templates.css and {
@@ -667,6 +695,7 @@ module:provides("http", {
 				authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
 				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
 				jwks_uri = nil; -- TODO?
+				userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
 				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host)))
 					or { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator" };
