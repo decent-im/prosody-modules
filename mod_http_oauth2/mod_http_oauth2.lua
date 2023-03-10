@@ -457,7 +457,7 @@ local allowed_response_type_handlers = module:get_option_set("allowed_oauth2_res
 for handler_type in pairs(response_type_handlers) do
 	if not allowed_response_type_handlers:contains(handler_type) then
 		module:log("debug", "Response type %q disabled", handler_type);
-		grant_type_handlers[handler_type] = nil;
+		response_type_handlers[handler_type] = nil;
 	else
 		module:log("debug", "Response type %q enabled", handler_type);
 	end
