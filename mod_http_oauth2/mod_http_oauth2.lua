@@ -445,7 +445,10 @@ end
 local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_types", {"authorization_code", "password"})
 for handler_type in pairs(grant_type_handlers) do
 	if not allowed_grant_type_handlers:contains(handler_type) then
+		module:log("debug", "Grant type %q disabled", handler_type);
 		grant_type_handlers[handler_type] = nil;
+	else
+		module:log("debug", "Grant type %q enabled", handler_type);
 	end
 end
 
@@ -453,7 +456,10 @@ end
 local allowed_response_type_handlers = module:get_option_set("allowed_oauth2_response_types", {"code"})
 for handler_type in pairs(response_type_handlers) do
 	if not allowed_response_type_handlers:contains(handler_type) then
+		module:log("debug", "Response type %q disabled", handler_type);
 		grant_type_handlers[handler_type] = nil;
+	else
+		module:log("debug", "Response type %q enabled", handler_type);
 	end
 end
 
