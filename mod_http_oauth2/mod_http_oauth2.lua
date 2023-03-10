@@ -429,7 +429,7 @@ local function error_response(request, err)
 		return render_page(templates.error, { error = err });
 	end
 	local redirect_query = url.parse(redirect_uri);
-	local sep = redirect_query and "&" or "?";
+	local sep = redirect_query.query and "&" or "?";
 	redirect_uri = redirect_uri
 		.. sep .. http.formencode(err.extra.oauth2_response)
 		.. "&" .. http.formencode({ state = q.state, iss = get_issuer() });
