@@ -197,7 +197,7 @@ local list_backends = {
 	-- TODO Invent some custom schema for this? Needed for just a set of strings?
 	pubsubitemid = {
 		init = function(self, pubsub_spec, opts)
-			local service_addr, node = pubsub_spec:match("^([^/]*)/(.*)");
+			local service_addr, node = pubsub_spec:match("^pubsubitemid:([^/]*)/(.*)");
 			module:depends("pubsub_subscription");
 			module:add_item("pubsub-subscription", {
 					service = service_addr;
