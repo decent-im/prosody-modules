@@ -626,11 +626,29 @@ executed, and no further rules will be checked.
 These actions cause a new stanza to be generated and sent somewhere.
 Processing of the original stanza will continue beyond these actions.
 
-  Action                  Description
-  ----------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------
-  `REPLY=text`            Reply to the stanza (assumed to be a message) with the given text.
-  `COPY=jid`              Make a copy of the stanza and send the copy to the specified JID. The copied stanza flows through Prosody's routing code, and as such is affected by firewall rules. Be careful to avoid loops.
-  `FORWARD=jid`           Forward a copy of the stanza to the given JID (using XEP-0297). The stanza will be sent from the current host's JID.
+  Action                   Description
+  ------------------------  ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  `REPLY=text`             Reply to the stanza (assumed to be a message) with the given text.
+  `COPY=jid`               Make a copy of the stanza and send the copy to the specified JID. The copied stanza flows through Prosody's routing code, and as such is affected by firewall rules. Be careful to avoid loops.
+  `FORWARD=jid`            Forward a copy of the stanza to the given JID (using XEP-0297). The stanza will be sent from the current host's JID.
+
+### Reporting
+
+  Action                    Description
+  ------------------------  ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  `REPORT=jid reason text`  Forwards the full stanza to `jid` with a XEP-0377 abuse report attached.
+
+Only the `jid` is mandatory. The `reason` parameter should be either `abuse`, `spam` or a custom URI. If not specified, it defaults to `abuse`.
+After the reason, some human-readable text may be included to explain the report.
+
+Example:
+
+```
+KIND: message
+TO: honeypot@example.com
+REPORT TO=antispam.example.com spam Caught by the honeypot!
+DROP.
+```
 
 ### Stanza modification
 

@@ -241,4 +241,22 @@ function action_handlers.UNSUBSCRIBE_SENDER()
 	       { "rostermanager", "core_post_stanza", "st", "split_to", "bare_to", "bare_from" };
 end
 
+function action_handlers.REPORT_TO(spec)
+	local where, reason, text = spec:match("^%s*(%S+) *(%S*) *(.*)$");
+	if reason == "spam" then
+		reason = "urn:xmpp:reporting:spam";
+	elseif reason == "abuse" or not reason then
+		reason = "urn:xmpp:reporting:abuse";
+	end
+	local code = [[
+		local newstanza = st.stanza("message", { to = %q, from = current_host }):tag("forwarded", { xmlns = "urn:xmpp:forward:0" });
+		local tmp_stanza = st.clone(stanza); tmp_stanza.attr.xmlns = "jabber:client"; newstanza:add_child(tmp_stanza):up();
+		newstanza:tag("report", { xmlns = "urn:xmpp:reporting:1", reason = %q })
+		do local text = %q; if text ~= "" then newstanza:text_tag("text", text); end end
+		newstanza:up();
+		core_post_stanza(session, newstanza);
+	]];
+	return code:format(where, reason, text), { "core_post_stanza", "current_host", "st" };
+end
+
 return action_handlers;
