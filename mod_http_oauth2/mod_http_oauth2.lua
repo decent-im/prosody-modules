@@ -555,9 +555,11 @@ local registration_schema = {
 	required = { "client_name"; "redirect_uris" };
 	properties = {
 		redirect_uris = { type = "array"; minLength = 1; items = { type = "string"; format = "uri" } };
-		token_endpoint_auth_method = { enum = { "none"; "client_secret_post"; "client_secret_basic" }; type = "string" };
+		token_endpoint_auth_method = { type = "string"; enum = { "none"; "client_secret_post"; "client_secret_basic" } };
 		grant_types = {
+			type = "array";
 			items = {
+				type = "string";
 				enum = {
 					"authorization_code";
 					"implicit";
@@ -567,16 +569,14 @@ local registration_schema = {
 					"urn:ietf:params:oauth:grant-type:jwt-bearer";
 					"urn:ietf:params:oauth:grant-type:saml2-bearer";
 				};
-				type = "string";
 			};
-			type = "array";
 		};
-		response_types = { items = { enum = { "code"; "token" }; type = "string" }; type = "array" };
+		response_types = { type = "array"; items = { type = "string"; enum = { "code"; "token" } } };
 		client_name = { type = "string" };
 		client_uri = { type = "string"; format = "uri" };
 		logo_uri = { type = "string"; format = "uri" };
 		scope = { type = "string" };
-		contacts = { items = { type = "string" }; type = "array" };
+		contacts = { type = "array"; items = { type = "string" } };
 		tos_uri = { type = "string" };
 		policy_uri = { type = "string"; format = "uri" };
 		jwks_uri = { type = "string"; format = "uri" };
