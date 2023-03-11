@@ -602,7 +602,7 @@ local function handle_register_request(event)
 
 	for _, redirect_uri in ipairs(client_metadata.redirect_uris) do
 		local components = url.parse(redirect_uri);
-		if not components then
+		if not components or not components.scheme then
 			return oauth_error("invalid_request", "Invalid redirect URI.");
 		end
 	end
