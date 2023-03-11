@@ -552,7 +552,13 @@ end
 
 local registration_schema = {
 	type = "object";
-	required = { "client_name"; "redirect_uris" };
+	required = {
+		-- These are shown to users in the template
+		"client_name";
+		"client_uri";
+		-- We need at least one redirect URI for things to work
+		"redirect_uris";
+	};
 	properties = {
 		redirect_uris = { type = "array"; minLength = 1; items = { type = "string"; format = "uri" } };
 		token_endpoint_auth_method = { type = "string"; enum = { "none"; "client_secret_post"; "client_secret_basic" } };
