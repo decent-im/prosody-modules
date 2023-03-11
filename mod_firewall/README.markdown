@@ -605,9 +605,9 @@ with parameters uses an equals sign ('='):
 
 ### Route modification
 
-The most common actions modify the stanza's route in some way. Currently
-the first matching rule to do so will halt further processing of actions
-and rules (this may change in the future).
+The following common actions modify the stanza's route in some way. These
+rules will halt further processing of the stanza - no further actions will be
+executed, and no further rules will be checked.
 
   Action                  Description
   ----------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -615,14 +615,22 @@ and rules (this may change in the future).
   `DROP.`                 Stop executing actions and rules on this stanza, and discard it.
   `DEFAULT.`              Stop executing actions and rules on this stanza, prevent any other scripts/modules from handling it, to trigger the appropriate default "unhandled stanza" behaviour. Do not use in custom chains (it is treated as PASS).
   `REDIRECT=jid`          Redirect the stanza to the given JID.
-  `REPLY=text`            Reply to the stanza (assumed to be a message) with the given text.
   `BOUNCE.`               Bounce the stanza with the default error (usually service-unavailable)
   `BOUNCE=error`          Bounce the stanza with the given error (MUST be a defined XMPP stanza error, see [RFC6120](http://xmpp.org/rfcs/rfc6120.html#stanzas-error-conditions).
   `BOUNCE=error (text)`   As above, but include the supplied human-readable text with a description of the error
-  `COPY=jid`              Make a copy of the stanza and send the copy to the specified JID. The copied stanza flows through Prosody's routing code, and as such is affected by firewall rules. Be careful to avoid loops.
-  `FORWARD=jid`           Forward a copy of the stanza to the given JID (using XEP-0297). The stanza will be sent from the current host's JID.
 
 **Note:** It is incorrect behaviour to reply to an 'error' stanza with another error, so BOUNCE will simply act the same as 'DROP' for stanzas that should not be bounced (error stanzas and iq results).
+
+### Replying and forwarding
+
+These actions cause a new stanza to be generated and sent somewhere.
+Processing of the original stanza will continue beyond these actions.
+
+  Action                  Description
+  ----------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  `REPLY=text`            Reply to the stanza (assumed to be a message) with the given text.
+  `COPY=jid`              Make a copy of the stanza and send the copy to the specified JID. The copied stanza flows through Prosody's routing code, and as such is affected by firewall rules. Be careful to avoid loops.
+  `FORWARD=jid`           Forward a copy of the stanza to the given JID (using XEP-0297). The stanza will be sent from the current host's JID.
 
 ### Stanza modification
 
