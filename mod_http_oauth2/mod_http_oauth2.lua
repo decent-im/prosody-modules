@@ -600,6 +600,13 @@ local function handle_register_request(event)
 		return oauth_error("invalid_request", "Failed schema validation.");
 	end
 
+	for _, redirect_uri in ipairs(client_metadata.redirect_uris) do
+		local components = url.parse(redirect_uri);
+		if not components then
+			return oauth_error("invalid_request", "Invalid redirect URI.");
+		end
+	end
+
 	-- Ensure each signed client_id JWT is unique
 	client_metadata.nonce = uuid.generate();
 
