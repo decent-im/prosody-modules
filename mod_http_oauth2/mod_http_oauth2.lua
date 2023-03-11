@@ -612,7 +612,7 @@ local function handle_register_request(event)
 		end
 	end
 
-	for field, prop_schema in pairs(registration_schema) do
+	for field, prop_schema in pairs(registration_schema.properties) do
 		if prop_schema.format == "uri" and client_metadata[field] then
 			local components = url.parse(client_metadata[field]);
 			if components.scheme ~= "https" then
