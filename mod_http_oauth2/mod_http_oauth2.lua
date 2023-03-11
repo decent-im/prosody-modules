@@ -6,7 +6,7 @@ local json = require "util.json";
 local usermanager = require "core.usermanager";
 local errors = require "util.error";
 local url = require "socket.url";
-local uuid = require "util.uuid";
+local id = require "util.id";
 local encodings = require "util.encodings";
 local base64 = encodings.base64;
 local random = require "util.random";
@@ -185,7 +185,7 @@ function response_type_handlers.code(client, params, granted_jid)
 	local request_username, request_host = jid.split(granted_jid);
 	local granted_scopes = filter_scopes(request_username, request_host, params.scope);
 
-	local code = uuid.generate();
+	local code = id.medium();
 	local ok = codes:set(params.client_id .. "#" .. code, {
 		expires = os.time() + 600;
 		granted_jid = granted_jid;
@@ -624,8 +624,9 @@ local function handle_register_request(event)
 		end
 	end
 
-	-- Ensure each signed client_id JWT is unique
-	client_metadata.nonce = uuid.generate();
+	-- Ensure each signed client_id JWT is unique, short ID and issued at
+	-- timestamp should be sufficient to rule out brute force attacks
+	client_metadata.nonce = id.short();
 
 	-- Do we want to keep everything?
 	local client_id = jwt_sign(client_metadata);
