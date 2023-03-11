@@ -604,6 +604,8 @@ local function handle_register_request(event)
 		local components = url.parse(redirect_uri);
 		if not components or not components.scheme then
 			return oauth_error("invalid_request", "Invalid redirect URI.");
+		elseif components.scheme == "http" and components.host ~= "localhost" then
+			return oauth_error("invalid_request", "Insecure redirect URI forbidden (except http://localhost)");
 		end
 	end
 
