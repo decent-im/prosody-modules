@@ -198,6 +198,10 @@ local list_backends = {
 	pubsubitemid = {
 		init = function(self, pubsub_spec, opts)
 			local service_addr, node = pubsub_spec:match("^pubsubitemid:([^/]*)/(.*)");
+			if not service_addr then
+				module:log("warn", "Invalid list specification (expected 'pubsubitemid:<service>/<node>', got: '%s')", pubsub_spec);
+				return;
+			end
 			module:depends("pubsub_subscription");
 			module:add_item("pubsub-subscription", {
 					service = service_addr;
