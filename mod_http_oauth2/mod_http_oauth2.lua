@@ -600,26 +600,30 @@ local function handle_register_request(event)
 		return oauth_error("invalid_request", "Failed schema validation.");
 	end
 
-	local redirect_hosts = set.new();
+	local client_uri = url.parse(client_metadata.client_uri);
+	if not client_uri or client_uri.scheme ~= "https" then
+		return oauth_error("invalid_request", "Missing, invalid or insecure client_uri");
+	end
+
 	for _, redirect_uri in ipairs(client_metadata.redirect_uris) do
 		local components = url.parse(redirect_uri);
 		if not components or not components.scheme then
 			return oauth_error("invalid_request", "Invalid redirect URI.");
 		elseif components.scheme == "http" and components.host ~= "localhost" then
 			return oauth_error("invalid_request", "Insecure redirect URI forbidden (except http://localhost)");
-		elseif components.scheme == "https" then
-			redirect_hosts:add(components.host);
+		elseif components.scheme == "https" and components.host ~= client_uri.host then
+			return oauth_error("invalid_request", "Redirects must use the same hostname as client_uri");
 		end
 	end
 
 	for field, prop_schema in pairs(registration_schema.properties) do
-		if prop_schema.format == "uri" and client_metadata[field] then
+		if field ~= "client_uri" and prop_schema.format == "uri" and client_metadata[field] then
 			local components = url.parse(client_metadata[field]);
 			if components.scheme ~= "https" then
 				return oauth_error("invalid_request", "Insecure URI forbidden");
 			end
-			if not redirect_hosts:contains(components.host) then
-				return oauth_error("invalid_request", "Informative URI must match redirect URIs");
+			if components.authority ~= client_uri.authority then
+				return oauth_error("invalid_request", "Informative URIs must have the same hostname");
 			end
 		end
 	end
