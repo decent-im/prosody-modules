@@ -209,7 +209,7 @@ function response_type_handlers.code(client, params, granted_jid)
 		}) or ("Here's your authorization code:\n%s\n"):format(code);
 		return response;
 	elseif not redirect_uri then
-		return {status_code = 400};
+		return 400;
 	end
 
 	local redirect = url.parse(redirect_uri);
