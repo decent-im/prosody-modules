@@ -684,11 +684,17 @@ end
 module:depends("http");
 module:provides("http", {
 	route = {
-		["POST /token"] = handle_token_grant;
+		-- User-facing login and consent view
 		["GET /authorize"] = handle_authorization_request;
 		["POST /authorize"] = handle_authorization_request;
-		["POST /revoke"] = handle_revocation_request;
+
+		-- Create OAuth client
 		["POST /register"] = handle_register_request;
+
+		["POST /token"] = handle_token_grant;
+		["POST /revoke"] = handle_revocation_request;
+
+		-- OpenID
 		["GET /userinfo"] = handle_userinfo_request;
 
 		-- Optional static content for templates
