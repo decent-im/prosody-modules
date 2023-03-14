@@ -133,8 +133,19 @@ local function oauth_error(err_name, err_desc)
 	});
 end
 
-local function new_access_token(token_jid, scope, ttl)
-	local token = tokens.create_jid_token(token_jid, token_jid, scope, ttl, nil, "oauth2");
+-- client_id / client_metadata are pretty large, filter out a subset of
+-- properties that are deemed useful e.g. in case tokens issued to a certain
+-- client needs to be revoked
+local function client_subset(client)
+	return { name = client.client_name; uri = client.client_uri };
+end
+
+local function new_access_token(token_jid, scope, ttl, client)
+	local token_data;
+	if client then
+		token_data = { oauth2_client = client_subset(client) };
+	end
+	local token = tokens.create_jid_token(token_jid, token_jid, scope, ttl, token_data, "oauth2");
 	return {
 		token_type = "bearer";
 		access_token = token;
@@ -235,7 +246,7 @@ end
 function response_type_handlers.token(client, params, granted_jid)
 	local request_username, request_host = jid.split(granted_jid);
 	local granted_scopes = filter_scopes(request_username, request_host, params.scope);
-	local token_info = new_access_token(granted_jid, granted_scopes, nil);
+	local token_info = new_access_token(granted_jid, granted_scopes, nil, client);
 
 	local redirect = url.parse(get_redirect_uri(client, params.redirect_uri));
 	token_info.state = params.state;
@@ -284,7 +295,7 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	return json.encode(new_access_token(code.granted_jid, code.granted_scopes, nil));
+	return json.encode(new_access_token(code.granted_jid, code.granted_scopes, nil, client));
 end
 
 -- Used to issue/verify short-lived tokens for the authorization process below
