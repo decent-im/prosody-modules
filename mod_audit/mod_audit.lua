@@ -38,6 +38,9 @@ local function session_extra(session)
 	if session.ip then
 		stanza:text_tag("remote-ip", session.ip);
 	end
+	if session.client_id then
+		stanza:text_tag("client", session.client_id);
+	end
 	return stanza
 end
 
