@@ -121,6 +121,7 @@ local function handle_status(session, status, ret, err_msg)
 end
 
 module:hook("sasl2/c2s/failure", function (event)
+	module:fire_event("authentication-failure", event);
 	local session, condition, text = event.session, event.message, event.error_text;
 	local failure = st.stanza("failure", { xmlns = xmlns_sasl2 })
 		:tag(condition, { xmlns = "urn:ietf:params:xml:ns:xmpp-sasl" }):up();
@@ -165,6 +166,7 @@ module:hook("sasl2/c2s/success", function (event)
 end, -1000);
 
 module:hook("sasl2/c2s/success", function (event)
+	module:fire_event("authentication-success", event);
 	local session = event.session;
 	local features = st.stanza("stream:features");
 	module:fire_event("stream-features", { origin = session, features = features });
