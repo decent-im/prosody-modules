@@ -3,7 +3,12 @@ module:set_global();
 local audit_log_limit = module:get_option_number("audit_log_limit", 10000);
 local cleanup_after = module:get_option_string("audit_log_expires_after", "2w");
 
+local attach_ips = module:get_option_boolean("audit_log_ips", true);
+local attach_ipv4_prefix = module:get_option_number("audit_log_ipv4_prefix", nil);
+local attach_ipv6_prefix = module:get_option_number("audit_log_ipv6_prefix", nil);
+
 local time_now = os.time;
+local ip = require "util.ip";
 local st = require "util.stanza";
 local moduleapi = require "core.moduleapi";
 
@@ -23,6 +28,17 @@ end
 
 setmetatable(stores, { __index = get_store });
 
+local function get_ip_network(ip_addr)
+	local _ip = ip.new_ip(ip_addr);
+	local proto = _ip.proto;
+	local network;
+	if proto == "IPv4" and attach_ipv4_prefix then
+		network = ip.truncate(_ip, attach_ipv4_prefix).normal.."/"..attach_ipv4_prefix;
+	elseif proto == "IPv6" and attach_ipv6_prefix then
+		network = ip.truncate(_ip, attach_ipv6_prefix).normal.."/"..attach_ipv6_prefix;
+	end
+	return network;
+end
 
 local function session_extra(session)
 	local attr = {
@@ -35,8 +51,12 @@ local function session_extra(session)
 		attr.type = session.type;
 	end
 	local stanza = st.stanza("session", attr);
-	if session.ip then
-		stanza:text_tag("remote-ip", session.ip);
+	if attach_ips and session.ip then
+		local remote_ip, network = session.ip;
+		if attach_ipv4_prefix or attach_ipv6_prefix then
+			network = get_ip_network(remote_ip);
+		end
+		stanza:text_tag("remote-ip", network or remote_ip);
 	end
 	if session.client_id then
 		stanza:text_tag("client", session.client_id);
