@@ -276,8 +276,8 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
 
-	local client = jwt_verify(params.client_id);
-	if not client then
+	local client_ok, client = jwt_verify(params.client_id);
+	if not client_ok then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
