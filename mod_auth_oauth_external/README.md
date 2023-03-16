@@ -7,13 +7,16 @@ labels:
 This module provides external authentication via an external [AOuth
 2](https://datatracker.ietf.org/doc/html/rfc7628) authorization server
 and supports the [SASL OAUTHBEARER authentication][rfc7628]
-mechanism.
+mechanism as well as PLAIN for legacy clients (this is all of them).
 
 # How it works
 
 Clients retrieve tokens somehow, then show them to Prosody, which asks
 the Authorization server to validate them, returning info about the user
 back to Prosody.
+
+Alternatively for legacy clients, Prosody receives the users username
+and password and retrieves a token itself, then proceeds as above.
 
 # Configuration
 
@@ -34,6 +37,21 @@ back to Prosody.
 :   String. Default is `"preferred_username"`. Field in the JSON
     structure returned by the validation endpoint that contains the XMPP
     localpart.
+
+## For SASL PLAIN
+
+`oauth_external_resource_owner_password`
+:   Boolean. Defaults to `true`. Whether to allow the *insecure*
+    resource owner password grant and SASL PLAIN.
+
+`oauth_external_token_endpoint`
+:   URL string. OAuth 2 [Token
+    Endpoint](https://www.rfc-editor.org/rfc/rfc6749#section-3.2) used
+    to retrieve token in order to then retrieve the username.
+
+`oauth_external_client_id`
+:   String. Client ID used to identify Prosody during the resource owner
+    password grant.
 
 # Compatibility
 
