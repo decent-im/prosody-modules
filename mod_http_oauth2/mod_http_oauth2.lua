@@ -78,11 +78,7 @@ local function parse_scopes(scope_string)
 	return array(scope_string:gmatch("%S+"));
 end
 
-local function filter_scopes(username, host, requested_scope_string)
-	if host ~= module.host then
-		return usermanager.get_jid_role(username.."@"..host, module.host).name;
-	end
-
+local function filter_scopes(username, requested_scope_string)
 	local selected_role, granted_scopes = nil, array();
 
 	if requested_scope_string then -- Specific role(s) requested
@@ -207,13 +203,16 @@ function grant_type_handlers.password(params)
 	end
 
 	local granted_jid = jid.join(request_username, request_host, request_resource);
-	local granted_scopes, granted_role = filter_scopes(request_username, request_host, params.scope);
+	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
 	return json.encode(new_access_token(granted_jid, granted_role, granted_scopes, nil));
 end
 
 function response_type_handlers.code(client, params, granted_jid)
 	local request_username, request_host = jid.split(granted_jid);
-	local granted_scopes, granted_role = filter_scopes(request_username, request_host, params.scope);
+	if not request_host or request_host ~= module.host then
+		return oauth_error("invalid_request", "invalid JID");
+	end
+	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
 
 	local code = id.medium();
 	local ok = codes:set(params.client_id .. "#" .. code, {
@@ -265,7 +264,10 @@ end
 -- Implicit flow
 function response_type_handlers.token(client, params, granted_jid)
 	local request_username, request_host = jid.split(granted_jid);
-	local granted_scopes, granted_role = filter_scopes(request_username, request_host, params.scope);
+	if not request_host or request_host ~= module.host then
+		return oauth_error("invalid_request", "invalid JID");
+	end
+	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
 	local token_info = new_access_token(granted_jid, granted_role, granted_scopes, nil, client);
 
 	local redirect = url.parse(get_redirect_uri(client, params.redirect_uri));
