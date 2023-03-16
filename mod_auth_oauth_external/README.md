@@ -20,11 +20,15 @@ and password and retrieves a token itself, then proceeds as above.
 
 # Configuration
 
+`oauth_external_issuer`
+:   Optional URL string representing the Authorization server identity.
+
 `oauth_external_discovery_url`
 :   Optional URL string pointing to [OAuth 2.0 Authorization Server
     Metadata](https://oauth.net/2/authorization-server-metadata/). Lets
     clients discover where they should retrieve access tokens from if
-    they don't have one yet.
+    they don't have one yet. Default based on `oauth_external_issuer` is
+    set, otherwise empty.
 
 `oauth_external_validation_endpoint`
 :   URL string. The token validation endpoint, should validate the token

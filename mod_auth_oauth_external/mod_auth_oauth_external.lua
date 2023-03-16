@@ -3,8 +3,9 @@ local async = require "util.async";
 local json = require "util.json";
 local sasl = require "util.sasl";
 
--- TODO -- local issuer_identity = module:get_option_string("oauth_external_issuer");
-local oidc_discovery_url = module:get_option_string("oauth_external_discovery_url")
+local issuer_identity = module:get_option_string("oauth_external_issuer");
+local oidc_discovery_url = module:get_option_string("oauth_external_discovery_url",
+	issuer_identity and issuer_identity .. "/.well-known/oauth-authorization-server" or nil);
 local validation_endpoint = module:get_option_string("oauth_external_validation_endpoint");
 local token_endpoint = module:get_option_string("oauth_external_token_endpoint");
 
