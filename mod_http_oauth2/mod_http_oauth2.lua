@@ -152,7 +152,7 @@ local function client_subset(client)
 	return { name = client.client_name; uri = client.client_uri };
 end
 
-local function new_access_token(token_jid, role, scope, ttl, client)
+local function new_access_token(token_jid, role, scope, ttl, client, id_token)
 	local token_data = {};
 	if client then
 		token_data.oauth2_client = client_subset(client);
@@ -166,6 +166,7 @@ local function new_access_token(token_jid, role, scope, ttl, client)
 		access_token = token;
 		expires_in = ttl;
 		scope = scope;
+		id_token = id_token;
 		-- TODO: include refresh_token when implemented
 	};
 end
@@ -204,10 +205,10 @@ function grant_type_handlers.password(params)
 
 	local granted_jid = jid.join(request_username, request_host, request_resource);
 	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
-	return json.encode(new_access_token(granted_jid, granted_role, granted_scopes, nil));
+	return json.encode(new_access_token(granted_jid, granted_role, granted_scopes, nil, nil));
 end
 
-function response_type_handlers.code(client, params, granted_jid)
+function response_type_handlers.code(client, params, granted_jid, id_token)
 	local request_username, request_host = jid.split(granted_jid);
 	if not request_host or request_host ~= module.host then
 		return oauth_error("invalid_request", "invalid JID");
@@ -220,6 +221,7 @@ function response_type_handlers.code(client, params, granted_jid)
 		granted_jid = granted_jid;
 		granted_scopes = granted_scopes;
 		granted_role = granted_role;
+		id_token = id_token;
 	});
 	if not ok then
 		return {status_code = 429};
@@ -268,7 +270,7 @@ function response_type_handlers.token(client, params, granted_jid)
 		return oauth_error("invalid_request", "invalid JID");
 	end
 	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
-	local token_info = new_access_token(granted_jid, granted_role, granted_scopes, nil, client);
+	local token_info = new_access_token(granted_jid, granted_role, granted_scopes, nil, client, nil);
 
 	local redirect = url.parse(get_redirect_uri(client, params.redirect_uri));
 	token_info.state = params.state;
@@ -317,7 +319,7 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	return json.encode(new_access_token(code.granted_jid, code.granted_role, code.granted_scopes, nil, client));
+	return json.encode(new_access_token(code.granted_jid, code.granted_role, code.granted_scopes, nil, client, code.id_token));
 end
 
 -- Used to issue/verify short-lived tokens for the authorization process below
@@ -549,12 +551,21 @@ local function handle_authorization_request(event)
 		return error_response(request, oauth_error("access_denied"));
 	end
 
+	local user_jid = jid.join(auth_state.user.username, module.host);
+	local client_secret = make_secret(params.client_id);
+	local id_token_signer = jwt.new_signer("HS256", client_secret);
+	local id_token = id_token_signer({
+		iss = get_issuer();
+		sub = url.build({ scheme = "xmpp"; path = user_jid });
+		aud = params.client_id;
+		nonce = params.nonce;
+	});
 	local response_type = params.response_type;
 	local response_handler = response_type_handlers[response_type];
 	if not response_handler then
 		return error_response(request, oauth_error("unsupported_response_type"));
 	end
-	return response_handler(client, params, jid.join(auth_state.user.username, module.host));
+	return response_handler(client, params, user_jid, id_token);
 end
 
 local function handle_revocation_request(event)
