@@ -88,6 +88,9 @@ local function filter_scopes(username, host, requested_scope_string)
 	if requested_scope_string then -- Specific role(s) requested
 		local requested_scopes = parse_scopes(requested_scope_string);
 		for _, scope in ipairs(requested_scopes) do
+			if scope == "openid" then
+				granted_scopes:push(scope);
+			end
 			if selected_role == nil and usermanager.user_can_assume_role(username, module.host, scope) then
 				selected_role = scope;
 			end
@@ -772,8 +775,8 @@ module:provides("http", {
 				jwks_uri = nil; -- TODO?
 				userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
-				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host)))
-					or { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator" };
+				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):push("openid")
+					or { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator"; "openid" };
 				response_types_supported = array(it.keys(response_type_handlers));
 				authorization_response_iss_parameter_supported = true;
 			};
