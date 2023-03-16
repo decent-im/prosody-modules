@@ -723,7 +723,7 @@ local function handle_userinfo_request(event)
 		-- permissions and scopes granted.
 	}
 	return {
-		status_code = 201;
+		status_code = 200;
 		headers = { content_type = "application/json" };
 		body = json.encode(user_info);
 	};
