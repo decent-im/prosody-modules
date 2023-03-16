@@ -7,16 +7,13 @@ summary: 'Create OAuth2 clients via ad-hoc command'
 Introduction
 ============
 
-Allows creating OAuth2 clients for use with [mod_http_oauth2]. Otherwise
-a work-in-progress intended for developers only!
-
-Configuration
-=============
-
-**TODO**
+::: {.alert .alert-danger}
+This module is currently broken since [mod_http_oauth2] switched to
+[dynamic registration](https://oauth.net/2/dynamic-client-registration/).
+:::
 
 Compatibility
 =============
 
-Probably Prosody trunk.
+Does not currently work at all.
 
