@@ -38,6 +38,13 @@ module:add_item("pubsub-subscription", {
 		module:log("debug", "Retracted hash: %s", hash);
 		banned_hashes[hash] = nil;
 	end;
+
+	purge = function()
+		module:log("debug", "Purge all hashes");
+		for hash in pairs(banned_hashes) do
+			banned_hashes[hash] = nil;
+		end
+	end;
 });
 
 function request_list()
