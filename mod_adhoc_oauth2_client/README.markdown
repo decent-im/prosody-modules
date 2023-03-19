@@ -2,18 +2,20 @@
 labels:
 - Stage-Alpha
 summary: 'Create OAuth2 clients via ad-hoc command'
+rockspec:
+  dependencies:
+  - mod_http_oauth2
 ...
 
 Introduction
 ============
 
-::: {.alert .alert-danger}
-This module is currently broken since [mod_http_oauth2] switched to
-[dynamic registration](https://oauth.net/2/dynamic-client-registration/).
-:::
+[Ad-Hoc command][XEP-0050] interface to
+[dynamic OAuth2 registration](https://oauth.net/2/dynamic-client-registration/)
+provided by [mod_http_oauth2].
 
 Compatibility
 =============
 
-Does not currently work at all.
+Same as [mod_http_oauth2]
 
