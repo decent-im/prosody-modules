@@ -636,27 +636,24 @@ local registration_schema = {
 	};
 }
 
-local function handle_register_request(event)
-	local request = event.request;
-	local client_metadata = json.decode(request.body);
-
+function create_client(client_metadata)
 	if not schema.validate(registration_schema, client_metadata) then
-		return oauth_error("invalid_request", "Failed schema validation.");
+		return nil, oauth_error("invalid_request", "Failed schema validation.");
 	end
 
 	local client_uri = url.parse(client_metadata.client_uri);
 	if not client_uri or client_uri.scheme ~= "https" then
-		return oauth_error("invalid_request", "Missing, invalid or insecure client_uri");
+		return nil, oauth_error("invalid_request", "Missing, invalid or insecure client_uri");
 	end
 
 	for _, redirect_uri in ipairs(client_metadata.redirect_uris) do
 		local components = url.parse(redirect_uri);
 		if not components or not components.scheme then
-			return oauth_error("invalid_request", "Invalid redirect URI.");
+			return nil, oauth_error("invalid_request", "Invalid redirect URI.");
 		elseif components.scheme == "http" and components.host ~= "localhost" then
-			return oauth_error("invalid_request", "Insecure redirect URI forbidden (except http://localhost)");
+			return nil, oauth_error("invalid_request", "Insecure redirect URI forbidden (except http://localhost)");
 		elseif components.scheme == "https" and components.host ~= client_uri.host then
-			return oauth_error("invalid_request", "Redirects must use the same hostname as client_uri");
+			return nil, oauth_error("invalid_request", "Redirects must use the same hostname as client_uri");
 		end
 	end
 
@@ -664,10 +661,10 @@ local function handle_register_request(event)
 		if field ~= "client_uri" and prop_schema.format == "uri" and client_metadata[field] then
 			local components = url.parse(client_metadata[field]);
 			if components.scheme ~= "https" then
-				return oauth_error("invalid_request", "Insecure URI forbidden");
+				return nil, oauth_error("invalid_request", "Insecure URI forbidden");
 			end
 			if components.authority ~= client_uri.authority then
-				return oauth_error("invalid_request", "Informative URIs must have the same hostname");
+				return nil, oauth_error("invalid_request", "Informative URIs must have the same hostname");
 			end
 		end
 	end
@@ -689,10 +686,23 @@ local function handle_register_request(event)
 		client_metadata.client_secret_expires_at = client_metadata.client_id_issued_at + (registration_options.default_ttl or 3600);
 	end
 
+	return client_metadata;
+end
+
+local function handle_register_request(event)
+	local request = event.request;
+	local client_metadata, err = json.decode(request.body);
+	if err then
+		return oauth_error("invalid_request", "Invalid JSON");
+	end
+
+	local response, err = create_client(client_metadata);
+	if err then return err end
+
 	return {
 		status_code = 201;
 		headers = { content_type = "application/json" };
-		body = json.encode(client_metadata);
+		body = json.encode(response);
 	};
 end
 
