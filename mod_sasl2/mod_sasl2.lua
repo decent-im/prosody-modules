@@ -208,6 +208,10 @@ module:hook_tag(xmlns_sasl2, "authenticate", function (session, auth)
 	local user_agent = auth:get_child("user-agent");
 	if user_agent then
 		session.client_id = user_agent.attr.id;
+		sasl_handler.user_agent = {
+			software = user_agent:get_child_text("software");
+			device = user_agent:get_child_text("device");
+		};
 	end
 	local initial = auth:get_child_text("initial-response");
 	return process_cdata(session, initial);
