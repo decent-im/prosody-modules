@@ -577,8 +577,12 @@ local function handle_revocation_request(event)
 	or not request.body or request.body == "" then
 		return 400;
 	end
-	local user = check_credentials(request, true);
-	if not user then
+	local credentials = get_request_credentials(request);
+	if not credentials or credentials.type ~= "basic" then
+		return 400;
+	end
+	-- OAuth "client" credentials
+	if not verify_client_secret(credentials.username, credentials.password) then
 		return 401;
 	end
 
