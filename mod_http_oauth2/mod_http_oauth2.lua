@@ -570,20 +570,20 @@ end
 
 local function handle_revocation_request(event)
 	local request, response = event.request, event.response;
-	if not request.headers.authorization then
-		response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
-		return 401;
-	elseif request.headers.content_type ~= "application/x-www-form-urlencoded"
+		if request.headers.content_type ~= "application/x-www-form-urlencoded"
 	or not request.body or request.body == "" then
 		return 400;
 	end
-	local credentials = get_request_credentials(request);
-	if not credentials or credentials.type ~= "basic" then
-		return 400;
-	end
-	-- OAuth "client" credentials
-	if not verify_client_secret(credentials.username, credentials.password) then
-		return 401;
+	if request.headers.authorization then
+		local credentials = get_request_credentials(request);
+		if not credentials or credentials.type ~= "basic" then
+			response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
+			return 401;
+		end
+		-- OAuth "client" credentials
+		if not verify_client_secret(credentials.username, credentials.password) then
+			return 401;
+		end
 	end
 
 	local form_data = http.formdecode(event.request.body);
