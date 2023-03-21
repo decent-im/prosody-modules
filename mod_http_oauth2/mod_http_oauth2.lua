@@ -426,7 +426,6 @@ if module:get_host_type() == "component" then
 	response_type_handlers.code = nil;
 	response_type_handlers.token = nil;
 	grant_type_handlers.authorization_code = nil;
-	check_credentials = function () return false end
 end
 
 -- OAuth errors should be returned to the client if possible, i.e. by
