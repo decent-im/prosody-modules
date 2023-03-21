@@ -284,12 +284,12 @@ function response_type_handlers.token(client, params, granted_jid)
 	}
 end
 
-local function make_secret(client_id) --> client_secret
+local function make_client_secret(client_id) --> client_secret
 	return hashes.hmac_sha256(verification_key, client_id, true);
 end
 
-local function verify_secret(client_id, client_secret)
-	return hashes.equals(make_secret(client_id), client_secret);
+local function verify_client_secret(client_id, client_secret)
+	return hashes.equals(make_client_secret(client_id), client_secret);
 end
 
 function grant_type_handlers.authorization_code(params)
@@ -305,7 +305,7 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	if not verify_secret(params.client_id, params.client_secret) then
+	if not verify_client_secret(params.client_id, params.client_secret) then
 		module:log("debug", "client_secret mismatch");
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
@@ -552,7 +552,7 @@ local function handle_authorization_request(event)
 	end
 
 	local user_jid = jid.join(auth_state.user.username, module.host);
-	local client_secret = make_secret(params.client_id);
+	local client_secret = make_client_secret(params.client_id);
 	local id_token_signer = jwt.new_signer("HS256", client_secret);
 	local id_token = id_token_signer({
 		iss = get_issuer();
@@ -675,7 +675,7 @@ function create_client(client_metadata)
 
 	-- Do we want to keep everything?
 	local client_id = jwt_sign(client_metadata);
-	local client_secret = make_secret(client_id);
+	local client_secret = make_client_secret(client_id);
 
 	client_metadata.client_id = client_id;
 	client_metadata.client_secret = client_secret;
