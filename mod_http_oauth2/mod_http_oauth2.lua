@@ -548,10 +548,6 @@ end
 
 local function handle_revocation_request(event)
 	local request, response = event.request, event.response;
-		if request.headers.content_type ~= "application/x-www-form-urlencoded"
-	or not request.body or request.body == "" then
-		return 400;
-	end
 	if request.headers.authorization then
 		local credentials = get_request_credentials(request);
 		if not credentials or credentials.type ~= "basic" then
@@ -564,9 +560,10 @@ local function handle_revocation_request(event)
 		end
 	end
 
-	local form_data = http.formdecode(event.request.body);
+	local form_data = http.formdecode(event.request.body or "");
 	if not form_data or not form_data.token then
-		return 400;
+		response.headers.accept = "application/x-www-form-urlencoded";
+		return 415;
 	end
 	local ok, err = tokens.revoke_token(form_data.token);
 	if not ok then
