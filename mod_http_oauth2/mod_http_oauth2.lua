@@ -401,28 +401,6 @@ local function get_request_credentials(request)
 	return nil;
 end
 
-local function check_credentials(request, allow_token)
-	local credentials = get_request_credentials(request);
-	if not credentials then return nil; end
-
-	if credentials.username and credentials.password then
-		local username = encodings.stringprep.nodeprep(credentials.username);
-		local password = encodings.stringprep.saslprep(credentials.password);
-		if not (username and password) then return false; end
-		if not usermanager.test_password(username, module.host, password) then
-			return false;
-		end
-		return username;
-	elseif allow_token and credentials.bearer_token then
-		local token_info = tokens.get_token_info(credentials.bearer_token);
-		if not token_info or not token_info.session or token_info.session.host ~= module.host then
-			return false;
-		end
-		return token_info.session.username;
-	end
-	return nil;
-end
-
 if module:get_host_type() == "component" then
 	local component_secret = assert(module:get_option_string("component_secret"), "'component_secret' is a required setting when loaded on a Component");
 
