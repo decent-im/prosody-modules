@@ -792,16 +792,19 @@ module:provides("http", {
 		["GET"] = {
 			headers = { content_type = "application/json" };
 			body = json.encode {
+				-- RFC 8414: OAuth 2.0 Authorization Server Metadata
 				issuer = get_issuer();
 				authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
 				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
 				jwks_uri = nil; -- TODO?
-				userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
 				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):push("openid")
 					or { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator"; "openid" };
 				response_types_supported = array(it.keys(response_type_handlers));
 				authorization_response_iss_parameter_supported = true;
+
+				-- OpenID
+				userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
 			};
 		};
 	};
