@@ -366,9 +366,14 @@ local function get_auth_state(request)
 			};
 		end
 
+		local scope = array():append(form):filter(function(field)
+			return field.name == "scope";
+		end):pluck("value"):concat(" ");
+
 		user.token = form.user_token;
 		return {
 			user = user;
+			scope = scope;
 			consent = form.consent == "granted";
 		};
 	end
@@ -522,11 +527,14 @@ local function handle_authorization_request(event)
 		return render_page(templates.login, { state = auth_state, client = client });
 	elseif auth_state.consent == nil then
 		-- Render consent page
-		return render_page(templates.consent, { state = auth_state, client = client }, true);
+		return render_page(templates.consent, { state = auth_state; client = client; scopes = parse_scopes(params.scope) }, true);
 	elseif not auth_state.consent then
 		-- Notify client of rejection
 		return error_response(request, oauth_error("access_denied"));
 	end
+	-- else auth_state.consent == true
+
+	params.scope = auth_state.scope;
 
 	local user_jid = jid.join(auth_state.user.username, module.host);
 	local client_secret = make_client_secret(params.client_id);
