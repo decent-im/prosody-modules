@@ -9,7 +9,8 @@
 <body>
 	<main>
 	<h1>{site_name}</h1>
-	<h2>Sign in</h2>
+	<fieldset>
+	<legend>Sign in</legend>
 	<p>Sign in to your account to continue.</p>
 	{state.error&<div class="error">
 		<p>{state.error}</p>
@@ -19,6 +20,7 @@
 		<input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required><br/>
 		<input type="submit" value="Sign in">
 	</form>
+	</fieldset>
 	</main>
 </body>
 </html>
