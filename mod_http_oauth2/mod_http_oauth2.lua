@@ -61,6 +61,9 @@ end
 
 local tokens = module:depends("tokenauth");
 
+local default_access_ttl = module:get_option_number("oauth2_access_token_ttl", 86400);
+local default_refresh_ttl = module:get_option_number("oauth2_refresh_token_ttl", nil);
+
 -- Used to derive client_secret from client_id, set to enable stateless dynamic registration.
 local registration_key = module:get_option_string("oauth2_registration_key");
 local registration_algo = module:get_option_string("oauth2_registration_algorithm", "HS256");
@@ -152,22 +155,40 @@ local function client_subset(client)
 	return { name = client.client_name; uri = client.client_uri };
 end
 
-local function new_access_token(token_jid, role, scope, ttl, client, id_token)
-	local token_data = {};
+local function new_access_token(token_jid, role, scope_string, client, id_token, refresh_token_info)
+	local token_data = { oauth2_scopes = scope_string, oauth2_client = nil };
 	if client then
 		token_data.oauth2_client = client_subset(client);
 	end
 	if next(token_data) == nil then
 		token_data = nil;
 	end
-	local token = tokens.create_jid_token(token_jid, token_jid, role, ttl, token_data, "oauth2");
+
+	local refresh_token;
+	local access_token, access_token_info
+	-- No existing refresh token, and we're issuing a time-limited access token?
+	-- Create a refresh token (unless refresh_token_info == false)
+	if refresh_token_info == false or not default_access_ttl then
+		-- Caller does not want a refresh token, or access tokens are not configured to expire
+		-- So, just create a standalone access token
+		access_token, access_token_info = tokens.create_jid_token(token_jid, token_jid, role, default_access_ttl, token_data, "oauth2");
+	else
+		-- We're issuing both a refresh and an access token
+		if not refresh_token_info then
+			refresh_token, refresh_token_info = tokens.create_jid_token(token_jid, token_jid, role, default_refresh_ttl, token_data, "oauth2-refresh");
+		else
+			refresh_token = refresh_token_info.token;
+		end
+		access_token, access_token_info = tokens.create_sub_token(token_jid, refresh_token_info.id, role, default_access_ttl, token_data, "oauth2");
+	end
+	local expires_at = access_token_info.expires;
 	return {
 		token_type = "bearer";
-		access_token = token;
-		expires_in = ttl;
-		scope = scope;
+		access_token = access_token;
+		expires_in = expires_at and (expires_at - os.time()) or nil;
+		scope = scope_string;
 		id_token = id_token;
-		-- TODO: include refresh_token when implemented
+		refresh_token = refresh_token;
 	};
 end
 
@@ -205,7 +226,7 @@ function grant_type_handlers.password(params)
 
 	local granted_jid = jid.join(request_username, request_host, request_resource);
 	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
-	return json.encode(new_access_token(granted_jid, granted_role, granted_scopes, nil, nil));
+	return json.encode(new_access_token(granted_jid, granted_role, granted_scopes, nil));
 end
 
 function response_type_handlers.code(client, params, granted_jid, id_token)
@@ -270,7 +291,7 @@ function response_type_handlers.token(client, params, granted_jid)
 		return oauth_error("invalid_request", "invalid JID");
 	end
 	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
-	local token_info = new_access_token(granted_jid, granted_role, granted_scopes, nil, client, nil);
+	local token_info = new_access_token(granted_jid, granted_role, granted_scopes, client, nil);
 
 	local redirect = url.parse(get_redirect_uri(client, params.redirect_uri));
 	token_info.state = params.state;
@@ -319,7 +340,33 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	return json.encode(new_access_token(code.granted_jid, code.granted_role, code.granted_scopes, nil, client, code.id_token));
+	return json.encode(new_access_token(code.granted_jid, code.granted_role, code.granted_scopes, client, code.id_token));
+end
+
+function grant_type_handlers.refresh_token(params)
+	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
+	if not params.client_secret then return oauth_error("invalid_request", "missing 'client_secret'"); end
+	if not params.refresh_token then return oauth_error("invalid_request", "missing 'refresh_token'"); end
+
+	local client_ok, client = jwt_verify(params.client_id);
+	if not client_ok then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+
+	if not verify_client_secret(params.client_id, params.client_secret) then
+		module:log("debug", "client_secret mismatch");
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+
+	local refresh_token_info = tokens.get_token_info(params.refresh_token);
+	if not refresh_token_info or refresh_token_info.purpose ~= "oauth2-refresh" then
+		return oauth_error("invalid_grant", "invalid refresh token");
+	end
+
+	-- new_access_token() requires the actual token
+	refresh_token_info.token = params.refresh_token;
+
+	return json.encode(new_access_token(token_info.jid, token_info.role, token_info.data.oauth2_scopes, client, nil, token_info));
 end
 
 -- Used to issue/verify short-lived tokens for the authorization process below
@@ -459,7 +506,7 @@ local function error_response(request, err)
 	};
 end
 
-local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_types", {"authorization_code", "password"})
+local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_types", {"authorization_code", "password", "refresh_token"})
 for handler_type in pairs(grant_type_handlers) do
 	if not allowed_grant_type_handlers:contains(handler_type) then
 		module:log("debug", "Grant type %q disabled", handler_type);
