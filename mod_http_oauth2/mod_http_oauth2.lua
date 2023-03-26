@@ -335,7 +335,7 @@ local new_user_token, verify_user_token = jwt.init("HS256", random.bytes(32), ni
 local function get_auth_state(request)
 	local form = request.method == "POST"
 	         and request.body
-	         and #request.body > 0
+	         and request.body ~= ""
 	         and request.headers.content_type == "application/x-www-form-urlencoded"
 	         and http.formdecode(request.body);
 
