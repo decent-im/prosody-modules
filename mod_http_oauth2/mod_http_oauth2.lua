@@ -339,7 +339,7 @@ local function get_auth_state(request)
 	         and request.headers.content_type == "application/x-www-form-urlencoded"
 	         and http.formdecode(request.body);
 
-	if not form then return {}; end
+	if type(form) ~= "table" then return {}; end
 
 	if not form.user_token then
 		-- First step: login
