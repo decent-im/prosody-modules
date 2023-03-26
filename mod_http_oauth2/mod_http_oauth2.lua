@@ -620,6 +620,8 @@ local registration_schema = {
 		software_id = { type = "string"; format = "uuid" };
 		software_version = { type = "string" };
 	};
+	-- Localized versions of descriptive properties and URIs
+	additionalProperties = { type = "string" };
 }
 
 function create_client(client_metadata)
