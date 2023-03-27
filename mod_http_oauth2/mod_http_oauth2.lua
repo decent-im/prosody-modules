@@ -165,22 +165,19 @@ local function new_access_token(token_jid, role, scope_string, client, id_token,
 	end
 
 	local refresh_token;
-	local access_token, access_token_info
-	-- No existing refresh token, and we're issuing a time-limited access token?
-	-- Create a refresh token (unless refresh_token_info == false)
-	if refresh_token_info == false or not default_access_ttl then
-		-- Caller does not want a refresh token, or access tokens are not configured to expire
-		-- So, just create a standalone access token
-		access_token, access_token_info = tokens.create_jid_token(token_jid, token_jid, role, default_access_ttl, token_data, "oauth2");
+	local grant = refresh_token_info and refresh_token_info.grant;
+	if not grant then
+		-- No existing grant, create one
+		grant = tokens.create_grant(token_jid, token_jid, default_refresh_ttl, token_data);
+		-- Create refresh token for the grant if desired
+		refresh_token = refresh_token_info ~= false and tokens.create_token(token_jid, grant, nil, nil, "oauth2-refresh");
 	else
-		-- We're issuing both a refresh and an access token
-		if not refresh_token_info then
-			refresh_token, refresh_token_info = tokens.create_jid_token(token_jid, token_jid, role, default_refresh_ttl, token_data, "oauth2-refresh");
-		else
-			refresh_token = refresh_token_info.token;
-		end
-		access_token, access_token_info = tokens.create_sub_token(token_jid, refresh_token_info.id, role, default_access_ttl, token_data, "oauth2");
+		-- Grant exists, reuse existing refresh token
+		refresh_token = refresh_token_info.token;
 	end
+
+	local access_token, access_token_info = tokens.create_token(token_jid, grant, role, default_access_ttl, "oauth2");
+
 	local expires_at = access_token_info.expires;
 	return {
 		token_type = "bearer";
@@ -188,7 +185,7 @@ local function new_access_token(token_jid, role, scope_string, client, id_token,
 		expires_in = expires_at and (expires_at - os.time()) or nil;
 		scope = scope_string;
 		id_token = id_token;
-		refresh_token = refresh_token;
+		refresh_token = refresh_token or nil;
 	};
 end
 
@@ -366,7 +363,9 @@ function grant_type_handlers.refresh_token(params)
 	-- new_access_token() requires the actual token
 	refresh_token_info.token = params.refresh_token;
 
-	return json.encode(new_access_token(token_info.jid, token_info.role, token_info.data.oauth2_scopes, client, nil, token_info));
+	return json.encode(new_access_token(
+		refresh_token_info.jid, refresh_token_info.role, refresh_token_info.data.oauth2_scopes, client, nil, refresh_token_info
+	));
 end
 
 -- Used to issue/verify short-lived tokens for the authorization process below
