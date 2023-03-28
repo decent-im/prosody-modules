@@ -1,3 +1,5 @@
+local usermanager = require "core.usermanager";
+
 local sasl = require "util.sasl";
 local dt = require "util.datetime";
 local id = require "util.id";
@@ -38,6 +40,8 @@ end
 
 local function new_token_tester(hmac_f)
 	return function (mechanism, username, client_id, token_hash, cb_data, invalidate)
+		local account_info = usermanager.get_account_info(username, module.host);
+		local last_password_change = account_info and account_info.password_updated;
 		local tried_current_token = false;
 		local key = hash.sha256(client_id, true).."-new";
 		local token;
@@ -50,6 +54,12 @@ local function new_token_tester(hmac_f)
 					local current_time = now();
 					if token.expires_at < current_time then
 						log("debug", "Token found, but it has expired (%ds ago). Cleaning up...", current_time - token.expires_at);
+						token_store:set(username, key, nil);
+						return nil, "credentials-expired";
+					elseif last_password_change and token.issued_at < last_password_change then
+						log("debug", "Token found, but issued prior to password change (%ds ago). Cleaning up...",
+							current_time - last_password_change
+						);
 						token_store:set(username, key, nil);
 						return nil, "credentials-expired";
 					end
