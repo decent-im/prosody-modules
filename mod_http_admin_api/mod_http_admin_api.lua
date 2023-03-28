@@ -1,5 +1,6 @@
 local usermanager = require "core.usermanager";
 
+local jid = require "util.jid";
 local it = require "util.iterators";
 local json = require "util.json";
 local st = require "util.stanza";
