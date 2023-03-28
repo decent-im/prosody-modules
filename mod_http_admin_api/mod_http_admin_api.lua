@@ -48,6 +48,9 @@ function check_auth(routes)
 			event.response.headers.authorization = www_authenticate_header;
 			return false, 401;
 		end
+		-- FIXME this should probably live in mod_tokenauth or similar
+		session.type = "c2s";
+		session.full_jid = jid.join(session.username, session.host, session.resource);
 		event.session = session;
 		if not module:may(":access-admin-api", event) then
 			return false, 403;
