@@ -112,6 +112,7 @@ module:hook("advertise-sasl-features", function (event)
 	end
 	local sasl_handler = get_sasl_handler(username);
 	if not sasl_handler then return; end
+	sasl_handler.fast_auth = true; -- For informational purposes
 	-- Copy channel binding info from primary SASL handler
 	sasl_handler.profile.cb = session.sasl_handler.profile.cb;
 	sasl_handler.userdata = session.sasl_handler.userdata;
