@@ -228,3 +228,20 @@ register_ht_mechanism("HT-SHA-256-NONE", "ht_sha_256", nil);
 register_ht_mechanism("HT-SHA-256-UNIQ", "ht_sha_256", "tls-unique");
 register_ht_mechanism("HT-SHA-256-ENDP", "ht_sha_256", "tls-server-end-point");
 register_ht_mechanism("HT-SHA-256-EXPR", "ht_sha_256", "tls-exporter");
+
+-- Public API
+
+--luacheck: ignore 131
+function is_client_fast(username, client_id, last_password_change)
+	local client_id_hash = hash.sha256(client_id, true);
+	local curr_time = now();
+	local cur = token_store:get(username, client_id_hash.."-cur");
+	if cur and cur.expires_at >= curr_time and (not last_password_change or last_password_change < cur.issued_at) then
+		return true;
+	end
+	local new = token_store:get(username, client_id_hash.."-new");
+	if new and new.expires_at >= curr_time and (not last_password_change or last_password_change < new.issued_at) then
+		return true;
+	end
+	return false;
+end
