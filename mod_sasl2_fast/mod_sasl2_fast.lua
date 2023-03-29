@@ -67,7 +67,7 @@ local function new_token_tester(hmac_f)
 						-- The new token is becoming the current token
 						token_store:set_keys(username, {
 							[key] = token_store.remove;
-							[key:sub(1, -4).."-cur"] = token;
+							[key:sub(1, -5).."-cur"] = token;
 						});
 					end
 					local rotation_needed;
@@ -84,7 +84,7 @@ local function new_token_tester(hmac_f)
 				log("debug", "Trying next token...");
 				-- Try again with the current token instead
 				tried_current_token = true;
-				key = key:sub(1, -4).."-cur";
+				key = key:sub(1, -5).."-cur";
 			else
 				log("debug", "No matching %s token found for %s/%s", mechanism, username, key);
 				return nil;
