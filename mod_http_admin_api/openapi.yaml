@@ -482,6 +482,21 @@ components:
           type: string
           description: Display name of the user
           nullable: true
+        role:
+          type: string
+          description: Primary role of the user
+          nullable: true
+        secondary_roles:
+          type: array
+          description: List of additional roles assigned to the user
+          items:
+            type: string
+        roles:
+          type: array
+          description: List of roles assigned to the user (Legacy)
+          deprecated: true
+          items:
+            type: string
         email:
           type: string
           description: Optional email address for the user (NYI)
