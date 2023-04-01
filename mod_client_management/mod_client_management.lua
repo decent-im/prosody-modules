@@ -1,7 +1,10 @@
 local modulemanager = require "core.modulemanager";
 local usermanager = require "core.usermanager";
 
+local array = require "util.array";
+local dt = require "util.datetime";
 local id = require "util.id";
+local it = require "util.iterators";
 local jid = require "util.jid";
 local st = require "util.stanza";
 
@@ -187,26 +190,26 @@ local function is_client_active(client)
 	if client.auth_token_id then
 		local grant = tokenauth.get_grant_info(client.auth_token_id);
 		if grant then
-			status.active_grant = grant;
+			status.grant = grant;
 		end
 	end
 
 	-- Check for active FAST tokens
 	if client.fast_auth then
 		if mod_fast.is_client_fast(username, client.id, last_password_change) then
-			status.active_fast = client.fast_auth;
+			status.fast = client.fast_auth;
 		end
 	end
 
 	-- Client has access if any password-based SASL mechanisms have been used since last password change
 	for mech, mech_last_used in pairs(client.mechanisms) do
 		if is_password_mechanism(mech) and mech_last_used >= last_password_change then
-			status.active_password = mech_last_used;
+			status.password = mech_last_used;
 		end
 	end
 
 	if prosody.full_sessions[client.full_jid] then
-		status.active_connected = true;
+		status.connected = true;
 	end
 
 	if next(status) == nil then
@@ -229,8 +232,8 @@ function get_active_clients(username)
 			client.type = "session";
 			client.active = active;
 			table.insert(active_clients, client);
-			if active.active_grant then
-				used_grants[active.active_grant.id] = true;
+			if active.grant then
+				used_grants[active.grant.id] = true;
 			end
 		end
 	end
@@ -244,7 +247,7 @@ function get_active_clients(username)
 				first_seen = grant.created;
 				last_seen = grant.accessed;
 				active = {
-					active_grant = grant;
+					grant = grant;
 				};
 				user_agent = get_user_agent(nil, grant);
 			});
@@ -268,3 +271,93 @@ function get_active_clients(username)
 
 	return active_clients;
 end
+
+-- Protocol
+
+local xmlns_manage_clients = "xmpp:prosody.im/protocol/manage-clients";
+
+module:hook("iq-get/self/xmpp:prosody.im/protocol/manage-clients:list", function (event)
+	local origin, stanza = event.origin, event.stanza;
+
+	if not module:may(":list-clients", event) then
+		origin.send(st.error_reply(stanza, "auth", "forbidden"));
+		return true;
+	end
+
+	local reply = st.reply(stanza)
+		:tag("clients", { xmlns = xmlns_manage_clients });
+
+	local active_clients = get_active_clients(event.origin.username);
+	for _, client in ipairs(active_clients) do
+		local auth_type = st.stanza("auth");
+		if client.active then
+			if client.active.password then
+				auth_type:text_tag("password");
+			end
+			if client.active.grant then
+				auth_type:text_tag("bearer-token");
+			end
+			if client.active.fast then
+				auth_type:text_tag("fast");
+			end
+		end
+
+		local user_agent = st.stanza("user-agent");
+		if client.user_agent then
+			if client.user_agent.software then
+				user_agent:text_tag("software", client.user_agent.software);
+			end
+			if client.user_agent.device then
+				user_agent:text_tag("device", client.user_agent.device);
+			end
+			if client.user_agent.uri then
+				user_agent:text_tag("uri", client.user_agent.uri);
+			end
+		end
+
+		local connected = client.active and client.active.connected;
+		reply:tag("client", { id = client.id, connected = connected and "true" or "false" })
+			:text_tag("first-seen", dt.datetime(client.first_seen))
+			:text_tag("last-seen", dt.datetime(client.last_seen))
+			:add_child(auth_type)
+			:add_child(user_agent)
+			:up();
+	end
+	reply:up();
+
+	origin.send(reply);
+	return true;
+end);
+
+-- Command
+
+module:once(function ()
+	local console_env = module:shared("/*/admin_shell/env");
+	if not console_env.user then return; end -- admin_shell probably not loaded
+
+	function console_env.user:clients(username)
+		local clients = get_active_clients(username);
+		if not clients or #clients == 0 then
+			return true, "No clients associated with this account";
+		end
+
+		local colspec = {
+			{ title = "Software", key = "software" };
+			{ title = "Last seen", key = "last_seen" };
+			{ title = "Authentication", key = "auth_methods" };
+		};
+
+		local row = require "util.human.io".table(colspec, self.session.width);
+
+		local print = self.session.print;
+		print(row());
+		for _, client in ipairs(clients) do
+			print(row({
+				software = client.user_agent.software;
+				last_seen = os.date("%Y-%m-%d", client.last_seen);
+				auth_methods = array.collect(it.keys(client.active)):sort();
+			}));
+		end
+		print(("%d clients"):format(#clients));
+	end
+end);
