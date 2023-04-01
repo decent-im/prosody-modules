@@ -7,6 +7,15 @@ local attach_ips = module:get_option_boolean("audit_log_ips", true);
 local attach_ipv4_prefix = module:get_option_number("audit_log_ipv4_prefix", nil);
 local attach_ipv6_prefix = module:get_option_number("audit_log_ipv6_prefix", nil);
 
+local have_geoip, geoip = pcall(require, "geoip.country");
+local attach_location = have_geoip and module:get_option_boolean("audit_log_location", true);
+
+local geoip4_country, geoip6_country;
+if have_geoip and attach_location then
+	geoip4_country = geoip.open(module:get_option_string("geoip_ipv4_country", "/usr/share/GeoIP/GeoIP.dat"));
+	geoip6_country = geoip.open(module:get_option_string("geoip_ipv6_country", "/usr/share/GeoIP/GeoIPv6.dat"));
+end
+
 local time_now = os.time;
 local ip = require "util.ip";
 local st = require "util.stanza";
@@ -57,6 +66,13 @@ local function session_extra(session)
 			network = get_ip_network(remote_ip);
 		end
 		stanza:text_tag("remote-ip", network or remote_ip);
+	end
+	if attach_location and session.ip then
+		local remote_ip = ip.new(session.ip);
+		local geoip_country = ip.proto == "IPv6" and geoip6_country or geoip4_country;
+		stanza:tag("location", {
+			country = geoip_country:query_by_addr(remote_ip.normal);
+		}):up();
 	end
 	if session.client_id then
 		stanza:text_tag("client", session.client_id);
