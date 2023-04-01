@@ -123,3 +123,77 @@ end
 function moduleapi.audit(module, user, event_type, extra)
 	audit(module.host, user, "mod_" .. module:get_name(), event_type, extra);
 end
+
+function module.command(_arg)
+	local arg = require "util.argparse".parse(_arg, { value_params = { "limit", "user" } });
+	local host = arg[1];
+	if not host then
+		print("EE: Please supply the host for which you want to show events");
+		return 1;
+	elseif not prosody.hosts[host] then
+		print("EE: Unknown host: "..host);
+		return 1;
+	end
+
+	require "core.storagemanager".initialize_host(host);
+	local store = stores[host];
+	local c = 0;
+
+	local results, err = store:find(nil, {
+		with = arg.user;
+		limit = arg.limit and tonumber(arg.limit) or nil;
+	})
+	if not results then
+		print("EE: Failed to query audit log: "..tostring(err));
+		return 1;
+	end
+
+	local colspec = {
+		{ title = "Date", key = "when", width = 19, mapper = function (when) return os.date("%Y-%m-%d %R:%S", when); end };
+		{ title = "Source", key = "source", width = 18 };
+		{ title = "Event", key = "event_type", width = 22 };
+	};
+
+	if not arg.global then
+		table.insert(colspec, {
+			title = "User", key = "username", width = 30,
+			mapper = function (user)
+				if user == "@" then return ""; end
+				if user:sub(-#host-1, -1) == ("@"..host) then
+					return (user:gsub("@.+$", ""));
+				end
+			end;
+		});
+
+		if attach_ips then
+			table.insert(colspec, {
+				title = "IP", key = "ip", width = "28";
+			});
+		end
+		if attach_location then
+			table.insert(colspec, {
+				title = "Location", key = "country", width = 2;
+			});
+		end
+	end
+
+	local width = tonumber(os.getenv("COLUMNS")) or 80;
+	local row = require "util.human.io".table(colspec, width);
+
+	print(string.rep("-", width));
+	print(row());
+	print(string.rep("-", width));
+	for _, entry, when, user in results do
+		c = c + 1;
+		print(row({
+			when = when;
+			source = entry.attr.source;
+			event_type = entry.attr.type:gsub("%-", " ");
+			username = user;
+			ip = entry:get_child_text("remote-ip");
+			location = entry:find("location@country");
+		}));
+	end
+	print(string.rep("-", width));
+	print(("%d records displayed"):format(c));
+end
