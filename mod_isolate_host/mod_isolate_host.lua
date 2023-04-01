@@ -45,7 +45,7 @@ end
 module:default_permission("prosody:admin", "xmpp:federate");
 
 function is_jid_isolated(bare_jid)
-	if module:may("xmpp:federate", bare_jid) or except_users:contains(bare_jid) then
+	if except_users:contains(bare_jid) or module:may("xmpp:federate", bare_jid) then
 		return false;
 	else
 		return true;
