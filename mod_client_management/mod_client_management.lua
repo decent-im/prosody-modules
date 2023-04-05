@@ -230,6 +230,7 @@ function get_active_clients(username)
 		local active = is_client_active(client);
 		if active then
 			client.type = "session";
+			client.id = "client/"..client.id;
 			client.active = active;
 			table.insert(active_clients, client);
 			if active.grant then
@@ -242,7 +243,7 @@ function get_active_clients(username)
 	for grant_id, grant in pairs(tokenauth.get_user_grants(username) or {}) do
 		if not used_grants[grant_id] then -- exclude grants already accounted for
 			table.insert(active_clients, {
-				id = grant_id;
+				id = "grant/"..grant.id;
 				type = "access";
 				first_seen = grant.created;
 				last_seen = grant.accessed;
@@ -270,6 +271,42 @@ function get_active_clients(username)
 	end);
 
 	return active_clients;
+end
+
+function revoke_client_access(username, client_selector)
+	if client_selector.id then
+		local c_type, c_id = client_selector.id:match("^(%w+)/(.+)$");
+		if c_type == "client" then
+			local client = client_store:get_key(username, c_id);
+			if not client then
+				return nil, "item-not-found";
+			end
+			local status = is_client_active(client);
+			if status.connected then
+				local ok, err = prosody.full_sessions[client.full_jid]:close();
+				if not ok then return ok, err; end
+			end
+			if status.fast then
+				local ok = mod_fast.revoke_fast_tokens(username, client.id);
+				if not ok then return nil, "internal-server-error"; end
+			end
+			if status.grant then
+				local ok = tokenauth.revoke_grant(username, status.grant.id);
+				if not ok then return nil, "internal-server-error"; end
+			end
+			return true;
+		elseif c_type == "grant" then
+			local grant = tokenauth.get_grant_info(username, c_id);
+			if not grant then
+				return nil, "item-not-found";
+			end
+			local ok = tokenauth.revoke_grant(username, c_id);
+			if not ok then return nil, "internal-server-error"; end
+			return true;
+		end
+	end
+
+	return nil, "item-not-found";
 end
 
 -- Protocol
