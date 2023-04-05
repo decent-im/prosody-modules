@@ -294,6 +294,9 @@ function revoke_client_access(username, client_selector)
 				local ok = tokenauth.revoke_grant(username, status.grant.id);
 				if not ok then return nil, "internal-server-error"; end
 			end
+			if status.password then
+				return nil, "password-reset-required";
+			end
 			return true;
 		elseif c_type == "grant" then
 			local grant = tokenauth.get_grant_info(username, c_id);
