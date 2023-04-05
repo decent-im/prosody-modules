@@ -316,7 +316,7 @@ module:hook("iq-get/self/xmpp:prosody.im/protocol/manage-clients:list", function
 		end
 
 		local connected = client.active and client.active.connected;
-		reply:tag("client", { id = client.id, connected = connected and "true" or "false" })
+		reply:tag("client", { id = client.id, connected = connected and "true" or "false", type = client.type })
 			:text_tag("first-seen", dt.datetime(client.first_seen))
 			:text_tag("last-seen", dt.datetime(client.last_seen))
 			:add_child(auth_type)
