@@ -245,3 +245,10 @@ function is_client_fast(username, client_id, last_password_change)
 	end
 	return false;
 end
+
+function revoke_fast_tokens(username, client_id)
+	local client_id_hash = hash.sha256(client_id, true);
+	local cur_ok = token_store:set(username, client_id_hash.."-cur", nil);
+	local new_ok = token_store:set(username, client_id_hash.."-new", nil);
+	return cur_ok and new_ok;
+end
