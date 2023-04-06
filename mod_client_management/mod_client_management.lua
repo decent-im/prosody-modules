@@ -389,22 +389,25 @@ module:once(function ()
 		end
 
 		local colspec = {
-			{ title = "Software", key = "software" };
-			{ title = "Last seen", key = "last_seen" };
-			{ title = "Authentication", key = "auth_methods" };
+			{ title = "Software", key = "software", width = "1p" };
+			{ title = "Last seen", key = "last_seen", width = 10 };
+			{ title = "Authentication", key = "auth_methods", width = "2p" };
 		};
 
 		local row = require "util.human.io".table(colspec, self.session.width);
 
 		local print = self.session.print;
 		print(row());
+		print(string.rep("-", self.session.width));
 		for _, client in ipairs(clients) do
 			print(row({
-				software = client.user_agent.software;
+				id = client.id;
+				software = client.user_agent and client.user_agent.software;
 				last_seen = os.date("%Y-%m-%d", client.last_seen);
 				auth_methods = array.collect(it.keys(client.active)):sort();
 			}));
 		end
-		print(("%d clients"):format(#clients));
+		print(string.rep("-", self.session.width));
+		return true, ("%d clients"):format(#clients);
 	end
 end);
