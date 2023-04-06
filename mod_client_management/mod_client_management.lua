@@ -375,8 +375,15 @@ module:once(function ()
 	local console_env = module:shared("/*/admin_shell/env");
 	if not console_env.user then return; end -- admin_shell probably not loaded
 
-	function console_env.user:clients(username)
-		local clients = get_active_clients(username);
+	function console_env.user:clients(user_jid)
+		local username, host = jid.split(user_jid);
+		local mod = prosody.hosts[host] and prosody.hosts[host].modules.client_management;
+		if not mod then
+			print("EE: Host does not exist on this server, or does not have mod_client_management loaded");
+			return 1;
+		end
+
+		local clients = mod.get_active_clients(username);
 		if not clients or #clients == 0 then
 			return true, "No clients associated with this account";
 		end
