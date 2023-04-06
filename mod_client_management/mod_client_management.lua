@@ -243,7 +243,7 @@ function get_active_clients(username)
 	for grant_id, grant in pairs(tokenauth.get_user_grants(username) or {}) do
 		if not used_grants[grant_id] then -- exclude grants already accounted for
 			table.insert(active_clients, {
-				id = "grant/"..grant.id;
+				id = "grant/"..grant_id;
 				type = "access";
 				first_seen = grant.created;
 				last_seen = grant.accessed;
