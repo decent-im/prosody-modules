@@ -404,7 +404,7 @@ module:once(function ()
 				id = client.id;
 				software = client.user_agent and client.user_agent.software;
 				last_seen = os.date("%Y-%m-%d", client.last_seen);
-				auth_methods = array.collect(it.keys(client.active)):sort();
+				auth_methods = array.collect(it.keys(client.active)):sort():concat(", ");
 			}));
 		end
 		print(string.rep("-", self.session.width));
