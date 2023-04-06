@@ -369,6 +369,33 @@ module:hook("iq-get/self/xmpp:prosody.im/protocol/manage-clients:list", function
 	return true;
 end);
 
+local revocation_errors = require "util.errors".init(module.name, xmlns_manage_clients, {
+	["item-not-found"] = { "cancel", "item-not-found", "Client not found" };
+	["internal-server-error"] = { "wait", "internal-server-error", "Unable to revoke client access" };
+	["password-reset-required"] = { "cancel", "service-unavailable", "Password reset required", "password-reset-required" };
+});
+
+module:hook("iq-set/self/xmpp:prosody.im/protocol/manage-clients:revoke", function (event)
+	local origin, stanza = event.origin, event.stanza;
+
+	if not module:may(":manage-clients", event) then
+		origin.send(st.error_reply(stanza, "auth", "forbidden"));
+		return true;
+	end
+
+	local client_id = stanza.tags[1].attr.id;
+
+	local ok, err = revocation_errors.coerce(revoke_client_access(origin.username, client_id));
+	if not ok then
+		origin.send(st.error_reply(stanza, err));
+		return true;
+	end
+
+	origin.send(st.reply(stanza));
+	return true;
+end);
+
+
 -- Command
 
 module:once(function ()
