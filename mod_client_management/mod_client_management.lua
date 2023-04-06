@@ -10,6 +10,9 @@ local st = require "util.stanza";
 
 local strict = module:get_option_boolean("enforce_client_ids", false);
 
+module:default_permission("prosody:user", ":list-clients");
+module:default_permission("prosody:user", ":manage-clients");
+
 local tokenauth = module:depends("tokenauth");
 local mod_fast = module:depends("sasl2_fast");
 
