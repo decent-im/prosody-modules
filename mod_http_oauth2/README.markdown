@@ -10,8 +10,9 @@ rockspec:
 
 ## Introduction
 
-This module implements an OAuth2/OpenID Connect (OIDC) provider HTTP frontend
-on top of Prosody's usual internal authentication backend.
+This module implements an [OAuth2](https://oauth.net/2/)/[OpenID Connect
+(OIDC)](https://openid.net/connect/) provider HTTP frontend on top of
+Prosody's usual internal authentication backend.
 
 OAuth and OIDC are web standards that allow you to provide clients and
 third-party applications limited access to your account, without sharing your
