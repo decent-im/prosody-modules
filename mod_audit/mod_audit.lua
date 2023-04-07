@@ -155,7 +155,7 @@ function module.command(_arg)
 		{ title = "Event", key = "event_type", width = "2p" };
 	};
 
-	if not arg.global then
+	if arg.show_user ~= false and (not arg.global or arg.show_user) then
 		table.insert(colspec, {
 			title = "User", key = "username", width = "2p",
 			mapper = function (user)
@@ -165,17 +165,16 @@ function module.command(_arg)
 				end
 			end;
 		});
-
-		if attach_ips then
-			table.insert(colspec, {
-				title = "IP", key = "ip", width = "2p";
-			});
-		end
-		if attach_location then
-			table.insert(colspec, {
-				title = "Location", key = "country", width = 2;
-			});
-		end
+	end
+	if arg.show_ip ~= false and (not arg.global and attach_ips or arg.show_ip) then
+		table.insert(colspec, {
+			title = "IP", key = "ip", width = "2p";
+		});
+	end
+	if arg.show_location ~= false and (not arg.global and attach_location or arg.show_location) then
+		table.insert(colspec, {
+			title = "Location", key = "country", width = 2;
+		});
 	end
 
 	local row, width = require "util.human.io".table(colspec);
