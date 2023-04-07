@@ -142,6 +142,7 @@ function module.command(_arg)
 	local results, err = store:find(nil, {
 		with = arg.user;
 		limit = arg.limit and tonumber(arg.limit) or nil;
+		reverse = true;
 	})
 	if not results then
 		print("EE: Failed to query audit log: "..tostring(err));
