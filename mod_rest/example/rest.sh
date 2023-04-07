@@ -3,6 +3,11 @@
 # Copyright (c) Kim Alvefur
 # This file is MIT/X11 licensed.
 
+# Dependencies:
+# - https://httpie.io/
+# - https://github.com/stedolan/jq
+# - some sort of XDG 'open' command
+
 # Settings
 HOST=""
 DOMAIN=""
