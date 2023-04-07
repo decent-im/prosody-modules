@@ -94,7 +94,7 @@ local function audit(host, user, source, event_type, extra)
 		attr.user = user_key;
 	end
 	local stanza = st.stanza("audit-event", attr);
-	if extra ~= nil then
+	if extra then
 		if extra.session then
 			local child = session_extra(extra.session);
 			if child then
