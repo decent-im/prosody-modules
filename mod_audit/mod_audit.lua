@@ -111,7 +111,7 @@ local function audit(host, user, source, event_type, extra)
 		end
 	end
 
-	local id, err = stores[host]:append(nil, nil, stanza, time_now(), user_key);
+	local id, err = stores[host]:append(nil, nil, stanza, extra and extra.timestamp or time_now(), user_key);
 	if err then
 		module:log("error", "failed to persist audit event: %s", err);
 		return
