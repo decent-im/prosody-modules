@@ -185,6 +185,12 @@ function module.command(_arg)
 		});
 	end
 
+	if arg.show_note then
+		table.insert(colspec, {
+			title = "Note", key = "note", width = "2p";
+		});
+	end
+
 	local row, width = require "util.human.io".table(colspec);
 
 	print(string.rep("-", width));
@@ -200,6 +206,7 @@ function module.command(_arg)
 				username = user;
 				ip = entry:get_child_text("remote-ip");
 				location = entry:find("location@country");
+				note = entry:get_child_text("note");
 			}));
 		end
 	end
