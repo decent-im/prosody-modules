@@ -178,8 +178,7 @@ function module.command(_arg)
 		end
 	end
 
-	local width = tonumber(os.getenv("COLUMNS")) or 80;
-	local row = require "util.human.io".table(colspec, width);
+	local row, width = require "util.human.io".table(colspec);
 
 	print(string.rep("-", width));
 	print(row());
