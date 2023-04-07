@@ -33,7 +33,8 @@ below.
 
 Known client implementations:
 
-- *(we need you!)*
+-   [example shell script for mod_rest](https://hg.prosody.im/prosody-modules/file/tip/mod_rest/example/rest.sh)
+-   *(we need you!)*
 
 Support for OAUTHBEARER has been added to the Lua XMPP library, [verse](https://code.matthewwild.co.uk/verse).
 If you know of additional implementations, or are motivated to work on one,
