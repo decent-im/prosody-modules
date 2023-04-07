@@ -20,7 +20,7 @@ password with them.
 
 With this module deployed, software that supports OAuth can obtain "access
 tokens" from Prosody which can then be used to connect to XMPP accounts using
-the 'OAUTHBEARER' SASL mechanism or via non-XMPP interfaces such as mod_rest.
+the 'OAUTHBEARER' SASL mechanism or via non-XMPP interfaces such as [mod_rest].
 
 Although this module has been around for some time, it has recently been
 significantly extended and largely rewritten to support OAuth/OIDC more fully.
