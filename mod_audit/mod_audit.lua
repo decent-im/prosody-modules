@@ -125,8 +125,9 @@ function moduleapi.audit(module, user, event_type, extra)
 end
 
 function module.command(_arg)
-	local arg = require "util.argparse".parse(_arg, { value_params = { "limit", "user" } });
-	local host = arg[1];
+	local jid = require "util.jid";
+	local arg = require "util.argparse".parse(_arg, { value_params = { "limit" } });
+	local query_user, host = jid.prepped_split(arg[1]);
 	if not host then
 		print("EE: Please supply the host for which you want to show events");
 		return 1;
@@ -139,8 +140,15 @@ function module.command(_arg)
 	local store = stores[host];
 	local c = 0;
 
+	if arg.global then
+		if query_user then
+			print("WW: Specifying a user account is incompatible with --global. Showing only global events.");
+		end
+		query_user = "@";
+	end
+
 	local results, err = store:find(nil, {
-		with = arg.user;
+		with = query_user;
 		limit = arg.limit and tonumber(arg.limit) or nil;
 		reverse = true;
 	})
@@ -155,7 +163,7 @@ function module.command(_arg)
 		{ title = "Event", key = "event_type", width = "2p" };
 	};
 
-	if arg.show_user ~= false and (not arg.global or arg.show_user) then
+	if arg.show_user ~= false and (not arg.global and not query_user) or arg.show_user then
 		table.insert(colspec, {
 			title = "User", key = "username", width = "2p",
 			mapper = function (user)
@@ -166,12 +174,12 @@ function module.command(_arg)
 			end;
 		});
 	end
-	if arg.show_ip ~= false and (not arg.global and attach_ips or arg.show_ip) then
+	if arg.show_ip ~= false and (not arg.global and attach_ips) or arg.show_ip then
 		table.insert(colspec, {
 			title = "IP", key = "ip", width = "2p";
 		});
 	end
-	if arg.show_location ~= false and (not arg.global and attach_location or arg.show_location) then
+	if arg.show_location ~= false and (not arg.global and attach_location) or arg.show_location then
 		table.insert(colspec, {
 			title = "Location", key = "country", width = 2;
 		});
@@ -183,15 +191,17 @@ function module.command(_arg)
 	print(row());
 	print(string.rep("-", width));
 	for _, entry, when, user in results do
-		c = c + 1;
-		print(row({
-			when = when;
-			source = entry.attr.source;
-			event_type = entry.attr.type:gsub("%-", " ");
-			username = user;
-			ip = entry:get_child_text("remote-ip");
-			location = entry:find("location@country");
-		}));
+		if arg.global ~= false or user ~= "@" then
+			c = c + 1;
+			print(row({
+				when = when;
+				source = entry.attr.source;
+				event_type = entry.attr.type:gsub("%-", " ");
+				username = user;
+				ip = entry:get_child_text("remote-ip");
+				location = entry:find("location@country");
+			}));
+		end
 	end
 	print(string.rep("-", width));
 	print(("%d records displayed"):format(c));
