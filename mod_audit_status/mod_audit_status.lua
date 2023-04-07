@@ -1,5 +1,7 @@
 module:depends("audit");
 
+local st = require "util.stanza";
+
 -- Suppress warnings about module:audit()
 -- luacheck: ignore 143/module
 
@@ -17,7 +19,11 @@ module:hook_global("server-started", function ()
 end);
 
 module:hook_global("server-stopped", function ()
-	module:audit(nil, "server-stopped");
+	module:audit(nil, "server-stopped", {
+		custom = {
+			prosody.shutdown_reason and st.stanza("note"):text(prosody.shutdown_reason);
+		};
+	});
 	store:set_key(nil, "status", "stopped");
 end);
 
