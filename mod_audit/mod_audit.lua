@@ -102,7 +102,7 @@ local function audit(host, user, source, event_type, extra)
 			end
 		end
 		if extra.custom then
-			for _, child in extra.custom do
+			for _, child in ipairs(extra.custom) do
 				if not st.is_stanza(child) then
 					error("all extra.custom items must be stanzas")
 				end
