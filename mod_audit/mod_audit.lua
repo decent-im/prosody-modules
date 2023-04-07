@@ -151,13 +151,13 @@ function module.command(_arg)
 
 	local colspec = {
 		{ title = "Date", key = "when", width = 19, mapper = function (when) return os.date("%Y-%m-%d %R:%S", when); end };
-		{ title = "Source", key = "source", width = 18 };
-		{ title = "Event", key = "event_type", width = 22 };
+		{ title = "Source", key = "source", width = "2p" };
+		{ title = "Event", key = "event_type", width = "2p" };
 	};
 
 	if not arg.global then
 		table.insert(colspec, {
-			title = "User", key = "username", width = 30,
+			title = "User", key = "username", width = "2p",
 			mapper = function (user)
 				if user == "@" then return ""; end
 				if user:sub(-#host-1, -1) == ("@"..host) then
@@ -168,7 +168,7 @@ function module.command(_arg)
 
 		if attach_ips then
 			table.insert(colspec, {
-				title = "IP", key = "ip", width = "28";
+				title = "IP", key = "ip", width = "2p";
 			});
 		end
 		if attach_location then
