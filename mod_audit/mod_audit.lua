@@ -1,7 +1,19 @@
 module:set_global();
 
-local audit_log_limit = module:get_option_number("audit_log_limit", 10000);
-local cleanup_after = module:get_option_string("audit_log_expires_after", "2w");
+local time_now = os.time;
+local parse_duration = require "util.human.io".parse_duration;
+local ip = require "util.ip";
+local st = require "util.stanza";
+local moduleapi = require "core.moduleapi";
+
+local host_wide_user = "@";
+
+local cleanup_after = module:get_option_string("audit_log_expires_after", "28d");
+if cleanup_after == "never" then
+	cleanup_after = nil;
+else
+	cleanup_after = parse_duration(cleanup_after);
+end
 
 local attach_ips = module:get_option_boolean("audit_log_ips", true);
 local attach_ipv4_prefix = module:get_option_number("audit_log_ipv4_prefix", nil);
@@ -16,12 +28,6 @@ if have_geoip and attach_location then
 	geoip6_country = geoip.open(module:get_option_string("geoip_ipv6_country", "/usr/share/GeoIP/GeoIPv6.dat"));
 end
 
-local time_now = os.time;
-local ip = require "util.ip";
-local st = require "util.stanza";
-local moduleapi = require "core.moduleapi";
-
-local host_wide_user = "@";
 
 local stores = {};
 
@@ -36,6 +42,23 @@ local function get_store(self, host)
 end
 
 setmetatable(stores, { __index = get_store });
+
+local function prune_audit_log(host)
+	local before = os.time() - cleanup_after;
+	module:context(host):log("debug", "Pruning audit log for entries older than %s", os.date("%Y-%m-%d %R:%S", before));
+	local ok, err = stores[host]:delete(nil, { ["end"] = before });
+	if not ok then
+		module:context(host):log("error", "Unable to prune audit log: %s", err);
+		return;
+	end
+	local sum = tonumber(ok);
+	if sum then
+		module:context(host):log("debug", "Pruned %d expired audit log entries", sum);
+		return sum > 0;
+	end
+	module:context(host):log("debug", "Pruned expired audit log entries");
+	return true;
+end
 
 local function get_ip_network(ip_addr)
 	local _ip = ip.new_ip(ip_addr);
@@ -111,12 +134,36 @@ local function audit(host, user, source, event_type, extra)
 		end
 	end
 
-	local id, err = stores[host]:append(nil, nil, stanza, extra and extra.timestamp or time_now(), user_key);
-	if err then
-		module:log("error", "failed to persist audit event: %s", err);
-		return
+	local store = stores[host];
+	local id, err = store:append(nil, nil, stanza, extra and extra.timestamp or time_now(), user_key);
+	if not id then
+		if err == "quota-limit" then
+			local limit = store.caps and store.caps.quota or 1000;
+			local truncate_to = math.floor(limit * 0.99);
+			if type(cleanup_after) == "number" then
+				module:log("debug", "Audit log has reached quota - forcing prune");
+				if prune_audit_log(host) then
+					-- Retry append
+					id, err = store:append(nil, nil, stanza, extra and extra.timestamp or time_now(), user_key);
+				end
+			end
+			if not id and (store.caps and store.caps.truncate) then
+				module:log("debug", "Audit log has reached quota - truncating");
+				local truncated = store:delete(nil, {
+					truncate = truncate_to;
+				});
+				if truncated then
+					-- Retry append
+					id, err = store:append(nil, nil, stanza, extra and extra.timestamp or time_now(), user_key);
+				end
+			end
+		end
+		if not id then
+			module:log("error", "Failed to persist audit event: %s", err);
+			return;
+		end
 	else
-		module:log("debug", "persisted audit event %s as %s", stanza:top_tag(), id);
+		module:log("debug", "Persisted audit event %s as %s", stanza:top_tag(), id);
 	end
 end
 
@@ -126,8 +173,27 @@ end
 
 function module.command(_arg)
 	local jid = require "util.jid";
-	local arg = require "util.argparse".parse(_arg, { value_params = { "limit" } });
+	local arg = require "util.argparse".parse(_arg, {
+		value_params = { "limit" };
+	 });
+
+	for k, v in pairs(arg) do print("U", k, v) end
 	local query_user, host = jid.prepped_split(arg[1]);
+
+	if arg.prune then
+		local sm = require "core.storagemanager";
+		if host then
+			sm.initialize_host(host);
+			prune_audit_log(host);
+		else
+			for _host in pairs(prosody.hosts) do
+				sm.initialize_host(_host);
+				prune_audit_log(_host);
+			end
+		end
+		return;
+	end
+
 	if not host then
 		print("EE: Please supply the host for which you want to show events");
 		return 1;
@@ -212,4 +278,11 @@ function module.command(_arg)
 	end
 	print(string.rep("-", width));
 	print(("%d records displayed"):format(c));
+end
+
+function module.add_host(host_module)
+	host_module:depends("cron");
+	host_module:daily("Prune audit logs", function ()
+		prune_audit_log(host_module.host);
+	end);
 end
