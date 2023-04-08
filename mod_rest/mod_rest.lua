@@ -391,7 +391,7 @@ local function handle_request(event, path)
 		end
 
 		local iq_timeout = tonumber(request.headers.prosody_rest_timeout) or module:get_option_number("rest_iq_timeout", 60*2);
-		iq_timeout = math.min(iq_timeout, module:get_option_boolean("rest_iq_max_timeout", 300));
+		iq_timeout = math.min(iq_timeout, module:get_option_number("rest_iq_max_timeout", 300));
 
 		local p = module:send_iq(payload, origin, iq_timeout):next(
 			function (result)
