@@ -81,13 +81,15 @@ local function parse_scopes(scope_string)
 	return array(scope_string:gmatch("%S+"));
 end
 
+local openid_claims = set.new({ "profile"; "email"; "address"; "phone" });
+
 local function filter_scopes(username, requested_scope_string)
 	local selected_role, granted_scopes = nil, array();
 
 	if requested_scope_string then -- Specific role(s) requested
 		local requested_scopes = parse_scopes(requested_scope_string);
 		for _, scope in ipairs(requested_scopes) do
-			if scope == "openid" then
+			if scope == "openid" or openid_claims:contains(scope) then
 				granted_scopes:push(scope);
 			end
 			if selected_role == nil and usermanager.user_can_assume_role(username, module.host, scope) then
@@ -758,16 +760,35 @@ local function handle_userinfo_request(event)
 		module:log("debug", "UserInfo query failed token validation: %s", err)
 		return 403;
 	end
-	-- TODO check that they actually have access to the userinfo endpoint, aka
-	-- the 'openid' scope. Tokens currently contain the JID in plain text so
-	-- we're not really returning anything they did not know already.
+	local scopes = set.new()
+	if type(token_info.grant.data) == "table" and type(token_info.grant.data.oauth2_scopes) == "string" then
+		scopes:add_list(parse_scopes(token_info.grant.data.oauth2_scopes));
+	else
+		module:log("debug", "token_info = %q", token_info)
+	end
+
+	if not scopes:contains("openid") then
+		module:log("debug", "Missing the 'openid' scope in %q", scopes)
+		-- The 'openid' scope is required for access to this endpoint.
+		return 403;
+	end
 
 	local user_info = {
 		iss = get_issuer();
 		sub = url.build({ scheme = "xmpp"; path = token_info.jid });
-		-- Additional UserInfo fields could be pulled from vcard4, depending on
-		-- permissions and scopes granted.
 	}
+
+	local token_claims = set.intersection(openid_claims, scopes);
+	if not token_claims:empty() then
+		-- Another module can do that
+		module:fire_event("token/userinfo", {
+			token = token_info;
+			claims = token_claims;
+			username = jid.split(token_info.jid);
+			userinfo = user_info;
+		});
+	end
+
 	return {
 		status_code = 200;
 		headers = { content_type = "application/json" };
