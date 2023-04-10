@@ -750,7 +750,7 @@ local function handle_userinfo_request(event)
 	local request = event.request;
 	local credentials = get_request_credentials(request);
 	if not credentials or not credentials.bearer_token then
-		return 400;
+		return 401;
 	end
 	local token_info = tokens.get_token_info(credentials.bearer_token);
 	if not token_info then
