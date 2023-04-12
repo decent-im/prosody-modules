@@ -176,6 +176,8 @@ local function new_access_token(token_jid, role, scope_string, client, id_token,
 	else
 		-- Grant exists, reuse existing refresh token
 		refresh_token = refresh_token_info.token;
+
+		refresh_token_info.grant = nil; -- Prevent reference loop
 	end
 
 	local access_token, access_token_info = tokens.create_token(token_jid, grant, role, default_access_ttl, "oauth2");
