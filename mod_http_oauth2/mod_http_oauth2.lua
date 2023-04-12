@@ -366,7 +366,7 @@ function grant_type_handlers.refresh_token(params)
 	refresh_token_info.token = params.refresh_token;
 
 	return json.encode(new_access_token(
-		refresh_token_info.jid, refresh_token_info.role, refresh_token_info.data.oauth2_scopes, client, nil, refresh_token_info
+		refresh_token_info.jid, refresh_token_info.role, refresh_token_info.grant.data.oauth2_scopes, client, nil, refresh_token_info
 	));
 end
 
