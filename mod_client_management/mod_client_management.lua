@@ -372,7 +372,7 @@ module:hook("iq-get/self/xmpp:prosody.im/protocol/manage-clients:list", function
 	return true;
 end);
 
-local revocation_errors = require "util.errors".init(module.name, xmlns_manage_clients, {
+local revocation_errors = require "util.error".init(module.name, xmlns_manage_clients, {
 	["item-not-found"] = { "cancel", "item-not-found", "Client not found" };
 	["internal-server-error"] = { "wait", "internal-server-error", "Unable to revoke client access" };
 	["password-reset-required"] = { "cancel", "service-unavailable", "Password reset required", "password-reset-required" };
