@@ -59,8 +59,22 @@ and password and retrieves a token itself, then proceeds as above.
 
 # Compatibility
 
+## Prosody
+
   Version   Status
   --------- ---------------
   trunk     works
   0.12.x    does not work
   0.11.x    does not work
+
+## Identity Provider
+
+Tested with
+
+-   [KeyCloak](https://www.keycloak.org/)
+
+# Future work
+
+-   Automatically discover endpoints from Discovery URL
+-   Configurable input username mapping (e.g. user → user@host).
+-   [SCRAM over HTTP?!][rfc7804]
