@@ -46,7 +46,8 @@ and password and retrieves a token itself, then proceeds as above.
 
 `oauth_external_resource_owner_password`
 :   Boolean. Defaults to `true`. Whether to allow the *insecure*
-    resource owner password grant and SASL PLAIN.
+    [resource owner password
+    grant](https://oauth.net/2/grant-types/password/) and SASL PLAIN.
 
 `oauth_external_token_endpoint`
 :   URL string. OAuth 2 [Token
