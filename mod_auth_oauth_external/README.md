@@ -20,6 +20,20 @@ and password and retrieves a token itself, then proceeds as above.
 
 # Configuration
 
+## Example
+
+```lua
+-- authentication = "oauth_external"
+
+oauth_external_discovery_url = "https//auth.example.com/auth/realms/TheRealm/.well-known/openid-configuration"
+oauth_external_token_endpoint = "https//auth.example.com/auth/realms/TheRealm/protocol/openid-connect/token"
+oauth_external_validation_endpoint = "https//auth.example.com/auth/realms/TheRealm/protocol/openid-connect/userinfo"
+oauth_external_username_field = "xmpp_username"
+```
+
+
+## Common
+
 `oauth_external_issuer`
 :   Optional URL string representing the Authorization server identity.
 
