@@ -171,9 +171,9 @@ function moduleapi.audit(module, user, event_type, extra)
 	audit(module.host, user, "mod_" .. module:get_name(), event_type, extra);
 end
 
-function module.command(_arg)
+function module.command(arg_)
 	local jid = require "util.jid";
-	local arg = require "util.argparse".parse(_arg, {
+	local arg = require "util.argparse".parse(arg_, {
 		value_params = { "limit" };
 	 });
 
