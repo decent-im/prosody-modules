@@ -11,7 +11,7 @@ local store = module:open_store(nil, "keyval+");
 
 module:hook_global("server-started", function ()
 	local recorded_status = store:get();
-	if recorded_status.status == "started" then
+	if recorded_status and recorded_status.status == "started" then
 		module:audit(nil, "server-crashed", { timestamp = recorded_status.heartbeat });
 	end
 	module:audit(nil, "server-started");
