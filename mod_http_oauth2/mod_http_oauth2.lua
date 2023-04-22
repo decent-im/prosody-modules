@@ -670,6 +670,7 @@ local registration_schema = {
 		software_version = { type = "string" };
 	};
 	-- Localized versions of descriptive properties and URIs
+	patternProperties = { ["^[a-z_]+_uri#"] = { type = "string"; format = "uri"; pattern = "^https:"  } };
 	additionalProperties = { type = "string" };
 }
 
@@ -702,6 +703,18 @@ function create_client(client_metadata)
 			end
 			if components.authority ~= client_uri.authority then
 				return nil, oauth_error("invalid_request", "Informative URIs must have the same hostname");
+			end
+		end
+	end
+
+	-- Localized URIs should be secure too
+	for k, v in pairs(client_metadata) do
+		if k:find"_uri#" then
+			local uri = url.parse(v);
+			if not uri or uri.scheme ~= "https" then
+				return nil, oauth_error("invalid_request", "Missing, invalid or insecure "..k);
+			elseif uri.host ~= client_uri.host then
+				return nil, oauth_error("invalid_request", "All URIs must use the same hostname as client_uri");
 			end
 		end
 	end
