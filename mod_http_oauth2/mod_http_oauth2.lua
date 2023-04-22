@@ -121,13 +121,12 @@ end);
 
 -- Periodically clear out unredeemed codes.  Does not need to be exact, expired
 -- codes are rejected if tried. Mostly just to keep memory usage in check.
-module:add_timer(900, function()
+module:hourly("Clear expired authorization codes", function()
 	local k, code = codes:tail();
 	while code and code_expired(code) do
 		codes:set(k, nil);
 		k, code = codes:tail();
 	end
-	return code and code_expires_in(code) + 1 or 900;
 end)
 
 local function get_issuer()
