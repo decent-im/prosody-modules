@@ -658,13 +658,13 @@ local registration_schema = {
 		};
 		response_types = { type = "array"; items = { type = "string"; enum = { "code"; "token" } } };
 		client_name = { type = "string" };
-		client_uri = { type = "string"; format = "uri" };
-		logo_uri = { type = "string"; format = "uri" };
+		client_uri = { type = "string"; format = "uri"; pattern = "^https:" };
+		logo_uri = { type = "string"; format = "uri"; pattern = "^https:"  };
 		scope = { type = "string" };
 		contacts = { type = "array"; items = { type = "string" } };
-		tos_uri = { type = "string"; format = "uri" };
-		policy_uri = { type = "string"; format = "uri" };
-		jwks_uri = { type = "string"; format = "uri" };
+		tos_uri = { type = "string"; format = "uri"; pattern = "^https:"  };
+		policy_uri = { type = "string"; format = "uri"; pattern = "^https:"  };
+		jwks_uri = { type = "string"; format = "uri"; pattern = "^https:"  };
 		jwks = { type = "object"; description = "JSON Web Key Set, RFC 7517" };
 		software_id = { type = "string"; format = "uuid" };
 		software_version = { type = "string" };
