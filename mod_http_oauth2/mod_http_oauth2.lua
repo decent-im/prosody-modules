@@ -869,8 +869,7 @@ module:provides("http", {
 				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
 				jwks_uri = nil; -- TODO?
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
-				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):push("openid")
-					or { "prosody:restricted"; "prosody:user"; "prosody:admin"; "prosody:operator"; "openid" };
+				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):append(array(openid_claims:items()));
 				response_types_supported = array(it.keys(response_type_handlers));
 				authorization_response_iss_parameter_supported = true;
 
