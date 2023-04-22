@@ -662,7 +662,7 @@ local registration_schema = {
 		logo_uri = { type = "string"; format = "uri" };
 		scope = { type = "string" };
 		contacts = { type = "array"; items = { type = "string" } };
-		tos_uri = { type = "string" };
+		tos_uri = { type = "string"; format = "uri" };
 		policy_uri = { type = "string"; format = "uri" };
 		jwks_uri = { type = "string"; format = "uri" };
 		jwks = { type = "object"; description = "JSON Web Key Set, RFC 7517" };
