@@ -13,6 +13,7 @@ module:hook("token/userinfo", function(event)
 	local vcard4 = select(3, pep_service:get_last_item("urn:xmpp:vcard4", true));
 
 	local userinfo = event.userinfo;
+	vcard4 = vcard4 and vcard4:get_child("vcard", "urn:ietf:params:xml:ns:vcard-4.0");
 	if vcard4 and event.claims:contains("profile") then
 		userinfo.name = vcard4:find("fn/text#");
 		userinfo.family_name = vcard4:find("n/surname#");
