@@ -71,7 +71,7 @@ module:hook("token/userinfo", function(event)
 	end
 
 	if vcard4 and event.claims:contains("phone") then
-		userinfo.phone = vcard4:find("email/text#")
+		userinfo.phone = vcard4:find("tel/text#")
 		if userinfo.phone then
 			userinfo.phone_number_verified = false;
 		end
