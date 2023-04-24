@@ -34,7 +34,7 @@ log = {
     error = "/var/log/prosody/prosody.err";
 
     -- Log debug and higher to a 2MB buffer
-    { level = "debug", to = "ringbuffer", size = 1024*1024*2, filename_template = "debug-logs-{pid}-{count}.log", signal = "SIGUSR2" };
+    { to = "ringbuffer", size = 1024*1024*2, filename_template = "debug-logs-{pid}-{count}.log", signal = "SIGUSR2" };
 }
 ```
 
@@ -43,8 +43,8 @@ The possible fields of the logging config entry are:
 `to`
 :   Set this to `"ringbuffer"`.
 
-`level`
-:   The minimum log level to capture, e.g. `"debug"`.
+`levels`
+:   The log levels to capture, e.g. `{ min = "debug" }`. By default, all levels are captured.
 
 `size`
 :   The size, in bytes, of the buffer. When the buffer fills,
@@ -109,7 +109,6 @@ log = {
 
 	{
 		to = "ringbuffer";
-		level = "debug";
 		filename_template = "{paths.data}/traceback-{pid}-{count}.log";
 		event = "debug_traceback/triggered";
 	};
