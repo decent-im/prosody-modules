@@ -34,7 +34,7 @@ log = {
     error = "/var/log/prosody/prosody.err";
 
     -- Log debug and higher to a 2MB buffer
-    { level = "debug", to = "ringbuffer", size = 1024*1024*2, filename = "debug-logs-{pid}-{count}.log", signal = "SIGUSR2" };
+    { level = "debug", to = "ringbuffer", size = 1024*1024*2, filename_template = "debug-logs-{pid}-{count}.log", signal = "SIGUSR2" };
 }
 ```
 
