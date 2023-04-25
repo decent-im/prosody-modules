@@ -669,9 +669,11 @@ local registration_schema = {
 		software_id = { type = "string"; format = "uuid" };
 		software_version = { type = "string" };
 	};
-	-- Localized versions of descriptive properties and URIs
-	luaPatternProperties = { ["^[a-z_]+_uri#"] = { type = "string"; format = "uri"; luaPattern = "^https:" } };
-	additionalProperties = { type = "string" };
+	luaPatternProperties = {
+		-- Localized versions of descriptive properties and URIs
+		["^client_name#"] = { description = "Localized version of 'client_name'"; type = "string" };
+		["^[a-z_]+_uri#"] = { type = "string"; format = "uri"; luaPattern = "^https:" };
+	};
 }
 
 function create_client(client_metadata)
