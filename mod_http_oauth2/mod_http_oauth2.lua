@@ -640,7 +640,7 @@ local registration_schema = {
 	};
 	properties = {
 		redirect_uris = { type = "array"; minLength = 1; items = { type = "string"; format = "uri" } };
-		token_endpoint_auth_method = { type = "string"; enum = { "none"; "client_secret_post"; "client_secret_basic" } };
+		token_endpoint_auth_method = { type = "string"; enum = { "none"; "client_secret_post"; "client_secret_basic"; default = "client_secret_basic" } };
 		grant_types = {
 			type = "array";
 			items = {
@@ -655,8 +655,9 @@ local registration_schema = {
 					"urn:ietf:params:oauth:grant-type:saml2-bearer";
 				};
 			};
+			default = { "authorization_code" };
 		};
-		response_types = { type = "array"; items = { type = "string"; enum = { "code"; "token" } } };
+		response_types = { type = "array"; items = { type = "string"; enum = { "code"; "token" } }; default = { "code" } };
 		client_name = { type = "string" };
 		client_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		logo_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
@@ -679,6 +680,13 @@ local registration_schema = {
 function create_client(client_metadata)
 	if not schema.validate(registration_schema, client_metadata) then
 		return nil, oauth_error("invalid_request", "Failed schema validation.");
+	end
+
+	-- Fill in default values
+	for propname, propspec in pairs(registration_schema.properties) do
+		if client_metadata[propname] == nil and type(propspec) == "table" and propspec.default ~= nil then
+			client_metadata[propname] = propspec.default;
+		end
 	end
 
 	local client_uri = url.parse(client_metadata.client_uri);
