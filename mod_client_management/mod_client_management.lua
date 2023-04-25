@@ -277,8 +277,8 @@ function get_active_clients(username)
 end
 
 function revoke_client_access(username, client_selector)
-	if client_selector.id then
-		local c_type, c_id = client_selector.id:match("^(%w+)/(.+)$");
+	if client_selector then
+		local c_type, c_id = client_selector:match("^(%w+)/(.+)$");
 		if c_type == "client" then
 			local client = client_store:get_key(username, c_id);
 			if not client then
