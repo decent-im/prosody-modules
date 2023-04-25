@@ -657,6 +657,7 @@ local registration_schema = {
 			};
 			default = { "authorization_code" };
 		};
+		application_type = { type = "string"; enum = { "native"; "web" }; default = "web" };
 		response_types = { type = "array"; items = { type = "string"; enum = { "code"; "token" } }; default = { "code" } };
 		client_name = { type = "string" };
 		client_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
@@ -677,6 +678,15 @@ local registration_schema = {
 	};
 }
 
+local function redirect_uri_allowed(redirect_uri, client_uri, app_type)
+	local uri = url.parse(redirect_uri);
+	if app_type == "native" then
+		return uri.scheme == "http" and uri.host == "localhost" or uri.scheme ~= "https";
+	elseif app_type == "web" then
+		return uri.scheme == "https" and uri.host == client_uri.host;
+	end
+end
+
 function create_client(client_metadata)
 	if not schema.validate(registration_schema, client_metadata) then
 		return nil, oauth_error("invalid_request", "Failed schema validation.");
@@ -695,13 +705,8 @@ function create_client(client_metadata)
 	end
 
 	for _, redirect_uri in ipairs(client_metadata.redirect_uris) do
-		local components = url.parse(redirect_uri);
-		if not components or not components.scheme then
-			return nil, oauth_error("invalid_request", "Invalid redirect URI.");
-		elseif components.scheme == "http" and components.host ~= "localhost" then
-			return nil, oauth_error("invalid_request", "Insecure redirect URI forbidden (except http://localhost)");
-		elseif components.scheme == "https" and components.host ~= client_uri.host then
-			return nil, oauth_error("invalid_request", "Redirects must use the same hostname as client_uri");
+		if not redirect_uri_allowed(redirect_uri, client_uri, client_metadata.application_type) then
+			return nil, oauth_error("invalid_request", "Invalid, insecure or inappropriate redirect URI.");
 		end
 	end
 
