@@ -206,7 +206,7 @@ local function is_client_active(client)
 
 	-- Client has access if any password-based SASL mechanisms have been used since last password change
 	for mech, mech_last_used in pairs(client.mechanisms) do
-		if is_password_mechanism(mech) and mech_last_used >= last_password_change then
+		if is_password_mechanism(mech) and (not last_password_change or mech_last_used >= last_password_change) then
 			status.password = mech_last_used;
 		end
 	end
