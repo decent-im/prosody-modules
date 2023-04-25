@@ -659,18 +659,18 @@ local registration_schema = {
 		response_types = { type = "array"; items = { type = "string"; enum = { "code"; "token" } } };
 		client_name = { type = "string" };
 		client_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
-		logo_uri = { type = "string"; format = "uri"; luaPattern = "^https:"  };
+		logo_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		scope = { type = "string" };
 		contacts = { type = "array"; items = { type = "string" } };
-		tos_uri = { type = "string"; format = "uri"; luaPattern = "^https:"  };
-		policy_uri = { type = "string"; format = "uri"; luaPattern = "^https:"  };
-		jwks_uri = { type = "string"; format = "uri"; luaPattern = "^https:"  };
+		tos_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
+		policy_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
+		jwks_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		jwks = { type = "object"; description = "JSON Web Key Set, RFC 7517" };
 		software_id = { type = "string"; format = "uuid" };
 		software_version = { type = "string" };
 	};
 	-- Localized versions of descriptive properties and URIs
-	luaPatternProperties = { ["^[a-z_]+_uri#"] = { type = "string"; format = "uri"; luaPattern = "^https:"  } };
+	luaPatternProperties = { ["^[a-z_]+_uri#"] = { type = "string"; format = "uri"; luaPattern = "^https:" } };
 	additionalProperties = { type = "string" };
 }
 
