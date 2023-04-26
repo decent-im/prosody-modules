@@ -429,9 +429,10 @@ module:once(function ()
 			{
 				title = "Last seen";
 				key = "last_seen";
-				width = 10;
+				width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
+				align = "right";
 				mapper = function(last_seen)
-					return os.date("%Y-%m-%d", last_seen);
+					return os.date(os.difftime(os.time(), last_seen) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
 				end;
 			};
 			{
