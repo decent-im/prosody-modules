@@ -419,9 +419,30 @@ module:once(function ()
 		end
 
 		local colspec = {
-			{ title = "Software", key = "software", width = "1p" };
-			{ title = "Last seen", key = "last_seen", width = 10 };
-			{ title = "Authentication", key = "auth_methods", width = "2p" };
+			{
+				title = "Software";
+				key = "software";
+				width = "1p";
+				mapper = function(user_agent)
+					return user_agent and user_agent.software;
+				end;
+			};
+			{
+				title = "Last seen";
+				key = "last_seen";
+				width = 10;
+				mapper = function(last_seen)
+					return os.date("%Y-%m-%d", last_seen);
+				end;
+			};
+			{
+				title = "Authentication";
+				key = "active";
+				width = "2p";
+				mapper = function(active)
+					return array.collect(it.keys(active)):sort():concat(", ");
+				end;
+			};
 		};
 
 		local row = require "util.human.io".table(colspec, self.session.width);
@@ -430,12 +451,7 @@ module:once(function ()
 		print(row());
 		print(string.rep("-", self.session.width));
 		for _, client in ipairs(clients) do
-			print(row({
-				id = client.id;
-				software = client.user_agent and client.user_agent.software;
-				last_seen = os.date("%Y-%m-%d", client.last_seen);
-				auth_methods = array.collect(it.keys(client.active)):sort():concat(", ");
-			}));
+			print(row(client));
 		end
 		print(string.rep("-", self.session.width));
 		return true, ("%d clients"):format(#clients);
