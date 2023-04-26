@@ -420,7 +420,7 @@ module:once(function ()
 		local colspec = {
 			{
 				title = "Software";
-				key = "software";
+				key = "user_agent";
 				width = "1p";
 				mapper = function(user_agent)
 					return user_agent and user_agent.software;
