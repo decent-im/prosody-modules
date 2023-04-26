@@ -81,7 +81,7 @@ local function parse_scopes(scope_string)
 	return array(scope_string:gmatch("%S+"));
 end
 
-local openid_claims = set.new({ "profile"; "email"; "address"; "phone" });
+local openid_claims = set.new({ "openid", "profile"; "email"; "address"; "phone" });
 
 local function filter_scopes(username, requested_scope_string)
 	local selected_role, granted_scopes = nil, array();
@@ -89,7 +89,7 @@ local function filter_scopes(username, requested_scope_string)
 	if requested_scope_string then -- Specific role(s) requested
 		local requested_scopes = parse_scopes(requested_scope_string);
 		for _, scope in ipairs(requested_scopes) do
-			if scope == "openid" or openid_claims:contains(scope) then
+			if openid_claims:contains(scope) then
 				granted_scopes:push(scope);
 			end
 			if selected_role == nil and usermanager.user_can_assume_role(username, module.host, scope) then
@@ -808,6 +808,7 @@ local function handle_userinfo_request(event)
 	}
 
 	local token_claims = set.intersection(openid_claims, scopes);
+	token_claims:remove("openid"); -- that's "iss" and "sub" above
 	if not token_claims:empty() then
 		-- Another module can do that
 		module:fire_event("token/userinfo", {
