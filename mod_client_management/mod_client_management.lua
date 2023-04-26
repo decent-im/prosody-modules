@@ -409,8 +409,7 @@ module:once(function ()
 		local username, host = jid.split(user_jid);
 		local mod = prosody.hosts[host] and prosody.hosts[host].modules.client_management;
 		if not mod then
-			print("EE: Host does not exist on this server, or does not have mod_client_management loaded");
-			return 1;
+			return false, ("Host does not exist on this server, or does not have mod_client_management loaded");
 		end
 
 		local clients = mod.get_active_clients(username);
