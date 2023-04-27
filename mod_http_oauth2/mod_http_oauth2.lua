@@ -640,7 +640,11 @@ local registration_schema = {
 	};
 	properties = {
 		redirect_uris = { type = "array"; minLength = 1; items = { type = "string"; format = "uri" } };
-		token_endpoint_auth_method = { type = "string"; enum = { "none"; "client_secret_post"; "client_secret_basic"; default = "client_secret_basic" } };
+		token_endpoint_auth_method = {
+			type = "string";
+			enum = { "none"; "client_secret_post"; "client_secret_basic" };
+			default = "client_secret_basic";
+		};
 		grant_types = {
 			type = "array";
 			items = {
