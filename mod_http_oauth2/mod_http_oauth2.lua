@@ -153,7 +153,7 @@ end
 -- properties that are deemed useful e.g. in case tokens issued to a certain
 -- client needs to be revoked
 local function client_subset(client)
-	return { name = client.client_name; uri = client.client_uri };
+	return { name = client.client_name; uri = client.client_uri; id = client.software_id; version = client.software_version };
 end
 
 local function new_access_token(token_jid, role, scope_string, client, id_token, refresh_token_info)
