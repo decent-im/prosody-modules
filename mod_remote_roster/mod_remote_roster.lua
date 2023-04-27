@@ -19,6 +19,7 @@ local rm_add_to_roster = require "core.rostermanager".add_to_roster;
 local rm_roster_push = require "core.rostermanager".roster_push;
 local user_exists = require "core.usermanager".user_exists;
 local add_task = require "util.timer".add_task;
+local new_id = require "util.id".short;
 
 module:hook("iq-get/bare/jabber:iq:roster:query", function(event)
 	local origin, stanza = event.origin, event.stanza;
@@ -138,7 +139,7 @@ function component_roster_push(node, host, jid)
 	if roster then
 		local item = roster[jid];
 		local contact_node, contact_host = jid_split(jid);
-		local stanza = st.iq({ type="set", from=node.."@"..host, to=contact_host }):query("jabber:iq:roster");
+		local stanza = st.iq({ type="set", from=node.."@"..host, to=contact_host, id = new_id() }):query("jabber:iq:roster");
 		if item then
 			stanza:tag("item", { jid = jid, subscription = item.subscription, name = item.name, ask = item.ask });
 			for group in pairs(item.groups) do
