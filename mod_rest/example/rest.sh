@@ -71,7 +71,7 @@ if [[ "$1" == "--login" ]]; then
 	if [ -z "${OAUTH_CLIENT_INFO:-}" ]; then
 		# Register a new OAuth client
 		REGISTRATION_ENDPOINT="$(echo "$OAUTH_META" | jq -e -r '.registration_endpoint')"
-		OAUTH_CLIENT_INFO="$(http --check-status "$REGISTRATION_ENDPOINT" Content-Type:application/json Accept:application/json client_name=rest.sh client_uri="https://modules.prosody.im/mod_rest" application_type=native redirect_uris:='["urn:ietf:wg:oauth:2.0:oob"]')"
+		OAUTH_CLIENT_INFO="$(http --check-status "$REGISTRATION_ENDPOINT" Content-Type:application/json Accept:application/json client_name=rest.sh client_uri="https://modules.prosody.im/mod_rest" application_type=native software_id=0bdb0eb9-18e8-43af-a7f6-bd26613374c0 redirect_uris:='["urn:ietf:wg:oauth:2.0:oob"]')"
 		mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/rest/"
 		typeset -p OAUTH_CLIENT_INFO >> "${XDG_CACHE_HOME:-$HOME/.cache}/rest/$HOST"
 	fi
