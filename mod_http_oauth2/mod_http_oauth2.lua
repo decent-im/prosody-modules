@@ -833,14 +833,26 @@ end
 module:depends("http");
 module:provides("http", {
 	route = {
-		-- User-facing login and consent view
+		-- OAuth 2.0 in 5 simple steps!
+		-- This is the normal 'authorization_code' flow.
+
+		-- Step 1. Create OAuth client
+		["POST /register"] = handle_register_request;
+
+		-- Step 2. User-facing login and consent view
 		["GET /authorize"] = handle_authorization_request;
 		["POST /authorize"] = handle_authorization_request;
 
-		-- Create OAuth client
-		["POST /register"] = handle_register_request;
+		-- Step 3. User is redirected to the 'redirect_uri' along with an
+		-- authorization code.  In the insecure 'implicit' flow, the access token
+		-- is delivered here.
 
+		-- Step 4. Retrieve access token using the code.
 		["POST /token"] = handle_token_grant;
+
+		-- Step 4 is later repeated using the refresh token to get new access tokens.
+
+		-- Step 5. Revoke token (access or refresh)
 		["POST /revoke"] = handle_revocation_request;
 
 		-- OpenID
