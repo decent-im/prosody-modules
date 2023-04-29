@@ -953,7 +953,6 @@ module:provides("http", {
 
 				-- OpenID
 				userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
-				require_request_uri_registration = true;
 			};
 		};
 	};
