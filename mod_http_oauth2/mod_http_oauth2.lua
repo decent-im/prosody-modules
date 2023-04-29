@@ -17,6 +17,10 @@ local it = require "util.iterators";
 local array = require "util.array";
 local st = require "util.stanza";
 
+local function b64url(s)
+	return (s:gsub("[+/=]", { ["+"] = "-", ["/"] = "_", ["="] = "" }))
+end
+
 local function read_file(base_path, fn, required)
 	local f, err = io.open(base_path .. "/" .. fn);
 	if not f then
@@ -68,6 +72,8 @@ local default_refresh_ttl = module:get_option_number("oauth2_refresh_token_ttl",
 local registration_key = module:get_option_string("oauth2_registration_key");
 local registration_algo = module:get_option_string("oauth2_registration_algorithm", "HS256");
 local registration_options = module:get_option("oauth2_registration_options", { default_ttl = 60 * 60 * 24 * 90 });
+
+local pkce_required = module:get_option_boolean("oauth2_require_code_challenge", false);
 
 local verification_key;
 local jwt_sign, jwt_verify;
@@ -211,6 +217,7 @@ end
 
 local grant_type_handlers = {};
 local response_type_handlers = {};
+local verifier_transforms = {};
 
 function grant_type_handlers.password(params)
 	local request_jid = assert(params.username, oauth_error("invalid_request", "missing 'username' (JID)"));
@@ -236,12 +243,18 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 	end
 	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
 
+	if pkce_required and not params.code_challenge then
+		return oauth_error("invalid_request", "PKCE required");
+	end
+
 	local code = id.medium();
 	local ok = codes:set(params.client_id .. "#" .. code, {
 		expires = os.time() + 600;
 		granted_jid = granted_jid;
 		granted_scopes = granted_scopes;
 		granted_role = granted_role;
+		challenge = params.code_challenge;
+		challenge_method = params.code_challenge_method;
 		id_token = id_token;
 	});
 	if not ok then
@@ -340,6 +353,14 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
+	-- TODO Decide if the code should be removed or not when PKCE fails
+	local transform = verifier_transforms[code.challenge_method or "plain"];
+	if not transform then
+		return oauth_error("invalid_request", "unknown challenge transform method");
+	elseif transform(params.code_verifier) ~= code.challenge then
+		return oauth_error("invalid_grant", "incorrect credentials");
+	end
+
 	return json.encode(new_access_token(code.granted_jid, code.granted_role, code.granted_scopes, client, code.id_token));
 end
 
@@ -369,6 +390,18 @@ function grant_type_handlers.refresh_token(params)
 	return json.encode(new_access_token(
 		refresh_token_info.jid, refresh_token_info.role, refresh_token_info.grant.data.oauth2_scopes, client, nil, refresh_token_info
 	));
+end
+
+-- RFC 7636 Proof Key for Code Exchange by OAuth Public Clients
+
+function verifier_transforms.plain(code_verifier)
+	-- code_challenge = code_verifier
+	return code_verifier;
+end
+
+function verifier_transforms.S256(code_verifier)
+	-- code_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))
+	return code_verifier and b64url(hashes.SHA256(code_verifier));
 end
 
 -- Used to issue/verify short-lived tokens for the authorization process below
@@ -903,6 +936,7 @@ module:provides("http", {
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
 				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):append(array(openid_claims:items()));
 				response_types_supported = array(it.keys(response_type_handlers));
+				code_challenge_methods_supported = array(it.keys(verifier_transforms));
 				authorization_response_iss_parameter_supported = true;
 
 				-- OpenID

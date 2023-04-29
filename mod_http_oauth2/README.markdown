@@ -46,6 +46,7 @@ Notable supported standards:
 
 - [RFC 6749: The OAuth 2.0 Authorization Framework](https://www.rfc-editor.org/rfc/rfc6749)
 - [RFC 7628: A Set of Simple Authentication and Security Layer (SASL) Mechanisms for OAuth](https://www.rfc-editor.org/rfc/rfc7628)
+- [RFC 7636: Proof Key for Code Exchange by OAuth Public Clients](https://www.rfc-editor.org/rfc/rfc7636)
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
 - [OpenID Connect Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html) & [RFC 7591: OAuth 2.0 Dynamic Client Registration](https://www.rfc-editor.org/rfc/rfc7591.html)
 - [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html)
@@ -119,6 +120,13 @@ allowed_oauth2_response_types = {
 	"code"; -- authorization code flow
     -- "token"; -- implicit flow disabled by default
 }
+```
+
+The [Proof Key for Code Exchange][RFC 7636] mitigation method can be
+made required:
+
+```lua
+oauth2_require_code_challenge = true
 ```
 
 ## Deployment notes
