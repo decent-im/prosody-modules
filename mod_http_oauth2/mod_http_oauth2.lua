@@ -562,6 +562,16 @@ for handler_type in pairs(response_type_handlers) do
 	end
 end
 
+local allowed_challenge_methods = module:get_option_set("allowed_oauth2_code_challenge_methods", { "plain"; "S256" })
+for handler_type in pairs(verifier_transforms) do
+	if not allowed_challenge_methods:contains(handler_type) then
+		module:log("debug", "Challenge method %q disabled", handler_type);
+		verifier_transforms[handler_type] = nil;
+	else
+		module:log("debug", "Challenge method %q enabled", handler_type);
+	end
+end
+
 function handle_token_grant(event)
 	local credentials = get_request_credentials(event.request);
 

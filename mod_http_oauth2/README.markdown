@@ -129,6 +129,15 @@ made required:
 oauth2_require_code_challenge = true
 ```
 
+Further, individual challenge methods can be enabled or disabled:
+
+```lua
+allowed_oauth2_code_challenge_methods = {
+    "plain"; -- the insecure one
+    "S256";
+}
+```
+
 ## Deployment notes
 
 ### Access management
