@@ -582,6 +582,7 @@ function handle_token_grant(event)
 	end
 
 	if credentials and credentials.type == "basic" then
+		-- client_secret_basic converted internally to client_secret_post
 		params.client_id = http.urldecode(credentials.username);
 		params.client_secret = http.urldecode(credentials.password);
 	end
@@ -946,6 +947,7 @@ module:provides("http", {
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
 				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):append(array(openid_claims:items()));
 				response_types_supported = array(it.keys(response_type_handlers));
+				token_endpoint_auth_methods_supported = array({ "client_secret_post"; "client_secret_basic" });
 				code_challenge_methods_supported = array(it.keys(verifier_transforms));
 				authorization_response_iss_parameter_supported = true;
 
