@@ -401,7 +401,7 @@ end
 
 function verifier_transforms.S256(code_verifier)
 	-- code_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))
-	return code_verifier and b64url(hashes.SHA256(code_verifier));
+	return code_verifier and b64url(hashes.sha256(code_verifier));
 end
 
 -- Used to issue/verify short-lived tokens for the authorization process below
