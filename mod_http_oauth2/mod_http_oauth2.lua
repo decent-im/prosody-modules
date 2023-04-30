@@ -729,7 +729,7 @@ local registration_schema = {
 local function redirect_uri_allowed(redirect_uri, client_uri, app_type)
 	local uri = url.parse(redirect_uri);
 	if app_type == "native" then
-		return uri.scheme == "http" and uri.host == "localhost" or uri.scheme ~= "https";
+		return uri.scheme == "http" and loopbacks:contains(uri.host) or uri.scheme ~= "https";
 	elseif app_type == "web" then
 		return uri.scheme == "https" and uri.host == client_uri.host;
 	end
