@@ -711,7 +711,7 @@ local registration_schema = {
 		client_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		logo_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		scope = { type = "string" };
-		contacts = { type = "array"; items = { type = "string" } };
+		contacts = { type = "array"; items = { type = "string"; format = "email" } };
 		tos_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		policy_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		jwks_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
