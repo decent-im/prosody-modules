@@ -18,7 +18,7 @@ local array = require "util.array";
 local st = require "util.stanza";
 
 local function b64url(s)
-	return (s:gsub("[+/=]", { ["+"] = "-", ["/"] = "_", ["="] = "" }))
+	return (base64.encode(s):gsub("[+/=]", { ["+"] = "-", ["/"] = "_", ["="] = "" }))
 end
 
 local function read_file(base_path, fn, required)
