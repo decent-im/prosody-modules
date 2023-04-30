@@ -915,6 +915,9 @@ module:provides("http", {
 			};
 			body = templates.js;
 		} or nil;
+
+		-- Some convenient fallback handlers
+		["GET /register"] = { headers = { content_type = "application/schema+json" }; body = json.encode(registration_schema) };
 	};
 });
 
