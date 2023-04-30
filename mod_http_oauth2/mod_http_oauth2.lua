@@ -918,6 +918,8 @@ module:provides("http", {
 
 		-- Some convenient fallback handlers
 		["GET /register"] = { headers = { content_type = "application/schema+json" }; body = json.encode(registration_schema) };
+		["GET /token"] = function() return 405; end;
+		["GET /revoke"] = function() return 405; end;
 	};
 });
 
