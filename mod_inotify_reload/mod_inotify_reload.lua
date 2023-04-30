@@ -12,31 +12,19 @@ local inh = inotify.init();
 local watches = {};
 local watch_ids = {};
 
--- Fake socket object around inotify
-local inh_conn = {
-	getfd = function () return inh:fileno(); end;
-	dirty = function (self) return false; end;
-	settimeout = function () end;
-	send = function (_, d) return #d, 0; end;
-	close = function () end;
-	receive = function ()
-		local events = inh:read();
-		for _, event in ipairs(events) do
-			local mod = watches[watch_ids[event.wd]];
-			if mod then
-				local host, name = mod.host, mod.name;
-				module:log("debug", "Reloading changed module mod_%s on %s", name, host);
-				modulemanager.reload(host, name);
-			else
-				module:log("warn", "no watch for %d", event.wd);
-			end
+require"net.server".watchfd(inh:fileno(), function()
+	local events = inh:read();
+	for _, event in ipairs(events) do
+		local mod = watches[watch_ids[event.wd]];
+		if mod then
+			local host, name = mod.host, mod.name;
+			module:log("debug", "Reloading changed module mod_%s on %s", name, host);
+			modulemanager.reload(host, name);
+		else
+			module:log("warn", "no watch for %d", event.wd);
 		end
-		return "";
 	end
-};
-require "net.server".wrapclient(inh_conn, "inotify", inh:fileno(), {
-	onincoming = function () end, ondisconnect = function () end
-}, "*a");
+end);
 
 function watch_module(name, host, path)
 	local id, err = inh:addwatch(path, inotify.IN_CLOSE_WRITE);
