@@ -138,6 +138,16 @@ allowed_oauth2_code_challenge_methods = {
 }
 ```
 
+### Policy documents
+
+Links to Terms of Service and Service Policy documents can be advertised
+for use by OAuth clients:
+
+```lua
+oauth2_terms_url = "https://example.com/terms-of-service.html"
+oauth2_policy_url = "https://example.com/service-policy.pdf"
+```
+
 ## Deployment notes
 
 ### Access management
