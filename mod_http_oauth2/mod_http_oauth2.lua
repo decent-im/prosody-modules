@@ -791,6 +791,21 @@ function create_client(client_metadata)
 		end
 	end
 
+	local grant_types = set.new(client_metadata.grant_types);
+	local response_types = set.new(client_metadata.response_types);
+
+	if grant_types:contains("authorization_code") and not response_types:contains("code") then
+		return nil, oauth_error("invalid_client_metadata", "Inconsistency between 'grant_types' and 'response_types'");
+	elseif grant_types:contains("implicit") and not response_types:contains("token") then
+		return nil, oauth_error("invalid_client_metadata", "Inconsistency between 'grant_types' and 'response_types'");
+	end
+
+	if set.intersection(grant_types, allowed_grant_type_handlers):empty() then
+		return nil, oauth_error("invalid_client_metadata", "No allowed 'grant_types' specified");
+	elseif set.intersection(response_types, allowed_response_type_handlers):empty() then
+		return nil, oauth_error("invalid_client_metadata", "No allowed 'response_types' specified");
+	end
+
 	-- Ensure each signed client_id JWT is unique, short ID and issued at
 	-- timestamp should be sufficient to rule out brute force attacks
 	client_metadata.nonce = id.short();
