@@ -812,15 +812,18 @@ function create_client(client_metadata)
 
 	-- Do we want to keep everything?
 	local client_id = jwt_sign(client_metadata);
-	local client_secret = make_client_secret(client_id);
 
 	client_metadata.client_id = client_id;
-	client_metadata.client_secret = client_secret;
 	client_metadata.client_id_issued_at = os.time();
-	client_metadata.client_secret_expires_at = 0;
 
-	if not registration_options.accept_expired then
-		client_metadata.client_secret_expires_at = client_metadata.client_id_issued_at + (registration_options.default_ttl or 3600);
+	if client_metadata.token_endpoint_auth_method ~= "none" then
+		local client_secret = make_client_secret(client_id);
+		client_metadata.client_secret = client_secret;
+		client_metadata.client_secret_expires_at = 0;
+
+		if not registration_options.accept_expired then
+			client_metadata.client_secret_expires_at = client_metadata.client_id_issued_at + (registration_options.default_ttl or 3600);
+		end
 	end
 
 	return client_metadata;
