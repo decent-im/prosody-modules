@@ -21,6 +21,12 @@ local function b64url(s)
 	return (base64.encode(s):gsub("[+/=]", { ["+"] = "-", ["/"] = "_", ["="] = "" }))
 end
 
+local function tmap(t)
+	return function(k)
+		return t[k];
+	end
+end
+
 local function read_file(base_path, fn, required)
 	local f, err = io.open(base_path .. "/" .. fn);
 	if not f then
@@ -956,20 +962,8 @@ module:provides("http", {
 				revocation_endpoint = handle_revocation_request and module:http_url() .. "/revoke" or nil;
 				revocation_endpoint_auth_methods_supported = array({ "client_secret_basic" });
 				code_challenge_methods_supported = array(it.keys(verifier_transforms));
-				grant_types_supported = array(it.keys(response_type_handlers)):map(function(h)
-					if h == "token" then
-						return "implicit"
-					elseif h == "code" then
-						return "authorization_code"
-					end
-				end);
-				response_modes_supported = array(it.keys(response_type_handlers)):map(function(h)
-					if h == "token" then
-						return "fragment"
-					elseif h == "code" then
-						return "query"
-					end
-				end);
+				grant_types_supported = array(it.keys(response_type_handlers)):map(tmap { token = "implicit"; code = "authorization_code" });
+				response_modes_supported = array(it.keys(response_type_handlers)):map(tmap { token = "fragment"; code = "query" });
 				authorization_response_iss_parameter_supported = true;
 
 				-- OpenID
