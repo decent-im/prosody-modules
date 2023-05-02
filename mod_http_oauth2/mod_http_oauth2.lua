@@ -755,12 +755,12 @@ function create_client(client_metadata)
 
 	local client_uri = url.parse(client_metadata.client_uri);
 	if not client_uri or client_uri.scheme ~= "https" or loopbacks:contains(client_uri.host) then
-		return nil, oauth_error("invalid_request", "Missing, invalid or insecure client_uri");
+		return nil, oauth_error("invalid_client_metadata", "Missing, invalid or insecure client_uri");
 	end
 
 	for _, redirect_uri in ipairs(client_metadata.redirect_uris) do
 		if not redirect_uri_allowed(redirect_uri, client_uri, client_metadata.application_type) then
-			return nil, oauth_error("invalid_request", "Invalid, insecure or inappropriate redirect URI.");
+			return nil, oauth_error("invalid_redirect_uri", "Invalid, insecure or inappropriate redirect URI.");
 		end
 	end
 
@@ -768,10 +768,10 @@ function create_client(client_metadata)
 		if field ~= "client_uri" and prop_schema.format == "uri" and client_metadata[field] then
 			local components = url.parse(client_metadata[field]);
 			if components.scheme ~= "https" then
-				return nil, oauth_error("invalid_request", "Insecure URI forbidden");
+				return nil, oauth_error("invalid_client_metadata", "Insecure URI forbidden");
 			end
 			if components.authority ~= client_uri.authority then
-				return nil, oauth_error("invalid_request", "Informative URIs must have the same hostname");
+				return nil, oauth_error("invalid_client_metadata", "Informative URIs must have the same hostname");
 			end
 		end
 	end
@@ -781,9 +781,9 @@ function create_client(client_metadata)
 		if k:find"_uri#" then
 			local uri = url.parse(v);
 			if not uri or uri.scheme ~= "https" then
-				return nil, oauth_error("invalid_request", "Missing, invalid or insecure "..k);
+				return nil, oauth_error("invalid_client_metadata", "Missing, invalid or insecure "..k);
 			elseif uri.host ~= client_uri.host then
-				return nil, oauth_error("invalid_request", "All URIs must use the same hostname as client_uri");
+				return nil, oauth_error("invalid_client_metadata", "All URIs must use the same hostname as client_uri");
 			end
 		end
 	end
