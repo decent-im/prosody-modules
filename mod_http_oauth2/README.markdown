@@ -45,6 +45,7 @@ please let us know! We'd be happy to help (e.g. by providing a test server).
 Notable supported standards:
 
 - [RFC 6749: The OAuth 2.0 Authorization Framework](https://www.rfc-editor.org/rfc/rfc6749)
+- [RFC 7009: OAuth 2.0 Token Revocation](https://www.rfc-editor.org/rfc/rfc7009)
 - [RFC 7628: A Set of Simple Authentication and Security Layer (SASL) Mechanisms for OAuth](https://www.rfc-editor.org/rfc/rfc7628)
 - [RFC 7636: Proof Key for Code Exchange by OAuth Public Clients](https://www.rfc-editor.org/rfc/rfc7636)
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
