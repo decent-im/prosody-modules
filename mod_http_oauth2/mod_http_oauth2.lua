@@ -766,12 +766,8 @@ function create_client(client_metadata)
 
 	for field, prop_schema in pairs(registration_schema.properties) do
 		if field ~= "client_uri" and prop_schema.format == "uri" and client_metadata[field] then
-			local components = url.parse(client_metadata[field]);
-			if components.scheme ~= "https" then
-				return nil, oauth_error("invalid_client_metadata", "Insecure URI forbidden");
-			end
-			if components.authority ~= client_uri.authority then
-				return nil, oauth_error("invalid_client_metadata", "Informative URIs must have the same hostname");
+			if not redirect_uri_allowed(client_metadata[field], client_uri, "web") then
+				return nil, oauth_error("invalid_client_metadata", "Invalid, insecure or inappropriate informative URI");
 			end
 		end
 	end
@@ -779,11 +775,8 @@ function create_client(client_metadata)
 	-- Localized URIs should be secure too
 	for k, v in pairs(client_metadata) do
 		if k:find"_uri#" then
-			local uri = url.parse(v);
-			if not uri or uri.scheme ~= "https" then
-				return nil, oauth_error("invalid_client_metadata", "Missing, invalid or insecure "..k);
-			elseif uri.host ~= client_uri.host then
-				return nil, oauth_error("invalid_client_metadata", "All URIs must use the same hostname as client_uri");
+			if not redirect_uri_allowed(v, client_uri, "web") then
+				return nil, oauth_error("invalid_client_metadata", "Invalid, insecure or inappropriate informative URI");
 			end
 		end
 	end
