@@ -772,9 +772,13 @@ function create_client(client_metadata)
 		end
 	end
 
-	-- Localized URIs should be secure too
 	for k, v in pairs(client_metadata) do
-		if k:find"_uri#" then
+		local base_k = k:match"^([^#]+)#" or k;
+		if not registration_schema.properties[base_k] or k:find"^client_uri#" then
+			-- Ignore and strip unknown extra properties
+			client_metadata[k] = nil;
+		elseif k:find"_uri#" then
+			-- Localized URIs should be secure too
 			if not redirect_uri_allowed(v, client_uri, "web") then
 				return nil, oauth_error("invalid_client_metadata", "Invalid, insecure or inappropriate informative URI");
 			end
