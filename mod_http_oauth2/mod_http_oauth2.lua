@@ -953,6 +953,8 @@ module:provides("http", {
 				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):append(array(openid_claims:items()));
 				response_types_supported = array(it.keys(response_type_handlers));
 				token_endpoint_auth_methods_supported = array({ "client_secret_post"; "client_secret_basic" });
+				revocation_endpoint = handle_revocation_request and module:http_url() .. "/revoke" or nil;
+				revocation_endpoint_auth_methods_supported = array({ "client_secret_basic" });
 				code_challenge_methods_supported = array(it.keys(verifier_transforms));
 				authorization_response_iss_parameter_supported = true;
 
