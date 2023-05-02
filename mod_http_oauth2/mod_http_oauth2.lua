@@ -963,6 +963,13 @@ module:provides("http", {
 						return "authorization_code"
 					end
 				end);
+				response_modes_supported = array(it.keys(response_type_handlers)):map(function(h)
+					if h == "token" then
+						return "fragment"
+					elseif h == "code" then
+						return "query"
+					end
+				end);
 				authorization_response_iss_parameter_supported = true;
 
 				-- OpenID
