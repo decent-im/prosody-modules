@@ -956,6 +956,13 @@ module:provides("http", {
 				revocation_endpoint = handle_revocation_request and module:http_url() .. "/revoke" or nil;
 				revocation_endpoint_auth_methods_supported = array({ "client_secret_basic" });
 				code_challenge_methods_supported = array(it.keys(verifier_transforms));
+				grant_types_supported = array(it.keys(response_type_handlers)):map(function(h)
+					if h == "token" then
+						return "implicit"
+					elseif h == "code" then
+						return "authorization_code"
+					end
+				end);
 				authorization_response_iss_parameter_supported = true;
 
 				-- OpenID
