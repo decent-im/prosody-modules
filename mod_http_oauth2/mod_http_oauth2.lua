@@ -620,6 +620,12 @@ local function handle_authorization_request(event)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
+	local client_response_types = set.new(array(client.response_types or { "code" }));
+	client_response_types = set.intersection(client_response_types, allowed_response_type_handlers);
+	if not client_response_types:contains(params.response_type) then
+		return oauth_error("invalid_client", "response_type not allowed");
+	end
+
 	local auth_state = get_auth_state(request);
 	if not auth_state.user then
 		-- Render login page
