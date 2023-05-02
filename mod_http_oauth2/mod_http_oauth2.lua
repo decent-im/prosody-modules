@@ -754,7 +754,7 @@ function create_client(client_metadata)
 	end
 
 	local client_uri = url.parse(client_metadata.client_uri);
-	if not client_uri or client_uri.scheme ~= "https" then
+	if not client_uri or client_uri.scheme ~= "https" or loopbacks:contains(client_uri.host) then
 		return nil, oauth_error("invalid_request", "Missing, invalid or insecure client_uri");
 	end
 
