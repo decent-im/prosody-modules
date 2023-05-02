@@ -988,6 +988,7 @@ module:provides("http", {
 				grant_types_supported = array(it.keys(response_type_handlers)):map(tmap { token = "implicit"; code = "authorization_code" });
 				response_modes_supported = array(it.keys(response_type_handlers)):map(tmap { token = "fragment"; code = "query" });
 				authorization_response_iss_parameter_supported = true;
+				service_documentation = module:get_option_string("oauth2_service_documentation", "https://modules.prosody.im/mod_http_oauth2.html");
 
 				-- OpenID
 				userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
