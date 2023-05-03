@@ -21,6 +21,13 @@ modules_enabled = {
 hsts_header = "max-age=31556952"
 ```
 
+If the redirect from `http://` to `https://` causes trouble with
+internal use of HTTP APIs it can be disabled:
+
+``` lua
+hsts_redirect = false
+```
+
 # Compatibility
 
   ------- -------------
