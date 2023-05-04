@@ -97,25 +97,45 @@ end
 
 local openid_claims = set.new({ "openid", "profile"; "email"; "address"; "phone" });
 
-local function filter_scopes(username, requested_scope_string)
-	local selected_role, granted_scopes = nil, array();
+local function split_scopes(scope_list)
+	local claims, roles, unknown = array(), array(), array();
+	local all_roles = usermanager.get_all_roles(module.host);
+	for _, scope in ipairs(scope_list) do
+		if openid_claims:contains(scope) then
+			claims:push(scope);
+		elseif all_roles[scope] then
+			roles:push(scope);
+		else
+			unknown:push(scope);
+		end
+	end
+	return claims, roles, unknown;
+end
 
-	if requested_scope_string then -- Specific role(s) requested
-		local requested_scopes = parse_scopes(requested_scope_string);
-		for _, scope in ipairs(requested_scopes) do
-			if openid_claims:contains(scope) then
-				granted_scopes:push(scope);
-			end
-			if selected_role == nil and usermanager.user_can_assume_role(username, module.host, scope) then
-				selected_role = scope;
+local function can_assume_role(username, requested_role)
+	return usermanager.user_can_assume_role(username, module.host, requested_role);
+end
+
+local function select_role(username, requested_roles)
+	if requested_roles then
+		for _, requested_role in ipairs(requested_roles) do
+			if can_assume_role(username, requested_role) then
+				return requested_role;
 			end
 		end
 	end
+	-- otherwise the default role
+	return usermanager.get_user_role(username, module.host).name;
+end
 
-	if not selected_role then
-		-- By default use the users' default role
-		selected_role = usermanager.get_user_role(username, module.host).name;
+local function filter_scopes(username, requested_scope_string)
+	local granted_scopes, requested_roles;
+
+	if requested_scope_string then -- Specific role(s) requested
+		granted_scopes, requested_roles = split_scopes(parse_scopes(requested_scope_string));
 	end
+
+	local selected_role = select_role(username, requested_roles);
 	granted_scopes:push(selected_role);
 
 	return granted_scopes:concat(" "), selected_role;
