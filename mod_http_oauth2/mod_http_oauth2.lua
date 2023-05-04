@@ -77,7 +77,9 @@ local default_refresh_ttl = module:get_option_number("oauth2_refresh_token_ttl",
 -- Used to derive client_secret from client_id, set to enable stateless dynamic registration.
 local registration_key = module:get_option_string("oauth2_registration_key");
 local registration_algo = module:get_option_string("oauth2_registration_algorithm", "HS256");
-local registration_options = module:get_option("oauth2_registration_options", { default_ttl = 60 * 60 * 24 * 90 });
+local registration_ttl = module:get_option("oauth2_registration_ttl", nil);
+local registration_options = module:get_option("oauth2_registration_options",
+	{ default_ttl = registration_ttl; accept_expired = not registration_ttl });
 
 local pkce_required = module:get_option_boolean("oauth2_require_code_challenge", false);
 

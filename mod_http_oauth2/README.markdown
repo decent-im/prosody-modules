@@ -98,12 +98,12 @@ To allow users to connect any compatible software, you should enable dynamic
 client registration.
 
 Dynamic client registration can be enabled by configuring a JWT key. Algorithm
-defaults to *HS256*.
+defaults to *HS256* lifetime defaults to forever.
 
 ```lua
 oauth2_registration_key = "securely generated JWT key here"
 oauth2_registration_algorithm = "HS256"
-oauth2_registration_options = { default_ttl = 60 * 60 * 24 * 90 }
+oauth2_registration_ttl = nil -- unlimited by default
 ```
 
 ### Supported flows
