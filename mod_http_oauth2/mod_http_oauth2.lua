@@ -133,6 +133,8 @@ local function filter_scopes(username, requested_scope_string)
 
 	if requested_scope_string then -- Specific role(s) requested
 		granted_scopes, requested_roles = split_scopes(parse_scopes(requested_scope_string));
+	else
+		granted_scopes = array();
 	end
 
 	local selected_role = select_role(username, requested_roles);
