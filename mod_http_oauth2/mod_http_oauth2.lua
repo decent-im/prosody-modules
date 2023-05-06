@@ -337,6 +337,7 @@ function response_type_handlers.token(client, params, granted_jid)
 	local token_info = new_access_token(granted_jid, granted_role, granted_scopes, client, nil);
 
 	local redirect = url.parse(get_redirect_uri(client, params.redirect_uri));
+	if not redirect then return 400; end
 	token_info.state = params.state;
 	redirect.fragment = http.formencode(token_info);
 
