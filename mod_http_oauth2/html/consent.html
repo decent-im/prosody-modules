@@ -38,10 +38,7 @@
 
 	<form method="post">
 		<details><summary>Requested permissions</summary>{scopes#
-			<input class="scope" type="checkbox" id="scope_{idx}" name="scope" value="{item}" checked><label class="scope" for="scope_{idx}">{item}</label>}{roles&
-			<select name="role">{roles#
-				<option value="{item.name}"{item.selected& selected}>{item.name}</option>}
-			</select>}
+			<input class="scope" type="checkbox" id="scope_{idx}" name="scope" value="{item}" checked><label class="scope" for="scope_{idx}">{item}</label>}
 		</details>
 		<input type="hidden" name="user_token" value="{state.user.token}">
 		<button type="submit" name="consent" value="denied">Deny</button>

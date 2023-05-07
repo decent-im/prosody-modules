@@ -485,7 +485,7 @@ local function get_auth_state(request)
 		end
 
 		local scope = array():append(form):filter(function(field)
-			return field.name == "scope" or field.name == "role";
+			return field.name == "scope";
 		end):pluck("value"):concat(" ");
 
 		user.token = form.user_token;
@@ -662,20 +662,7 @@ local function handle_authorization_request(event)
 		return render_page(templates.login, { state = auth_state, client = client });
 	elseif auth_state.consent == nil then
 		-- Render consent page
-		local scopes, requested_roles = split_scopes(parse_scopes(params.scope or ""));
-		local default_role = select_role(auth_state.user.username, requested_roles);
-		local roles = array(it.values(usermanager.get_all_roles(module.host))):filter(function(role)
-			return can_assume_role(auth_state.user.username, role.name);
-		end):sort(function(a, b)
-			return (a.priority or 0) < (b.priority or 0)
-		end):map(function(role)
-			return { name = role.name; selected = role.name == default_role };
-		end);
-		if not roles[2] then
-			-- Only one role to choose from, might as well skip the selector
-			roles = nil;
-		end
-		return render_page(templates.consent, { state = auth_state; client = client; scopes = scopes; roles = roles }, true);
+		return render_page(templates.consent, { state = auth_state; client = client; scopes = parse_scopes(params.scope or "") }, true);
 	elseif not auth_state.consent then
 		-- Notify client of rejection
 		return error_response(request, oauth_error("access_denied"));
