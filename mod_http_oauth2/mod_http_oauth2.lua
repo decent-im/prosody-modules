@@ -651,7 +651,8 @@ local function handle_authorization_request(event)
 		return render_page(templates.login, { state = auth_state, client = client });
 	elseif auth_state.consent == nil then
 		-- Render consent page
-		return render_page(templates.consent, { state = auth_state; client = client; scopes = parse_scopes(params.scope or "") }, true);
+		local scopes, roles = split_scopes(parse_scopes(params.scope or ""));
+		return render_page(templates.consent, { state = auth_state; client = client; scopes = scopes+roles }, true);
 	elseif not auth_state.consent then
 		-- Notify client of rejection
 		return error_response(request, oauth_error("access_denied"));
