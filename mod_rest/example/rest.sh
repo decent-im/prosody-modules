@@ -19,7 +19,7 @@ if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/restrc" ]; then
 	# Config file can contain the above settings
 	source "${XDG_CONFIG_HOME:-$HOME/.config}/restrc"
 fi
-	
+
 if [[ $# == 0 ]]; then
 	echo "${0##*/} [-h HOST] [-u USER|--login] [/path] kind=(message|presence|iq) ...."
 	# Last arguments are handed to HTTPie, so refer to its docs for further details
@@ -61,7 +61,7 @@ if [[ "$1" == "--login" ]]; then
 
 	# Check cache for OAuth client
 	if [ -f "${XDG_CACHE_HOME:-$HOME/.cache}/rest/$HOST" ]; then
-		source "${XDG_CACHE_HOME:-$HOME/.cache}/rest/$HOST" 
+		source "${XDG_CACHE_HOME:-$HOME/.cache}/rest/$HOST"
 	fi
 
 	OAUTH_META="$(http --check-status --json "https://$HOST/.well-known/oauth-authorization-server" Accept:application/json)"
