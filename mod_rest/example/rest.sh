@@ -113,6 +113,22 @@ if [[ "$1" == "--login" ]]; then
 	http --check-status -b --session rest "$USERINFO_ENDPOINT" "Authorization:Bearer $ACCESS_TOKEN" Accept:application/json >&2
 	AUTH_METHOD="session-read-only"
 	AUTH_ID="rest"
+
+elif [[ "$1" == "--logout" ]]; then
+	# Revoke token
+	source "${XDG_CACHE_HOME:-$HOME/.cache}/rest/$HOST"
+
+	OAUTH_META="$(http --check-status --json "https://$HOST/.well-known/oauth-authorization-server" Accept:application/json)"
+	REVOCATION_ENDPOINT="$(echo "$OAUTH_META" | jq -e -r '.revocation_endpoint')"
+
+	CLIENT_ID="$(echo "$OAUTH_CLIENT_INFO" | jq -e -r '.client_id')"
+	CLIENT_SECRET="$(echo "$OAUTH_CLIENT_INFO" | jq -e -r '.client_secret')"
+
+	http -h --check-status --auth "$CLIENT_ID:$CLIENT_SECRET" --form "$REVOCATION_ENDPOINT" token="$REFRESH_TOKEN"
+
+	# Overwrite the token
+	typeset -p OAUTH_CLIENT_INFO > "${XDG_CACHE_HOME:-$HOME/.cache}/rest/$HOST"
+	exit 0
 fi
 
 if [[ $# == 0 ]]; then
