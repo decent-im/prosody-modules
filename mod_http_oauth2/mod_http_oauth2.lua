@@ -124,8 +124,7 @@ local function select_role(username, requested_roles)
 			end
 		end
 	end
-	-- otherwise the default role
-	return usermanager.get_user_role(username, module.host).name;
+	-- otherwise no role
 end
 
 local function filter_scopes(username, requested_scope_string)
