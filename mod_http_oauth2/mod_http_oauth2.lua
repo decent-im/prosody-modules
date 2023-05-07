@@ -126,33 +126,13 @@ local function user_assumable_roles(username, requested_roles)
 	return array.filter(requested_roles, role_assumable_by(username));
 end
 
-local function select_role(username, requested_roles)
-	if requested_roles then
-		for _, requested_role in ipairs(requested_roles) do
-			if can_assume_role(username, requested_role) then
-				return requested_role;
-			end
-		end
-	end
-	-- otherwise no role
-end
-
 local function filter_scopes(username, requested_scope_string)
-	local granted_scopes, requested_roles;
+	local requested_scopes, requested_roles = split_scopes(parse_scopes(requested_scope_string or ""));
 
-	if requested_scope_string then -- Specific role(s) requested
-		granted_scopes, requested_roles = split_scopes(parse_scopes(requested_scope_string));
-	else
-		granted_scopes = array();
-	end
+	local granted_roles = user_assumable_roles(username, requested_roles);
+	local granted_scopes = requested_scopes + granted_roles;
 
-	if requested_roles then
-		granted_scopes:append(array.filter(requested_roles, function(role)
-			return can_assume_role(username, role)
-		end));
-	end
-
-	local selected_role = select_role(username, requested_roles);
+	local selected_role = granted_roles[1];
 
 	return granted_scopes:concat(" "), selected_role;
 end
