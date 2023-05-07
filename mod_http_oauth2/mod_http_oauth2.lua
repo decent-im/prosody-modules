@@ -116,6 +116,12 @@ local function can_assume_role(username, requested_role)
 	return usermanager.user_can_assume_role(username, module.host, requested_role);
 end
 
+local function user_assumable_roles(username, requested_roles)
+	return array.filter(requested_roles, function(role)
+		return can_assume_role(username, role);
+	end);
+end
+
 local function select_role(username, requested_roles)
 	if requested_roles then
 		for _, requested_role in ipairs(requested_roles) do
