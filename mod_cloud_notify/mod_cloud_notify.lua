@@ -28,6 +28,10 @@ local push_errors = module:shared("push_errors");
 local id2node = {};
 local id2identifier = {};
 
+if _VERSION:match("5%.1") then
+	module:log("warn", "This module may behave incorrectly on Lua 5.1. It is recommended to upgrade to a newer Lua version.");
+end
+
 -- For keeping state across reloads while caching reads
 -- This uses util.cache for caching the most recent devices and removing all old devices when max_push_devices is reached
 local push_store = (function()

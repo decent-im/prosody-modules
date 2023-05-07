@@ -1,3 +1,5 @@
+local usermanager = require "core.usermanager";
+
 local sasl = require "util.sasl";
 local dt = require "util.datetime";
 local id = require "util.id";
@@ -38,6 +40,8 @@ end
 
 local function new_token_tester(hmac_f)
 	return function (mechanism, username, client_id, token_hash, cb_data, invalidate)
+		local account_info = usermanager.get_account_info(username, module.host);
+		local last_password_change = account_info and account_info.password_updated;
 		local tried_current_token = false;
 		local key = hash.sha256(client_id, true).."-new";
 		local token;
@@ -52,12 +56,18 @@ local function new_token_tester(hmac_f)
 						log("debug", "Token found, but it has expired (%ds ago). Cleaning up...", current_time - token.expires_at);
 						token_store:set(username, key, nil);
 						return nil, "credentials-expired";
+					elseif last_password_change and token.issued_at < last_password_change then
+						log("debug", "Token found, but issued prior to password change (%ds ago). Cleaning up...",
+							current_time - last_password_change
+						);
+						token_store:set(username, key, nil);
+						return nil, "credentials-expired";
 					end
 					if not tried_current_token and not invalidate then
 						-- The new token is becoming the current token
 						token_store:set_keys(username, {
 							[key] = token_store.remove;
-							[key:sub(1, -4).."-cur"] = token;
+							[key:sub(1, -5).."-cur"] = token;
 						});
 					end
 					local rotation_needed;
@@ -74,7 +84,7 @@ local function new_token_tester(hmac_f)
 				log("debug", "Trying next token...");
 				-- Try again with the current token instead
 				tried_current_token = true;
-				key = key:sub(1, -4).."-cur";
+				key = key:sub(1, -5).."-cur";
 			else
 				log("debug", "No matching %s token found for %s/%s", mechanism, username, key);
 				return nil;
@@ -102,6 +112,7 @@ module:hook("advertise-sasl-features", function (event)
 	end
 	local sasl_handler = get_sasl_handler(username);
 	if not sasl_handler then return; end
+	sasl_handler.fast_auth = true; -- For informational purposes
 	-- Copy channel binding info from primary SASL handler
 	sasl_handler.profile.cb = session.sasl_handler.profile.cb;
 	sasl_handler.userdata = session.sasl_handler.userdata;
@@ -217,3 +228,27 @@ register_ht_mechanism("HT-SHA-256-NONE", "ht_sha_256", nil);
 register_ht_mechanism("HT-SHA-256-UNIQ", "ht_sha_256", "tls-unique");
 register_ht_mechanism("HT-SHA-256-ENDP", "ht_sha_256", "tls-server-end-point");
 register_ht_mechanism("HT-SHA-256-EXPR", "ht_sha_256", "tls-exporter");
+
+-- Public API
+
+--luacheck: ignore 131
+function is_client_fast(username, client_id, last_password_change)
+	local client_id_hash = hash.sha256(client_id, true);
+	local curr_time = now();
+	local cur = token_store:get(username, client_id_hash.."-cur");
+	if cur and cur.expires_at >= curr_time and (not last_password_change or last_password_change < cur.issued_at) then
+		return true;
+	end
+	local new = token_store:get(username, client_id_hash.."-new");
+	if new and new.expires_at >= curr_time and (not last_password_change or last_password_change < new.issued_at) then
+		return true;
+	end
+	return false;
+end
+
+function revoke_fast_tokens(username, client_id)
+	local client_id_hash = hash.sha256(client_id, true);
+	local cur_ok = token_store:set(username, client_id_hash.."-cur", nil);
+	local new_ok = token_store:set(username, client_id_hash.."-new", nil);
+	return cur_ok and new_ok;
+end

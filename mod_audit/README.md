@@ -25,3 +25,27 @@ Before using these modules, you may want to ensure that you are legally
 allowed to store the data for the amount of time these modules will store it.
 Note that it is currently not possible to store different event types with
 different expiration times.
+
+## Viewing the log
+
+You can view the log using prosodyctl. This works even when Prosody is not
+running.
+
+For example, to view the full audit log for example.com:
+
+```shell
+prosodyctl mod_audit example.com
+```
+
+To view only host-wide events (those not attached to a specific user account),
+use the `--global` option (or use `--no-global` to hide such events):
+
+```shell
+prosodyctl mod_audit --global example.com
+```
+
+To narrow results to a specific user, specify their JID:
+
+```shell
+prosodyctl mod_audit user@example.com
+```

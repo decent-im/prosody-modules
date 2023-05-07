@@ -1,22 +1,20 @@
 local adhoc = require "util.adhoc";
 local dataforms = require "util.dataforms";
-local errors = require "util.error";
-local hashes = require "util.hashes";
-local id = require "util.id";
-local jid = require "util.jid";
-local base64 = require"util.encodings".base64;
 
-local clients = module:open_store("oauth2_clients", "map");
-
-local iteration_count = module:get_option_number("oauth2_client_iteration_count", 10000);
-local pepper = module:get_option_string("oauth2_client_pepper", "");
+local mod_http_oauth2 = module:depends"http_oauth2";
 
 local new_client = dataforms.new({
 	title = "Create OAuth2 client";
-	{var = "FORM_TYPE"; type = "hidden"; value = "urn:uuid:ff0d55ed-2187-4ee0-820a-ab633a911c14#create"};
-	{name = "name"; type = "text-single"; label = "Client name"; required = true};
-	{name = "description"; type = "text-multi"; label = "Description"};
-	{name = "info_url"; type = "text-single"; label = "Informative URL"; desc = "Link to information about your client"; datatype = "xs:anyURI"};
+	{ var = "FORM_TYPE"; type = "hidden"; value = "urn:uuid:ff0d55ed-2187-4ee0-820a-ab633a911c14#create" };
+	{ name = "client_name"; type = "text-single"; label = "Client name"; required = true };
+	{
+		name = "client_uri";
+		type = "text-single";
+		label = "Informative URL";
+		desc = "Link to information about your client. MUST be https URI.";
+		datatype = "xs:anyURI";
+		required = true;
+	};
 	{
 		name = "redirect_uri";
 		type = "text-single";
@@ -30,9 +28,9 @@ local new_client = dataforms.new({
 local client_created = dataforms.new({
 	title = "New OAuth2 client created";
 	instructions = "Save these details, they will not be shown again";
-	{var = "FORM_TYPE"; type = "hidden"; value = "urn:uuid:ff0d55ed-2187-4ee0-820a-ab633a911c14#created"};
-	{name = "client_id"; type = "text-single"; label = "Client ID"};
-	{name = "client_secret"; type = "text-single"; label = "Client secret"};
+	{ var = "FORM_TYPE"; type = "hidden"; value = "urn:uuid:ff0d55ed-2187-4ee0-820a-ab633a911c14#created" };
+	{ name = "client_id"; type = "text-single"; label = "Client ID" };
+	{ name = "client_secret"; type = "text-single"; label = "Client secret" };
 })
 
 local function create_client(client, formerr, data)
@@ -41,23 +39,15 @@ local function create_client(client, formerr, data)
 		for field, err in pairs(formerr) do table.insert(errmsg, field .. ": " .. err); end
 		return {status = "error"; error = {message = table.concat(errmsg, "\n")}};
 	end
+	client.redirect_uris = { client.redirect_uri };
+	client.redirect_uri = nil;
 
-	local creator = jid.split(data.from);
-	local client_uid = id.short();
-	local client_id = jid.join(creator, module.host, client_uid);
-	local client_secret = id.long();
-	local salt = id.medium();
-	local i = iteration_count;
+	local client_metadata, err = mod_http_oauth2.create_client(client);
+	if err then return { status = "error"; error = err }; end
 
-	client.secret_hash = base64.encode(hashes.pbkdf2_hmac_sha256(client_secret, salt .. pepper, i));
-	client.iteration_count = i;
-	client.salt = salt;
+	module:log("info", "OAuth2 client %q %q created by %s", client.name, client.info_uri, data.from);
 
-	local ok, err = errors.coerce(clients:set(creator, client_uid, client));
-	module:log("info", "OAuth2 client %q created by %s", client_id, data.from);
-	if not ok then return {status = "canceled"; error = {message = err}}; end
-
-	return {status = "completed"; result = {layout = client_created; values = {client_id = client_id; client_secret = client_secret}}};
+	return { status = "completed"; result = { layout = client_created; values = client_metadata } };
 end
 
 local handler = adhoc.new_simple_form(new_client, create_client);

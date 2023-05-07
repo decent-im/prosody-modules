@@ -1,33 +1,37 @@
 ---
-labels:
 summary: HTTP Strict Transport Security
-...
+---
 
-Introduction
-============
+# Introduction
 
-This module implements [HTTP Strict Transport
-Security](https://tools.ietf.org/html/rfc6797) and responds to all
-non-HTTPS requests with a `301 Moved Permanently` redirect to the HTTPS
-equivalent of the path.
+This module implements [RFC 6797: HTTP Strict Transport Security] and
+responds to all non-HTTPS requests with a `301 Moved Permanently`
+redirect to the HTTPS equivalent of the path.
 
-Configuration
-=============
+# Configuration
 
 Add the module to the `modules_enabled` list and optionally configure
 the specific header sent.
 
-    modules_enabled = {
-      ...
-          "strict_https";
-    }
-    hsts_header = "max-age=31556952"
+``` lua
+modules_enabled = {
+  ...
+      "strict_https";
+}
+hsts_header = "max-age=31556952"
+```
 
-Compatibility
-=============
+If the redirect from `http://` to `https://` causes trouble with
+internal use of HTTP APIs it can be disabled:
 
-  ------- --------------
-  trunk   Works
-  0.9     Works
-  0.8     Doesn't work
-  ------- --------------
+``` lua
+hsts_redirect = false
+```
+
+# Compatibility
+
+  ------- -------------
+  trunk   Should work
+  0.12    Should work
+  0.11    Should work
+  ------- -------------

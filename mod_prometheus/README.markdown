@@ -15,10 +15,12 @@ more information.
 
 [prometheusconf]: https://prometheus.io/docs/instrumenting/exposition_formats/
 
+::: {.alert .alert-info}
 **Note:** For use with Prosody trunk (0.12) we recommend the bundled
 [mod_http_openmetrics](https://prosody.im/doc/modules/mod_http_openmetrics)
 instead. This module (mod_prometheus) will continue to be available in the
 community repository for use with older Prosody versions.
+:::
 
 Configuration
 =============

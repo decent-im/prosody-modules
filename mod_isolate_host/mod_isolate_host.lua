@@ -22,6 +22,14 @@ function check_stanza(event)
 			except_domains:add(to_host);
 			return;
 		end
+		if origin.type == "local" then
+			-- this is code-generated, which means that set_session_isolation_flag has never triggered.
+			-- we need to check explicitly.
+			if not is_jid_isolated(jid_bare(event.stanza.attr.from)) then
+				module:log("debug", "server-generated stanza from %s is allowed, as the jid is not isolated", event.stanza.attr.from);
+				return;
+			end
+		end
 		module:log("warn", "Forbidding stanza from %s to %s", stanza.attr.from or origin.full_jid, stanza.attr.to);
 		origin.send(st.error_reply(stanza, "auth", "forbidden", "Communication with "..to_host.." is not available"));
 		return true;
@@ -36,13 +44,21 @@ end
 
 module:default_permission("prosody:admin", "xmpp:federate");
 
-function check_user_isolated(event)
+function is_jid_isolated(bare_jid)
+	if except_users:contains(bare_jid) or module:may("xmpp:federate", bare_jid) then
+		return false;
+	else
+		return true;
+	end
+end
+
+function set_session_isolation_flag(event)
 	local session = event.session;
 	local bare_jid = jid_bare(session.full_jid);
-	if module:may("xmpp:federate", event) or except_users:contains(bare_jid) then
+	if not is_jid_isolated(bare_jid) then
 		session.no_host_isolation = true;
 	end
 	module:log("debug", "%s is %sisolated", session.full_jid or "[?]", session.no_host_isolation and "" or "not ");
 end
 
-module:hook("resource-bind", check_user_isolated);
+module:hook("resource-bind", set_session_isolation_flag);

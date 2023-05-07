@@ -28,7 +28,12 @@ function handle_register(event)
 	if filter_muted then
 		local muted_jids = {};
 		for item in filter_muted:childtags("item") do
-			muted_jids[jid.prep(item.attr.jid)] = true;
+			local room_jid = jid.prep(item.attr.jid);
+			if not room_jid then
+				module:log("warn", "Skipping invalid JID: <%s>", room_jid);
+			else
+				muted_jids[room_jid] = true;
+			end
 		end
 		event.push_info.muted_jids = muted_jids;
 	end
@@ -37,10 +42,15 @@ function handle_register(event)
 	if filter_groupchat then
 		local groupchat_rules = {};
 		for item in filter_groupchat:childtags("room") do
-			groupchat_rules[jid.prep(item.attr.jid)] = {
-				when = item.attr.allow;
-				nick = item.attr.nick;
-			};
+			local room_jid = jid.prep(item.attr.jid);
+			if not room_jid then
+				module:log("warn", "Skipping invalid JID: <%s>", item.attr.jid);
+			else
+				groupchat_rules[room_jid] = {
+					when = item.attr.allow;
+					nick = item.attr.nick;
+				};
+			end
 		end
 		event.push_info.groupchat_rules = groupchat_rules;
 	end

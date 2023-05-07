@@ -19,11 +19,11 @@ Enable the module as any other:
 
 You can then set some options to configure your desired policy:
 
-  Option                           Default         Description
-  -------------------------------- --------------- -------------------------------------------------------------------------------------------------------------------------------------------------
-  block\_registrations\_users      `{ "admin" }`   A list of reserved usernames
-  block\_registrations\_matching   `{ }`           A list of [Lua patterns](http://www.lua.org/manual/5.1/manual.html#5.4.1) matching reserved usernames (slower than block\_registrations\_users)
-  block\_registrations\_require    `nil`           A pattern that registered user accounts MUST match to be allowed
+  Option                         Default             Description
+  ------------------------------ ------------------- -----------------------------------------------------------------------------------------------------------------------------------------------
+  block_registrations_users      *See source code*   A list of reserved usernames
+  block_registrations_matching   `{ }`               A list of [Lua patterns](http://www.lua.org/manual/5.1/manual.html#5.4.1) matching reserved usernames (slower than block_registrations_users)
+  block_registrations_require    `nil`               A pattern that registered user accounts MUST match to be allowed
 
 Some examples:
 
@@ -36,9 +36,7 @@ Some examples:
 Compatibility
 =============
 
-  ----- -------------
-  0.9   Works
-  0.8   Should work
-  ----- -------------
-
-
+  ------ -------
+  0.12    Works
+  0.11    Work
+  ------ -------

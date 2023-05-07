@@ -558,8 +558,12 @@ local function compile_handler(code_string, filename)
 	local function fire_event(name, data)
 		return module:fire_event(name, data);
 	end
+	local init_ok, initialized_chunk = pcall(chunk);
+	if not init_ok then
+		return nil, "Error initializing compiled rules: "..initialized_chunk;
+	end
 	return function (pass_return)
-		return chunk()(active_definitions, fire_event, logger(filename), module, pass_return); -- Returns event handler with upvalues
+		return initialized_chunk(active_definitions, fire_event, logger(filename), module, pass_return); -- Returns event handler with upvalues
 	end
 end
 

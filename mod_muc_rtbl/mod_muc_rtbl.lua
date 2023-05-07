@@ -38,6 +38,13 @@ module:add_item("pubsub-subscription", {
 		module:log("debug", "Retracted hash: %s", hash);
 		banned_hashes[hash] = nil;
 	end;
+
+	purge = function()
+		module:log("debug", "Purge all hashes");
+		for hash in pairs(banned_hashes) do
+			banned_hashes[hash] = nil;
+		end
+	end;
 });
 
 function request_list()
@@ -146,7 +153,7 @@ end);
 
 module:hook("muc-private-message", function(event)
 	local occupant = event.room:get_occupant_by_nick(event.stanza.attr.from);
-	local affiliation = event.room:get_affiliation(event.occupant.bare_jid);
+	local affiliation = event.room:get_affiliation(occupant.bare_jid);
 	if affiliation and affiliation ~= "none" then
 		-- Skip check for affiliated users
 		return;

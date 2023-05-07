@@ -79,9 +79,9 @@ do
 	end
 end
 
-local user_options = module:get_option("conversejs_options");
-
 local function get_converse_options()
+	local user_options = module:get_option("conversejs_options");
+
 	local allow_registration = module:get_option_boolean("allow_registration", false);
 	local converse_options = {
 		-- Auto-detected connection endpoints

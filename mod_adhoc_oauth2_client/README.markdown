@@ -2,21 +2,20 @@
 labels:
 - Stage-Alpha
 summary: 'Create OAuth2 clients via ad-hoc command'
+rockspec:
+  dependencies:
+  - mod_http_oauth2
 ...
 
 Introduction
 ============
 
-Allows creating OAuth2 clients for use with [mod_http_oauth2]. Otherwise
-a work-in-progress intended for developers only!
-
-Configuration
-=============
-
-**TODO**
+[Ad-Hoc command][XEP-0050] interface to
+[dynamic OAuth2 registration](https://oauth.net/2/dynamic-client-registration/)
+provided by [mod_http_oauth2].
 
 Compatibility
 =============
 
-Probably Prosody trunk.
+Same as [mod_http_oauth2]
 

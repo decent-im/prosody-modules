@@ -76,7 +76,7 @@ local function handle_vcard(event)
 			session.send(st.error_reply(stanza, "cancel", "item-not-found"));
 		end
 	else
-		if from_affiliation == "owner" then
+		if from_affiliation == "owner" or (module.may and module:may("muc:automatic-ownership", from)) then
 			if vcards:set(room_node, st.preserialize(stanza.tags[1])) then
 				session.send(st.reply(stanza):tag("vCard", { xmlns = "vcard-temp" }));
 				broadcast_presence(room, nil)
