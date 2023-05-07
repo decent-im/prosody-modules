@@ -89,7 +89,7 @@ if [[ "$1" == "--login" ]]; then
 
 	if [ -z "${ACCESS_TOKEN:-}" ]; then
 		CODE_CHALLENGE="$(head -c 33 /dev/urandom | base64 | tr /+ _-)"
-		open "$AUTHORIZATION_ENDPOINT?response_type=code&client_id=$CLIENT_ID&code_challenge=$CODE_CHALLENGE&scope=openid+prosody:user"
+		open "$AUTHORIZATION_ENDPOINT?response_type=code&client_id=$CLIENT_ID&code_challenge=$CODE_CHALLENGE&scope=${SCOPE:-openid+prosody:user}"
 		read -p "Paste authorization code: " -s -r AUTHORIZATION_CODE
 
 		TOKEN_RESPONSE="$(http --check-status --form "$TOKEN_ENDPOINT" 'grant_type=authorization_code' "client_id=$CLIENT_ID" "client_secret=$CLIENT_SECRET" "code=$AUTHORIZATION_CODE" code_verifier="$CODE_CHALLENGE")"
