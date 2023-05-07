@@ -137,8 +137,13 @@ local function filter_scopes(username, requested_scope_string)
 		granted_scopes = array();
 	end
 
+	if requested_roles then
+		granted_scopes:append(array.filter(requested_roles, function(role)
+			return can_assume_role(username, role)
+		end));
+	end
+
 	local selected_role = select_role(username, requested_roles);
-	granted_scopes:push(selected_role);
 
 	return granted_scopes:concat(" "), selected_role;
 end
