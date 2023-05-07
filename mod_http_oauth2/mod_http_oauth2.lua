@@ -116,10 +116,14 @@ local function can_assume_role(username, requested_role)
 	return usermanager.user_can_assume_role(username, module.host, requested_role);
 end
 
-local function user_assumable_roles(username, requested_roles)
-	return array.filter(requested_roles, function(role)
+local function role_assumable_by(username)
+	return function(role)
 		return can_assume_role(username, role);
-	end);
+	end
+end
+
+local function user_assumable_roles(username, requested_roles)
+	return array.filter(requested_roles, role_assumable_by(username));
 end
 
 local function select_role(username, requested_roles)
