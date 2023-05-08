@@ -74,6 +74,10 @@ oauth_external_username_field = "xmpp_username"
 :   String. Client ID used to identify Prosody during the resource owner
     password grant.
 
+`oauth_external_client_secret`
+:   String. Client secret used to identify Prosody during the resource
+    owner password grant.
+
 # Compatibility
 
 ## Prosody

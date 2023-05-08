@@ -16,7 +16,7 @@ local allow_plain = module:get_option_boolean("oauth_external_resource_owner_pas
 -- XXX Hold up, does whatever done here even need any of these things? Are we
 -- the OAuth client? Is the XMPP client the OAuth client? What are we???
 local client_id = module:get_option_string("oauth_external_client_id");
--- TODO -- local client_secret = module:get_option_string("oauth_external_client_secret");
+local client_secret = module:get_option_string("oauth_external_client_secret");
 
 --[[ More or less required endpoints
 digraph "oauth endpoints" {
@@ -41,6 +41,7 @@ function provider.get_sasl_handler()
 				body = http.formencode({
 					grant_type = "password";
 					client_id = client_id;
+					client_secret = client_secret;
 					username = map_username(username, realm);
 					password = password;
 					scope = "openid";
