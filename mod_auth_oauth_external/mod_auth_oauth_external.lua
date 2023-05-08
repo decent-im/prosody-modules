@@ -1,5 +1,6 @@
 local http = require "net.http";
 local async = require "util.async";
+local jid = require "util.jid";
 local json = require "util.json";
 local sasl = require "util.sasl";
 
