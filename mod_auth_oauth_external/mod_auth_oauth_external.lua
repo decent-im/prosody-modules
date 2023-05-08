@@ -53,6 +53,12 @@ function provider.get_sasl_handler()
 			if not token_resp or string.lower(token_resp.token_type or "") ~= "bearer" then
 				return false, nil;
 			end
+			if not validation_endpoint then
+				-- We're not going to get more info, only the username
+				self.username = jid.escape(username);
+				self.token_info = token_resp;
+				return true, true;
+			end
 			local ret, err = async.wait_for(self.profile.http_client:request(validation_endpoint,
 				{ headers = { ["Authorization"] = "Bearer " .. token_resp.access_token; ["Accept"] = "application/json" } }));
 			if err then
@@ -73,25 +79,28 @@ function provider.get_sasl_handler()
 			return true, true;
 		end
 	end
-	function profile:oauthbearer(token)
-		if token == "" then
-			return false, nil, extra;
-		end
+	if validation_endpoint then
+		function profile:oauthbearer(token)
+			if token == "" then
+				return false, nil, extra;
+			end
 
-		local ret, err = async.wait_for(self.profile.http_client:request(validation_endpoint,
-			{ headers = { ["Authorization"] = "Bearer " .. token; ["Accept"] = "application/json" } }));
-		if err then
-			return false, nil, extra;
-		end
-		local response = ret and json.decode(ret.body);
-		if not (ret.code >= 200 and ret.code < 300) then
-			return false, nil, response or extra;
-		end
-		if type(response) ~= "table" or type(response[username_field]) ~= "string" then
-			return false, nil, nil;
-		end
+			local ret, err = async.wait_for(self.profile.http_client:request(validation_endpoint, {
+				headers = { ["Authorization"] = "Bearer " .. token; ["Accept"] = "application/json" };
+			}));
+			if err then
+				return false, nil, extra;
+			end
+			local response = ret and json.decode(ret.body);
+			if not (ret.code >= 200 and ret.code < 300) then
+				return false, nil, response or extra;
+			end
+			if type(response) ~= "table" or type(response[username_field]) ~= "string" then
+				return false, nil, nil;
+			end
 
-		return response[username_field], true, response;
+			return response[username_field], true, response;
+		end
 	end
 	return sasl.new(host, profile);
 end

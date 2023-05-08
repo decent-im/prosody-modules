@@ -50,6 +50,8 @@ oauth_external_username_field = "xmpp_username"
     logging in the field specified by `oauth_external_username_field`.
     Commonly the [OpenID `UserInfo`
     endpoint](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo)
+    If left unset, only `SASL PLAIN` is supported and the username
+    provided there is assumed correct.
 
 `oauth_external_username_field`
 :   String. Default is `"preferred_username"`. Field in the JSON
