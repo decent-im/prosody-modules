@@ -74,9 +74,6 @@ function provider.get_sasl_handler()
 			if type(response) ~= "table" or (response[username_field]) ~= username then
 				return false, nil, nil;
 			end
-			if response.jid then
-				self.username, self.realm, self.resource = jid.prepped_split(response.jid, true);
-			end
 			self.token_info = response;
 			return true, true;
 		end
