@@ -77,7 +77,6 @@ function provider.get_sasl_handler()
 			if response.jid then
 				self.username, self.realm, self.resource = jid.prepped_split(response.jid, true);
 			end
-			self.role = response.role;
 			self.token_info = response;
 			return true, true;
 		end
