@@ -30,6 +30,32 @@ registration -> { client_id client_secret }
 local host = module.host;
 local provider = {};
 
+local function not_implemented()
+	return nil, "method not implemented"
+end
+
+-- With proper OAuth 2, most of these should be handled at the atuhorization
+-- server, no there.
+provider.test_password = not_implemented;
+provider.get_password = not_implemented;
+provider.set_password = not_implemented;
+provider.create_user = not_implemented;
+provider.delete_user = not_implemented;
+
+function provider.user_exists(_username)
+	-- Can this even be done in a generic way in OAuth 2?
+	-- OIDC and WebFinger perhaps?
+	return true;
+end
+
+function provider.users()
+	-- TODO this could be done by recording known users locally
+	return function ()
+		module:log("debug", "User iteration not supported");
+		return nil;
+	end
+end
+
 function provider.get_sasl_handler()
 	local profile = {};
 	profile.http_client = http.default; -- TODO configurable
