@@ -71,9 +71,12 @@ function provider.get_sasl_handler()
 				return false, nil;
 			end
 			local response = json.decode(ret.body);
-			if type(response) ~= "table" or (response[username_field]) ~= username then
+			if type(response) ~= "table" then
+				return false, nil, nil;
+			elseif type(response[username_field]) ~= "string" then
 				return false, nil, nil;
 			end
+			self.username = jid.escape(response[username_field]);
 			self.token_info = response;
 			return true, true;
 		end
