@@ -78,6 +78,10 @@ oauth_external_username_field = "xmpp_username"
 :   String. Client secret used to identify Prosody during the resource
     owner password grant.
 
+`oauth_external_scope`
+:   String. Defaults to `"oauth"`. Included in request for resource
+    owner password grant.
+
 # Compatibility
 
 ## Prosody

@@ -17,6 +17,7 @@ local allow_plain = module:get_option_boolean("oauth_external_resource_owner_pas
 -- the OAuth client? Is the XMPP client the OAuth client? What are we???
 local client_id = module:get_option_string("oauth_external_client_id");
 local client_secret = module:get_option_string("oauth_external_client_secret");
+local scope = module:get_option_string("oauth_external_scope", "openid");
 
 --[[ More or less required endpoints
 digraph "oauth endpoints" {
@@ -44,7 +45,7 @@ function provider.get_sasl_handler()
 					client_secret = client_secret;
 					username = map_username(username, realm);
 					password = password;
-					scope = "openid";
+					scope = scope;
 				});
 			}))
 			if err or not (tok.code >= 200 and tok.code < 300) then
