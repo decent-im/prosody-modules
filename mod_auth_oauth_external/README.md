@@ -97,6 +97,7 @@ oauth_external_username_field = "xmpp_username"
 Tested with
 
 -   [KeyCloak](https://www.keycloak.org/)
+-   [Mastodon](https://joinmastodon.org/)
 
 # Future work
 
