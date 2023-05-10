@@ -37,6 +37,7 @@ function provider.get_sasl_handler()
 	if token_endpoint and allow_plain then
 		local map_username = function (username, _realm) return username; end; --jid.join; -- TODO configurable
 		function profile:plain_test(username, password, realm)
+			username = jid.unescape(username); -- COMPAT Mastodon
 			local tok, err = async.wait_for(self.profile.http_client:request(token_endpoint, {
 				headers = { ["Content-Type"] = "application/x-www-form-urlencoded; charset=utf-8"; ["Accept"] = "application/json" };
 				body = http.formencode({
