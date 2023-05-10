@@ -127,7 +127,7 @@ function provider.get_sasl_handler()
 				return false, nil, nil;
 			end
 
-			return response[username_field], true, response;
+			return jid.escape(response[username_field]), true, response;
 		end
 	end
 	return sasl.new(host, profile);
