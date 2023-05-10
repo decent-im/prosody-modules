@@ -87,10 +87,10 @@ oauth_external_username_field = "xmpp_username"
 ## Prosody
 
   Version   Status
-  --------- ---------------
+  --------- -----------------------------------------------
   trunk     works
-  0.12.x    does not work
-  0.11.x    does not work
+  0.12.x    OAUTHBEARER will not work, otherwise untested
+  0.11.x    OAUTHBEARER will not work, otherwise untested
 
 ## Identity Provider
 
