@@ -368,6 +368,7 @@ function grant_type_handlers.authorization_code(params)
 	if not params.client_secret then return oauth_error("invalid_request", "missing 'client_secret'"); end
 	if not params.code then return oauth_error("invalid_request", "missing 'code'"); end
 	if params.scope and params.scope ~= "" then
+		-- FIXME allow a subset of granted scopes
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
 
@@ -544,6 +545,7 @@ if module:get_host_type() == "component" then
 		local request_password = assert(params.password, oauth_error("invalid_request", "missing 'password'"));
 		local request_username, request_host, request_resource = jid.prepped_split(request_jid);
 		if params.scope then
+			-- TODO shouldn't we support scopes / roles here?
 			return oauth_error("invalid_scope", "unknown scope requested");
 		end
 		if not request_host or request_host ~= module.host then
