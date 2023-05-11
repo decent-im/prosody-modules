@@ -477,14 +477,14 @@ local function get_auth_state(request)
 			};
 		end
 
-		local scope = array():append(form):filter(function(field)
+		local scopes = array():append(form):filter(function(field)
 			return field.name == "scope";
-		end):pluck("value"):concat(" ");
+		end):pluck("value");
 
 		user.token = form.user_token;
 		return {
 			user = user;
-			scope = scope;
+			scopes = scopes;
 			consent = form.consent == "granted";
 		};
 	end
@@ -649,13 +649,21 @@ local function handle_authorization_request(event)
 		return oauth_error("invalid_client", "response_type not allowed");
 	end
 
+	local requested_scopes = parse_scopes(params.scope or "");
+	if client.scope then
+		local client_scopes = set.new(parse_scopes(client.scope));
+		requested_scopes:filter(function(scope)
+			return client_scopes:contains(scope);
+		end);
+	end
+
 	local auth_state = get_auth_state(request);
 	if not auth_state.user then
 		-- Render login page
 		return render_page(templates.login, { state = auth_state, client = client });
 	elseif auth_state.consent == nil then
 		-- Render consent page
-		local scopes, roles = split_scopes(parse_scopes(params.scope or ""));
+		local scopes, roles = split_scopes(requested_scopes);
 		return render_page(templates.consent, { state = auth_state; client = client; scopes = scopes+roles }, true);
 	elseif not auth_state.consent then
 		-- Notify client of rejection
@@ -663,7 +671,15 @@ local function handle_authorization_request(event)
 	end
 	-- else auth_state.consent == true
 
-	params.scope = auth_state.scope;
+	local granted_scopes = auth_state.scopes
+	if client.scope then
+		local client_scopes = set.new(parse_scopes(client.scope));
+		granted_scopes:filter(function(scope)
+			return client_scopes:contains(scope);
+		end);
+	end
+
+	params.scope = granted_scopes:concat(" ");
 
 	local user_jid = jid.join(auth_state.user.username, module.host);
 	local client_secret = make_client_secret(params.client_id);
