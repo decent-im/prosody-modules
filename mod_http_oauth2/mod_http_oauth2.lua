@@ -410,11 +410,14 @@ function grant_type_handlers.refresh_token(params)
 		return oauth_error("invalid_grant", "invalid refresh token");
 	end
 
+	local refresh_scopes = refresh_token_info.grant.data.oauth2_scopes;
+	local new_scopes, role = filter_scopes(username, refresh_scopes);
+
 	-- new_access_token() requires the actual token
 	refresh_token_info.token = params.refresh_token;
 
 	return json.encode(new_access_token(
-		refresh_token_info.jid, refresh_token_info.role, refresh_token_info.grant.data.oauth2_scopes, client, nil, refresh_token_info
+		refresh_token_info.jid, role, new_scopes, client, nil, refresh_token_info
 	));
 end
 
