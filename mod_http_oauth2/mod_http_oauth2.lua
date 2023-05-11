@@ -411,14 +411,22 @@ function grant_type_handlers.refresh_token(params)
 	end
 
 	local refresh_scopes = refresh_token_info.grant.data.oauth2_scopes;
+
+	if params.scope then
+		local granted_scopes = set.new(parse_scopes(refresh_scopes));
+		local requested_scopes = parse_scopes(params.scope);
+		refresh_scopes = array.filter(requested_scopes, function(scope)
+			return granted_scopes:contains(scope);
+		end):concat(" ");
+	end
+
+	local username = jid.split(refresh_token_info.jid);
 	local new_scopes, role = filter_scopes(username, refresh_scopes);
 
 	-- new_access_token() requires the actual token
 	refresh_token_info.token = params.refresh_token;
 
-	return json.encode(new_access_token(
-		refresh_token_info.jid, role, new_scopes, client, nil, refresh_token_info
-	));
+	return json.encode(new_access_token(refresh_token_info.jid, role, new_scopes, client, nil, refresh_token_info));
 end
 
 -- RFC 7636 Proof Key for Code Exchange by OAuth Public Clients
