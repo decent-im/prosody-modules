@@ -91,12 +91,20 @@ if registration_key then
 	jwt_sign, jwt_verify = jwt.init(registration_algo, registration_key, registration_key, registration_options);
 end
 
+-- scope : string | array | set
+--
+-- at each step, allow the same or a subset of scopes
+-- (all ( client ( grant ( token ) ) ))
+-- preserve order since it determines role if more than one granted
+
+-- string -> array
 local function parse_scopes(scope_string)
 	return array(scope_string:gmatch("%S+"));
 end
 
 local openid_claims = set.new({ "openid", "profile"; "email"; "address"; "phone" });
 
+-- array -> array, array, array
 local function split_scopes(scope_list)
 	local claims, roles, unknown = array(), array(), array();
 	local all_roles = usermanager.get_all_roles(module.host);
@@ -116,16 +124,19 @@ local function can_assume_role(username, requested_role)
 	return usermanager.user_can_assume_role(username, module.host, requested_role);
 end
 
+-- function (string) : function(string) : boolean
 local function role_assumable_by(username)
 	return function(role)
 		return can_assume_role(username, role);
 	end
 end
 
+-- string, array --> array
 local function user_assumable_roles(username, requested_roles)
 	return array.filter(requested_roles, role_assumable_by(username));
 end
 
+-- string, string|nil --> string, string
 local function filter_scopes(username, requested_scope_string)
 	local requested_scopes, requested_roles = split_scopes(parse_scopes(requested_scope_string or ""));
 
