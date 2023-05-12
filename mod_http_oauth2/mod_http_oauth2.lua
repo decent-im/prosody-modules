@@ -682,6 +682,7 @@ local function handle_authorization_request(event)
 	elseif auth_state.consent == nil then
 		-- Render consent page
 		local scopes, roles = split_scopes(requested_scopes);
+		roles = user_assumable_roles(auth_state.user.username, roles);
 		return render_page(templates.consent, { state = auth_state; client = client; scopes = scopes+roles }, true);
 	elseif not auth_state.consent then
 		-- Notify client of rejection
