@@ -754,7 +754,7 @@ local registration_schema = {
 		"redirect_uris";
 	};
 	properties = {
-		redirect_uris = { type = "array"; minLength = 1; items = { type = "string"; format = "uri" } };
+		redirect_uris = { type = "array"; minItems = 1; items = { type = "string"; format = "uri" } };
 		token_endpoint_auth_method = {
 			type = "string";
 			enum = { "none"; "client_secret_post"; "client_secret_basic" };
