@@ -174,6 +174,11 @@ local function get_issuer()
 	return (module:http_url(nil, "/"):gsub("/$", ""));
 end
 
+-- Non-standard special redirect URI that has the AS show the authorization
+-- code to the user for them to copy-paste into the client, which can then
+-- continue as if it received it via redirect.
+local oob_uri = "urn:ietf:wg:oauth:2.0:oob";
+
 local loopbacks = set.new({ "localhost", "127.0.0.1", "::1" });
 local function is_secure_redirect(uri)
 	local u = url.parse(uri);
@@ -295,7 +300,7 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 	end
 
 	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
-	if redirect_uri == "urn:ietf:wg:oauth:2.0:oob" then
+	if redirect_uri == oob_uri then
 		-- TODO some nicer template page
 		-- mod_http_errors will set content-type to text/html if it catches this
 		-- event, if not text/plain is kept for the fallback text.
@@ -811,7 +816,7 @@ local function redirect_uri_allowed(redirect_uri, client_uri, app_type)
 		return false; -- no relative URLs
 	end
 	if app_type == "native" then
-		return uri.scheme == "http" and loopbacks:contains(uri.host) or uri.scheme ~= "https";
+		return uri.scheme == "http" and loopbacks:contains(uri.host) or redirect_uri == oob_uri or uri.scheme:find(".", 1, true) ~= nil;
 	elseif app_type == "web" then
 		return uri.scheme == "https" and uri.host == client_uri.host;
 	end
