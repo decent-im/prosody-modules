@@ -84,11 +84,11 @@ local registration_options = module:get_option("oauth2_registration_options",
 local pkce_required = module:get_option_boolean("oauth2_require_code_challenge", false);
 
 local verification_key;
-local jwt_sign, jwt_verify;
+local sign_client, verify_client;
 if registration_key then
 	-- Tie it to the host if global
 	verification_key = hashes.hmac_sha256(registration_key, module.host);
-	jwt_sign, jwt_verify = jwt.init(registration_algo, registration_key, registration_key, registration_options);
+	sign_client, verify_client = jwt.init(registration_algo, registration_key, registration_key, registration_options);
 end
 
 -- scope : string | array | set
@@ -374,7 +374,7 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
 
-	local client_ok, client = jwt_verify(params.client_id);
+	local client_ok, client = verify_client(params.client_id);
 	if not client_ok then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
@@ -409,7 +409,7 @@ function grant_type_handlers.refresh_token(params)
 	if not params.client_secret then return oauth_error("invalid_request", "missing 'client_secret'"); end
 	if not params.refresh_token then return oauth_error("invalid_request", "missing 'refresh_token'"); end
 
-	local client_ok, client = jwt_verify(params.client_id);
+	local client_ok, client = verify_client(params.client_id);
 	if not client_ok then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
@@ -660,7 +660,7 @@ local function handle_authorization_request(event)
 
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
 
-	local ok, client = jwt_verify(params.client_id);
+	local ok, client = verify_client(params.client_id);
 
 	if not ok then
 		return oauth_error("invalid_client", "incorrect credentials");
@@ -886,7 +886,7 @@ function create_client(client_metadata)
 	client_metadata.nonce = id.short();
 
 	-- Do we want to keep everything?
-	local client_id = jwt_sign(client_metadata);
+	local client_id = sign_client(client_metadata);
 
 	client_metadata.client_id = client_id;
 	client_metadata.client_id_issued_at = os.time();
