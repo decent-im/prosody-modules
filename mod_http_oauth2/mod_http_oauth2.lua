@@ -251,6 +251,11 @@ local function get_redirect_uri(client, query_redirect_uri) -- record client, st
 			return redirect_uri
 		end
 	end
+	-- FIXME The authorization server MUST allow any port to be specified at the
+	-- time of the request for loopback IP redirect URIs, to accommodate clients
+	-- that obtain an available ephemeral port from the operating system at the
+	-- time of the request.
+	-- https://www.ietf.org/archive/id/draft-ietf-oauth-v2-1-08.html#section-8.4.2
 end
 
 local grant_type_handlers = {};
