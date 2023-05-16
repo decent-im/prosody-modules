@@ -762,6 +762,7 @@ local registration_schema = {
 		};
 		grant_types = {
 			type = "array";
+			minItems = 1;
 			items = {
 				type = "string";
 				enum = {
@@ -777,12 +778,12 @@ local registration_schema = {
 			default = { "authorization_code" };
 		};
 		application_type = { type = "string"; enum = { "native"; "web" }; default = "web" };
-		response_types = { type = "array"; items = { type = "string"; enum = { "code"; "token" } }; default = { "code" } };
+		response_types = { type = "array"; minItems = 1; items = { type = "string"; enum = { "code"; "token" } }; default = { "code" } };
 		client_name = { type = "string" };
 		client_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		logo_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		scope = { type = "string" };
-		contacts = { type = "array"; items = { type = "string"; format = "email" } };
+		contacts = { type = "array"; minItems = 1; items = { type = "string"; format = "email" } };
 		tos_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		policy_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
 		jwks_uri = { type = "string"; format = "uri"; luaPattern = "^https:" };
