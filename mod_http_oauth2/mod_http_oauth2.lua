@@ -807,6 +807,9 @@ local registration_schema = {
 
 local function redirect_uri_allowed(redirect_uri, client_uri, app_type)
 	local uri = url.parse(redirect_uri);
+	if not uri.scheme then
+		return false; -- no relative URLs
+	end
 	if app_type == "native" then
 		return uri.scheme == "http" and loopbacks:contains(uri.host) or uri.scheme ~= "https";
 	elseif app_type == "web" then
