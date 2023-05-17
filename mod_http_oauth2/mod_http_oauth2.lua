@@ -102,7 +102,7 @@ local function parse_scopes(scope_string)
 	return array(scope_string:gmatch("%S+"));
 end
 
-local openid_claims = set.new({ "openid", "profile"; "email"; "address"; "phone" });
+local openid_claims = set.new({ "openid"; "profile"; "email"; "address"; "phone" });
 
 -- array -> array, array, array
 local function split_scopes(scope_list)
@@ -111,7 +111,7 @@ local function split_scopes(scope_list)
 	for _, scope in ipairs(scope_list) do
 		if openid_claims:contains(scope) then
 			claims:push(scope);
-		elseif all_roles[scope] then
+		elseif scope == "xmpp" or all_roles[scope] then
 			roles:push(scope);
 		else
 			unknown:push(scope);
@@ -121,7 +121,7 @@ local function split_scopes(scope_list)
 end
 
 local function can_assume_role(username, requested_role)
-	return usermanager.user_can_assume_role(username, module.host, requested_role);
+	return requested_role == "xmpp" or usermanager.user_can_assume_role(username, module.host, requested_role);
 end
 
 -- function (string) : function(string) : boolean
@@ -221,6 +221,12 @@ local function new_access_token(token_jid, role, scope_string, client, id_token,
 	else
 		-- Grant exists, reuse existing refresh token
 		refresh_token = refresh_token_info.token;
+	end
+
+	if role == "xmpp" then
+		-- Special scope meaning the users default role.
+		local user_default_role = usermanager.get_user_role(jid.node(token_jid), module.host);
+		role = user_default_role and user_default_role.name;
 	end
 
 	local access_token, access_token_info = tokens.create_token(token_jid, grant.id, role, default_access_ttl, "oauth2");
@@ -1080,7 +1086,8 @@ module:provides("http", {
 				authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
 				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
-				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):append(array(openid_claims:items()));
+				scopes_supported = usermanager.get_all_roles
+					and array(it.keys(usermanager.get_all_roles(module.host))):push("xmpp"):append(array(openid_claims:items()));
 				response_types_supported = array(it.keys(response_type_handlers));
 				token_endpoint_auth_methods_supported = array({ "client_secret_post"; "client_secret_basic" });
 				op_policy_uri = module:get_option_string("oauth2_policy_url", nil);

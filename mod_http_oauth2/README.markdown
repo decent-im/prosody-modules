@@ -165,12 +165,22 @@ work on additional interfaces in the future.
 
 OAuth supports "scopes" as a way to grant clients limited access.
 
-There are currently no standard scopes defined for XMPP. This is something
-that we intend to change, e.g. by definitions provided in a future XEP. This
-means that clients you authorize currently have unrestricted access to your
-account (including the ability to change your password and lock you out!). So,
-for now, while using OAuth clients can prevent leaking your password to them,
-it is not currently suitable for connecting untrusted clients to your account.
+There are currently no standard scopes defined for XMPP. This is
+something that we intend to change, e.g. by definitions provided in a
+future XEP. This means that clients you authorize currently have to
+choose between unrestricted access to your account (including the
+ability to change your password and lock you out!) and zero access. So,
+for now, while using OAuth clients can prevent leaking your password to
+them, it is not currently suitable for connecting untrusted clients to
+your account.
+
+As a first step, the `xmpp` scope is supported, and corresponds to
+whatever permissions the user would have when logged in over XMPP.
+
+Further, known Prosody roles can be used as scopes.
+
+OpenID scopes such as `openid` and `profile` can be used for "Login
+with XMPP" without granting access to more than limited profile details.
 
 ## Compatibility
 
