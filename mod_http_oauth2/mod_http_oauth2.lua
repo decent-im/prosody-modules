@@ -337,7 +337,7 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 		}) or ("Here's your authorization code:\n%s\n"):format(code);
 		return response;
 	elseif not redirect_uri then
-		return 400;
+		return oauth_error("invalid_redirect_uri");
 	end
 
 	local redirect = url.parse(redirect_uri);
