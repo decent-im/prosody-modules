@@ -236,6 +236,17 @@ local function new_access_token(token_jid, role, scope_string, client, id_token,
 	};
 end
 
+local function normalize_loopback(uri)
+	local u = url.parse(uri);
+	if u.scheme == "http" and loopbacks:contains(u.host) then
+		u.authority = nil;
+		u.host = "::1";
+		u.port = nil;
+		return url.build(u);
+	end
+	-- else, not a valid loopback uri
+end
+
 local function get_redirect_uri(client, query_redirect_uri) -- record client, string : string
 	if not query_redirect_uri then
 		if #client.redirect_uris ~= 1 then
@@ -251,11 +262,19 @@ local function get_redirect_uri(client, query_redirect_uri) -- record client, st
 			return redirect_uri
 		end
 	end
-	-- FIXME The authorization server MUST allow any port to be specified at the
-	-- time of the request for loopback IP redirect URIs, to accommodate clients
-	-- that obtain an available ephemeral port from the operating system at the
-	-- time of the request.
+	-- The authorization server MUST allow any port to be specified at the time
+	-- of the request for loopback IP redirect URIs, to accommodate clients that
+	-- obtain an available ephemeral port from the operating system at the time
+	-- of the request.
 	-- https://www.ietf.org/archive/id/draft-ietf-oauth-v2-1-08.html#section-8.4.2
+	local loopback_redirect_uri = normalize_loopback(query_redirect_uri);
+	if loopback_redirect_uri then
+		for _, redirect_uri in ipairs(client.redirect_uris) do
+			if loopback_redirect_uri == normalize_loopback(redirect_uri) then
+				return query_redirect_uri;
+			end
+		end
+	end
 end
 
 local grant_type_handlers = {};
