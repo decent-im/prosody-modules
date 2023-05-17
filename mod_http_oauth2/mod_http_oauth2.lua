@@ -707,7 +707,12 @@ local function handle_authorization_request(event)
 	local auth_state = get_auth_state(request);
 	if not auth_state.user then
 		-- Render login page
-		return render_page(templates.login, { state = auth_state, client = client });
+		local extra = {};
+		if params.login_hint then
+			extra.username_hint = (jid.prepped_split(params.login_hint));
+			extra.no_username_hint = not extra.username_hint;
+		end
+		return render_page(templates.login, { state = auth_state; client = client; extra = extra });
 	elseif auth_state.consent == nil then
 		-- Render consent page
 		local scopes, roles = split_scopes(requested_scopes);
