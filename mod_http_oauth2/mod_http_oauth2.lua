@@ -1074,7 +1074,6 @@ module:provides("http", {
 				issuer = get_issuer();
 				authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
 				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
-				jwks_uri = nil; -- TODO?
 				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
 				scopes_supported = usermanager.get_all_roles and array(it.keys(usermanager.get_all_roles(module.host))):append(array(openid_claims:items()));
 				response_types_supported = array(it.keys(response_type_handlers));
@@ -1091,7 +1090,8 @@ module:provides("http", {
 
 				-- OpenID
 				userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
-				id_token_signing_alg_values_supported = { "HS256" };
+				jwks_uri = nil; -- REQUIRED in OpenID Discovery but not in OAuth 2.0 Metadata
+				id_token_signing_alg_values_supported = { "HS256" }; -- The algorithm RS256 MUST be included, but we use HS256 and client_secret as shared key.
 			};
 		};
 	};

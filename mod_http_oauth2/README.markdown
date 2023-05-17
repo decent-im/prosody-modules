@@ -50,7 +50,7 @@ Notable supported standards:
 - [RFC 7628: A Set of Simple Authentication and Security Layer (SASL) Mechanisms for OAuth](https://www.rfc-editor.org/rfc/rfc7628)
 - [RFC 7636: Proof Key for Code Exchange by OAuth Public Clients](https://www.rfc-editor.org/rfc/rfc7636)
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
-- [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html)
+- [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html) (_partial, e.g. missing JWKS_)
 - [OpenID Connect Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html) 
 
 ## Configuration
