@@ -664,7 +664,7 @@ function handle_token_grant(event)
 	event.response.headers.content_type = "application/json";
 	local params = http.formdecode(event.request.body);
 	if not params then
-		return error_response(event.request, oauth_error("invalid_request"));
+		return oauth_error("invalid_request");
 	end
 
 	if credentials and credentials.type == "basic" then
@@ -676,7 +676,7 @@ function handle_token_grant(event)
 	local grant_type = params.grant_type
 	local grant_handler = grant_type_handlers[grant_type];
 	if not grant_handler then
-		return error_response(event.request, oauth_error("unsupported_grant_type"));
+		return oauth_error("invalid_request");
 	end
 	return grant_handler(params);
 end
