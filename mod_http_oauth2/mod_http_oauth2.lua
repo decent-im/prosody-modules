@@ -61,6 +61,7 @@ local function render_page(template, data, sensitive)
 		headers = {
 			["Content-Type"] = "text/html; charset=utf-8";
 			["Content-Security-Policy"] = "default-src 'self'";
+			["Referrer-Policy"] = "no-referrer";
 			["X-Frame-Options"] = "DENY";
 			["Cache-Control"] = (sensitive and "no-store" or "no-cache")..", private";
 		};
