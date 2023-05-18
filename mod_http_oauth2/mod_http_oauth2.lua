@@ -703,6 +703,11 @@ local function handle_authorization_request(event)
 		return render_error(oauth_error("invalid_request", "Invalid 'client_id' parameter"));
 	end
 
+	if not get_redirect_uri(client, params.redirect_uri) then
+		return render_error(oauth_error("invalid_request", "Invalid 'redirect_uri' parameter"));
+	end
+	-- From this point we know that redirect_uri is safe to use
+
 	local client_response_types = set.new(array(client.response_types or { "code" }));
 	client_response_types = set.intersection(client_response_types, allowed_response_type_handlers);
 	if not client_response_types:contains(params.response_type) then
