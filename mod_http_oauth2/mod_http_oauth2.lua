@@ -180,10 +180,6 @@ end
 local oob_uri = "urn:ietf:wg:oauth:2.0:oob";
 
 local loopbacks = set.new({ "localhost", "127.0.0.1", "::1" });
-local function is_secure_redirect(uri)
-	local u = url.parse(uri);
-	return u.scheme ~= "http" or loopbacks:contains(u.host);
-end
 
 local function oauth_error(err_name, err_desc)
 	return errors.new({
@@ -607,8 +603,7 @@ end
 -- the redirect_uri is missing or invalid. In those cases, we render an
 -- error directly to the user-agent.
 local function error_response(request, redirect_uri, err)
-	if not redirect_uri or not is_secure_redirect(redirect_uri) then
-		module:log("warn", "Missing or invalid redirect_uri %q, rendering error to user-agent", redirect_uri);
+	if not redirect_uri or redirect_uri == oob_uri then
 		return render_error(err);
 	end
 	local q = request.url.query and http.formdecode(request.url.query);
