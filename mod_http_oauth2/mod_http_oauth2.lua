@@ -610,7 +610,7 @@ local function error_response(request, err)
 	local q = request.url.query and http.formdecode(request.url.query);
 	local redirect_uri = q and q.redirect_uri;
 	if not redirect_uri or not is_secure_redirect(redirect_uri) then
-		module:log("warn", "Missing or invalid redirect_uri <%s>, rendering error to user-agent", redirect_uri or "");
+		module:log("warn", "Missing or invalid redirect_uri %q, rendering error to user-agent", redirect_uri);
 		return render_error(err);
 	end
 	local redirect_query = url.parse(redirect_uri);
