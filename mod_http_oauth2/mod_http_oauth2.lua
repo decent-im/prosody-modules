@@ -1025,6 +1025,7 @@ end
 
 module:depends("http");
 module:provides("http", {
+	cors = { enabled = true; credentials = true };
 	route = {
 		-- OAuth 2.0 in 5 simple steps!
 		-- This is the normal 'authorization_code' flow.
@@ -1089,6 +1090,7 @@ end, 5);
 module:provides("http", {
 	name = "oauth2-discovery";
 	default_path = "/.well-known/oauth-authorization-server";
+	cors = { enabled = true };
 	route = {
 		["GET"] = {
 			headers = { content_type = "application/json" };
