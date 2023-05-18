@@ -754,7 +754,11 @@ local function handle_authorization_request(event)
 	if not response_handler then
 		return error_response(request, oauth_error("unsupported_response_type"));
 	end
-	return response_handler(client, params, user_jid, id_token);
+	local ret = response_handler(client, params, user_jid, id_token);
+	if errors.is_err(ret) then
+		return error_response(request, ret);
+	end
+	return ret;
 end
 
 local function handle_revocation_request(event)
