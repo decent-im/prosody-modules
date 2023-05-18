@@ -681,11 +681,11 @@ local function handle_authorization_request(event)
 	local request = event.request;
 
 	if not request.url.query then
-		return error_response(request, oauth_error("invalid_request"));
+		return error_response(request, oauth_error("invalid_request", "Missing query parameters"));
 	end
 	local params = http.formdecode(request.url.query);
 	if not params then
-		return error_response(request, oauth_error("invalid_request"));
+		return error_response(request, oauth_error("invalid_request", "Invalid query parameters"));
 	end
 
 	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
