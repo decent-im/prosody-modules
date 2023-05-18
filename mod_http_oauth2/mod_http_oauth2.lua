@@ -597,6 +597,10 @@ if module:get_host_type() == "component" then
 	grant_type_handlers.authorization_code = nil;
 end
 
+local function render_error(err)
+	return render_page(templates.error, { error = err });
+end
+
 -- OAuth errors should be returned to the client if possible, i.e. by
 -- appending the error information to the redirect_uri and sending the
 -- redirect to the user-agent. In some cases we can't do this, e.g. if
@@ -607,7 +611,7 @@ local function error_response(request, err)
 	local redirect_uri = q and q.redirect_uri;
 	if not redirect_uri or not is_secure_redirect(redirect_uri) then
 		module:log("warn", "Missing or invalid redirect_uri <%s>, rendering error to user-agent", redirect_uri or "");
-		return render_page(templates.error, { error = err });
+		return render_error(err);
 	end
 	local redirect_query = url.parse(redirect_uri);
 	local sep = redirect_query.query and "&" or "?";
@@ -680,28 +684,29 @@ end
 local function handle_authorization_request(event)
 	local request = event.request;
 
+	-- Directly returning errors to the user before we have a validated client object
 	if not request.url.query then
-		return error_response(request, oauth_error("invalid_request", "Missing query parameters"));
+		return render_error(oauth_error("invalid_request", "Missing query parameters"));
 	end
 	local params = http.formdecode(request.url.query);
 	if not params then
-		return error_response(request, oauth_error("invalid_request", "Invalid query parameters"));
+		return render_error(oauth_error("invalid_request", "Invalid query parameters"));
 	end
 
 	if not params.client_id then
-		return oauth_error("invalid_request", "Missing 'client_id' parameter");
+		return render_error(oauth_error("invalid_request", "Missing 'client_id' parameter"));
 	end
 
 	local ok, client = verify_client(params.client_id);
 
 	if not ok then
-		return oauth_error("invalid_request", "Invalid 'client_id' parameter");
+		return render_error(oauth_error("invalid_request", "Invalid 'client_id' parameter"));
 	end
 
 	local client_response_types = set.new(array(client.response_types or { "code" }));
 	client_response_types = set.intersection(client_response_types, allowed_response_type_handlers);
 	if not client_response_types:contains(params.response_type) then
-		return oauth_error("invalid_client", "'response_type' not allowed");
+		return error_response(request, oauth_error("invalid_client", "'response_type' not allowed"));
 	end
 
 	local requested_scopes = parse_scopes(params.scope or "");
