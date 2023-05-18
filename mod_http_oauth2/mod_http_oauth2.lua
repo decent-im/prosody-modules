@@ -688,18 +688,20 @@ local function handle_authorization_request(event)
 		return error_response(request, oauth_error("invalid_request", "Invalid query parameters"));
 	end
 
-	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
+	if not params.client_id then
+		return oauth_error("invalid_request", "Missing 'client_id' parameter");
+	end
 
 	local ok, client = verify_client(params.client_id);
 
 	if not ok then
-		return oauth_error("invalid_client", "incorrect credentials");
+		return oauth_error("invalid_request", "Invalid 'client_id' parameter");
 	end
 
 	local client_response_types = set.new(array(client.response_types or { "code" }));
 	client_response_types = set.intersection(client_response_types, allowed_response_type_handlers);
 	if not client_response_types:contains(params.response_type) then
-		return oauth_error("invalid_client", "response_type not allowed");
+		return oauth_error("invalid_client", "'response_type' not allowed");
 	end
 
 	local requested_scopes = parse_scopes(params.scope or "");
