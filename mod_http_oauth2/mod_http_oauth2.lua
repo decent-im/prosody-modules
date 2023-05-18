@@ -606,13 +606,12 @@ end
 -- redirect to the user-agent. In some cases we can't do this, e.g. if
 -- the redirect_uri is missing or invalid. In those cases, we render an
 -- error directly to the user-agent.
-local function error_response(request, err)
-	local q = request.url.query and http.formdecode(request.url.query);
-	local redirect_uri = q and q.redirect_uri;
+local function error_response(request, redirect_uri, err)
 	if not redirect_uri or not is_secure_redirect(redirect_uri) then
 		module:log("warn", "Missing or invalid redirect_uri %q, rendering error to user-agent", redirect_uri);
 		return render_error(err);
 	end
+	local q = request.url.query and http.formdecode(request.url.query);
 	local redirect_query = url.parse(redirect_uri);
 	local sep = redirect_query.query and "&" or "?";
 	redirect_uri = redirect_uri
@@ -703,7 +702,8 @@ local function handle_authorization_request(event)
 		return render_error(oauth_error("invalid_request", "Invalid 'client_id' parameter"));
 	end
 
-	if not get_redirect_uri(client, params.redirect_uri) then
+	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
+	if not redirect_uri then
 		return render_error(oauth_error("invalid_request", "Invalid 'redirect_uri' parameter"));
 	end
 	-- From this point we know that redirect_uri is safe to use
@@ -711,7 +711,7 @@ local function handle_authorization_request(event)
 	local client_response_types = set.new(array(client.response_types or { "code" }));
 	client_response_types = set.intersection(client_response_types, allowed_response_type_handlers);
 	if not client_response_types:contains(params.response_type) then
-		return error_response(request, oauth_error("invalid_client", "'response_type' not allowed"));
+		return error_response(request, redirect_uri, oauth_error("invalid_client", "'response_type' not allowed"));
 	end
 
 	local requested_scopes = parse_scopes(params.scope or "");
@@ -738,7 +738,7 @@ local function handle_authorization_request(event)
 		return render_page(templates.consent, { state = auth_state; client = client; scopes = scopes+roles }, true);
 	elseif not auth_state.consent then
 		-- Notify client of rejection
-		return error_response(request, oauth_error("access_denied"));
+		return error_response(request, redirect_uri, oauth_error("access_denied"));
 	end
 	-- else auth_state.consent == true
 
@@ -764,11 +764,11 @@ local function handle_authorization_request(event)
 	local response_type = params.response_type;
 	local response_handler = response_type_handlers[response_type];
 	if not response_handler then
-		return error_response(request, oauth_error("unsupported_response_type"));
+		return error_response(request, redirect_uri, oauth_error("unsupported_response_type"));
 	end
 	local ret = response_handler(client, params, user_jid, id_token);
 	if errors.is_err(ret) then
-		return error_response(request, ret);
+		return error_response(request, redirect_uri, ret);
 	end
 	return ret;
 end
