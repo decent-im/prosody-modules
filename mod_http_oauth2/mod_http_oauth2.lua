@@ -326,7 +326,7 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 		id_token = id_token;
 	});
 	if not ok then
-		return {status_code = 429};
+		return oauth_error("temporarily_unavailable");
 	end
 
 	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
