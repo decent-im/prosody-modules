@@ -29,10 +29,15 @@ local function publish_payload(node, actor, item_id, payload)
 	return 202;
 end
 
-local node_template = module:get_option_string("alertmanager_node_template", "{path?alerts}");
+local global_node_template = module:get_option_string("alertmanager_node_template", "{path?alerts}");
+local path_configs = module:get_option("alertmanager_path_configs", {});
 
 function handle_POST(event, path)
 	local request = event.request;
+
+	local config = path_configs[path] or {};
+	local node_template = config.node_template or global_node_template;
+	local publisher = config.publisher or request.ip;
 
 	local payload = json.decode(event.request.body);
 	if type(payload) ~= "table" then return 400; end
@@ -55,7 +60,7 @@ function handle_POST(event, path)
 		end
 
 		local node = render(node_template, {alert = alert, path = path, payload = payload, request = request});
-		local ret = publish_payload(node, request.ip, uuid_generate(), item);
+		local ret = publish_payload(node, publisher, uuid_generate(), item);
 		if ret ~= 202 then
 			return ret
 		end

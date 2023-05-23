@@ -93,3 +93,21 @@ Available configuration options:
 
 `alertmanager_node_template`
 :   Template for the pubsub node name, defaults to `"{path?alerts}"`
+
+`alertmanager_path_configs`
+:   Per-path configuration variables (see below).
+
+### Per-path configuration
+
+It's possible to override configuration options based on the path suffix. For
+example, if a request is made to `http://prosody/pubsub_alertmanager/foo` the
+path suffix is `foo`. You can then supply the following configuration:
+
+``` lua
+alertmanager_path_configs = {
+    foo = {
+        node_template = "alerts/{alert.labels.severity}";
+        publisher = "user@example.net";
+    };
+}
+```
