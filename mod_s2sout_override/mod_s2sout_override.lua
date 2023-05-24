@@ -12,5 +12,8 @@ module:hook("s2sout-pre-connect", function(event)
 	end
 	if type(override) == "table" and override.scheme == "tcp" and type(override.host) == "string" then
 		event.resolver = basic_resolver.new(override.host, tonumber(override.port) or 5269, override.scheme, {});
+	elseif type(override) == "table" and override.scheme == "tls" and type(override.host) == "string" then
+		event.resolver = basic_resolver.new(override.host, tonumber(override.port) or 5270, "tcp",
+			{ servername = event.session.to_host; sslctx = event.session.ssl_ctx });
 	end
 end);

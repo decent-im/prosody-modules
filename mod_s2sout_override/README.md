@@ -11,9 +11,12 @@ Enable the module as usual, then specify a map of XMPP remote hostnames
 to URIs like `"tcp://host.example:port"`, to have Prosody connect there
 instead of doing normal DNS SRV resolution.
 
-Currently only the `tcp://` scheme is supported.  A future version could
-support more methods including Direct TLS, alternate SRV lookup targets
-or even UNIX sockets.
+Currently supported schemes are `tcp://` and `tls://`.  A future version
+could support more methods including alternate SRV lookup targets or
+even UNIX sockets.
+
+URIs with IP addresses like `tcp://127.0.0.1:9999` will bypass A/AAAA
+DNS lookups.
 
 ```lua
 -- Global section
@@ -25,6 +28,7 @@ modules_enabled = {
 s2sout_override = {
     ["example.com"] = "tcp://other.host.example:5299";
     ["xmpp.example.net"] = "tcp://localhost:5999";
+    ["secure.example"] = = "tls://127.0.0.1:5270";
 }
 ```
 
