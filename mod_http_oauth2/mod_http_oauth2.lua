@@ -138,6 +138,8 @@ local function check_client(client_id)
 	return client;
 end
 
+local purpose_map = { ["oauth2-refresh"] = "refresh_token"; ["oauth"] = "access_token" };
+
 -- scope : string | array | set
 --
 -- at each step, allow the same or a subset of scopes
@@ -1047,6 +1049,47 @@ local function handle_device_verification_request(event)
 	}
 end
 
+local function handle_introspection_request(event)
+	local request = event.request;
+	local credentials = get_request_credentials(request);
+	if not credentials or credentials.type ~= "basic" then
+		event.response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
+		return 401;
+	end
+	-- OAuth "client" credentials
+	if not verify_client_secret(credentials.username, credentials.password) then
+		return 401;
+	end
+
+	local form_data = http.formdecode(request.body or "=");
+	local token = form_data.token;
+	if not token then
+		return 400;
+	end
+
+	local token_info = tokens.get_token_info(form_data.token);
+	if not token_info then
+		return { headers = { content_type = "application/json" }; body = json.encode { active = false } };
+	end
+
+	return {
+		headers = { content_type = "application/json" };
+		body = json.encode {
+			active = true;
+			client_id = credentials.username; -- We don't really know for sure
+			username = jid.node(token_info.jid);
+			scope = token_info.grant.data.oauth2_scopes;
+			token_type = purpose_map[token_info.purpose];
+			exp = token.expires;
+			iat = token.created;
+			sub = url.build({ scheme = "xmpp"; path = token_info.jid });
+			aud = nil;
+			iss = get_issuer();
+			jti = token_info.id;
+		};
+	};
+end
+
 local strict_auth_revoke = module:get_option_boolean("oauth2_require_auth_revoke", false);
 
 local function handle_revocation_request(event)
@@ -1425,6 +1468,9 @@ module:provides("http", {
 		-- Step 5. Revoke token (access or refresh)
 		["POST /revoke"] = handle_revocation_request;
 
+		-- Get info about a token
+		["POST /introspect"] = handle_introspection_request;
+
 		-- OpenID
 		["GET /userinfo"] = handle_userinfo_request;
 
@@ -1446,6 +1492,7 @@ module:provides("http", {
 		["GET /register"] = { headers = { content_type = "application/schema+json" }; body = json.encode(registration_schema) };
 		["GET /token"] = function() return 405; end;
 		["GET /revoke"] = function() return 405; end;
+		["GET /introspect"] = function() return 405; end;
 	};
 });
 
@@ -1482,6 +1529,8 @@ function get_authorization_server_metadata()
 		revocation_endpoint = handle_revocation_request and module:http_url() .. "/revoke" or nil;
 		revocation_endpoint_auth_methods_supported = array({ "client_secret_basic" });
 		device_authorization_endpoint = handle_device_authorization_request and module:http_url() .. "/device";
+		introspection_endpoint = handle_introspection_request and module:http_url() .. "/introspect";
+		introspection_endpoint_auth_methods_supported = nil;
 		code_challenge_methods_supported = array(it.keys(verifier_transforms));
 		grant_types_supported = array(it.keys(grant_type_handlers));
 		response_modes_supported = array(it.keys(response_type_handlers)):map(tmap { token = "fragment"; code = "query" });
