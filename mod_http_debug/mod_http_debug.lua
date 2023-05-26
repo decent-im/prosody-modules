@@ -26,6 +26,7 @@ local methods = module:get_option_set("http_debug_methods", { "GET"; "HEAD"; "DE
 local route = {};
 for method in methods do
 	route[method] = handle_request;
+	route[method .. " /*"] = handle_request;
 end
 
 module:provides("http", {
