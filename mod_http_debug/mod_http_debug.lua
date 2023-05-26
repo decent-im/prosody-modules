@@ -3,6 +3,7 @@ local json = require "util.json"
 module:depends("http")
 local function handle_request(event)
 	local request = event.request;
+	(request.log or module._log)("debug", "%s -- %s %q HTTP/%s -- %q -- %s", request.ip, request.method, request.url, request.httpversion, request.headers, request.body);
 	return {
 		status_code = 200;
 		headers = { content_type = "application/json" };
