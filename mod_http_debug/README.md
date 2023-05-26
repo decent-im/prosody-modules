@@ -29,3 +29,12 @@ $ curl -sSf  https://xmpp.example.net:5281/debug | json_pp
    }
 }
 ```
+
+# Configuration
+
+HTTP Methods handled can be configured via the `http_debug_methods`
+setting. By default, the most common methods are already enabled.
+
+```lua
+http_debug_methods = { "GET"; "HEAD"; "DELETE"; "OPTIONS"; "PATCH"; "POST"; "PUT" };
+```
