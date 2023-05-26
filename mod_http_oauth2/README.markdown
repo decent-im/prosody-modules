@@ -127,6 +127,26 @@ are enforced:
 -   Informative URIs such as policy and terms of service **MUST** use
     the same scheme (i.e. `https://`) and hostname as the `client_uri`.
 
+#### Registration Example
+
+In short registration works by POST-ing a JSON structure describing your
+client to an endpoint:
+
+``` bash
+curl -sSf https://xmpp.example.net/oauth2/register \
+    -H Content-Type:application/json \
+    -H Accept:application/json \
+    --data '
+{
+   "client_name" : "My Application",
+   "client_uri" : "https://app.example.com/",
+   "redirect_uris" : [
+      "https://app.example.com/redirect"
+   ]
+}
+'
+```
+
 ### Supported flows
 
 Various flows can be disabled and enabled with
