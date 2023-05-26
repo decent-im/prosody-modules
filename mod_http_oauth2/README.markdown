@@ -107,6 +107,26 @@ oauth2_registration_algorithm = "HS256"
 oauth2_registration_ttl = nil -- unlimited by default
 ```
 
+Registering a client is described in
+[RFC7591](https://www.rfc-editor.org/rfc/rfc7591.html).
+
+In addition to the requirements in the RFC, the following requirements
+are enforced:
+
+-   `client_name` and `client_uri` **MUST** be present.
+-   `client_uri` **MUST** be a `https://` URL.
+-   `redirect_uris` **MUST** contain at least one valid URI.
+-   If `application_type` equals `web` (or is not included) then all
+    `redirect_uris` **MUST** be `https://` URIs and **MUST** use the
+    same hostname part as the `client_uri`.
+-   If `application_type` equals `native` then all `redirect_uris`
+    **MUST** match one of:
+    -   Loopback `http://` URI, e.g. `https://127.0.0.1:8080/`
+    -   Application-specific scheme, e.g. `com.example.app:/`
+    -   The special OOB URI `urn:ietf:wg:oauth:2.0:oob`
+-   Informative URIs such as policy and terms of service **MUST** use
+    the same scheme (i.e. `https://`) and hostname as the `client_uri`.
+
 ### Supported flows
 
 Various flows can be disabled and enabled with
