@@ -16,6 +16,9 @@ class ProsodyRestSession(OAuth2Session):
                 "client_name": client_name,
                 "client_uri": client_uri,
                 "redirect_uris": [redirect_uri],
+                "application_type": redirect_uri[:8] == "https://"
+                and "web"
+                or "native",
             },
         ).json()
 
