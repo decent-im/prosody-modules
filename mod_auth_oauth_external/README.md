@@ -79,7 +79,7 @@ oauth_external_username_field = "xmpp_username"
     owner password grant.
 
 `oauth_external_scope`
-:   String. Defaults to `"oauth"`. Included in request for resource
+:   String. Defaults to `"openid"`. Included in request for resource
     owner password grant.
 
 # Compatibility
