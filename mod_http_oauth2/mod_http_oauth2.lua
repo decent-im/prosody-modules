@@ -45,6 +45,7 @@ local template_path = module:get_option_path("oauth2_template_path", "html");
 local templates = {
 	login = read_file(template_path, "login.html", true);
 	consent = read_file(template_path, "consent.html", true);
+	oob = read_file(template_path, "oob.html", true);
 	error = read_file(template_path, "error.html", true);
 	css = read_file(template_path, "style.css");
 	js = read_file(template_path, "script.js");
@@ -328,17 +329,7 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 
 	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
 	if redirect_uri == oob_uri then
-		-- TODO some nicer template page
-		-- mod_http_errors will set content-type to text/html if it catches this
-		-- event, if not text/plain is kept for the fallback text.
-		local response = { status_code = 200; headers = { content_type = "text/plain" } }
-		response.body = module:context("*"):fire_event("http-message", {
-			response = response;
-			title = "Your authorization code";
-			message = "Here's your authorization code, copy and paste it into " .. (client.client_name or "your client");
-			extra = code;
-		}) or ("Here's your authorization code:\n%s\n"):format(code);
-		return response;
+		return render_page(templates.oob, { client = client; authorization_code = code }, true);
 	elseif not redirect_uri then
 		return oauth_error("invalid_redirect_uri");
 	end

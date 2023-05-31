@@ -27,6 +27,19 @@ p
 	border: solid 1px #f5c2c7;
 }
 
+.oob
+{
+	background-color: #d7daf8;
+	border: solid 1px #c2c7f5;
+	color: #202984;
+	margin: 0.75em;
+}
+.oob tt {
+	font-size: xx-large;
+	font-family: monospace;
+
+}
+
 input {
 	margin: 0.3rem;
 	padding: 0.2rem;
@@ -70,6 +83,10 @@ button, input[type=submit]
 	.error {
 		color: #f8d7da;
 		background-color: #842029;
+	}
+	.oob {
+		color: #d7daf8;
+		background-color: #202984;
 	}
 
 
