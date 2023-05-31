@@ -23,7 +23,9 @@
          }
       ],
       "timestamp-field" : "timestamp",
-      "timestamp-format" : "%b %d %H:%M:%S ",
+      "timestamp-format" : [
+         "%b %d %H:%M:%S "
+      ],
       "title" : "Prosody log",
       "url" : "https://prosody.im/doc/logging",
       "value" : {
