@@ -72,6 +72,8 @@ local function render_page(template, data, sensitive)
 	return resp;
 end
 
+local authorization_server_metadata = nil;
+
 local tokens = module:depends("tokenauth");
 
 local default_access_ttl = module:get_option_number("oauth2_access_token_ttl", 86400);
@@ -105,7 +107,16 @@ local function parse_scopes(scope_string)
 	return array(scope_string:gmatch("%S+"));
 end
 
-local openid_claims = set.new({ "openid"; "profile"; "email"; "address"; "phone" });
+local openid_claims = set.new();
+module:add_item("openid-claim", "openid");
+
+module:handle_items("openid-claim", function(event)
+	authorization_server_metadata = nil;
+	openid_claims:add(event.item);
+end, function()
+	authorization_server_metadata = nil;
+	openid_claims = set.new(module:get_host_items("openid-claim"));
+end, true);
 
 -- array -> array, array, array
 local function split_scopes(scope_list)
@@ -1079,39 +1090,52 @@ end, 5);
 
 -- OIDC Discovery
 
+function get_authorization_server_metadata()
+	if authorization_server_metadata then
+		return authorization_server_metadata;
+	end
+	authorization_server_metadata = {
+		-- RFC 8414: OAuth 2.0 Authorization Server Metadata
+		issuer = get_issuer();
+		authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
+		token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
+		registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
+		scopes_supported = usermanager.get_all_roles
+			and array(it.keys(usermanager.get_all_roles(module.host))):push("xmpp"):append(array(openid_claims:items()));
+		response_types_supported = array(it.keys(response_type_handlers));
+		token_endpoint_auth_methods_supported = array({ "client_secret_post"; "client_secret_basic" });
+		op_policy_uri = module:get_option_string("oauth2_policy_url", nil);
+		op_tos_uri = module:get_option_string("oauth2_terms_url", nil);
+		revocation_endpoint = handle_revocation_request and module:http_url() .. "/revoke" or nil;
+		revocation_endpoint_auth_methods_supported = array({ "client_secret_basic" });
+		code_challenge_methods_supported = array(it.keys(verifier_transforms));
+		grant_types_supported = array(it.keys(response_type_handlers)):map(tmap {
+			token = "implicit";
+			code = "authorization_code";
+		});
+		response_modes_supported = array(it.keys(response_type_handlers)):map(tmap { token = "fragment"; code = "query" });
+		authorization_response_iss_parameter_supported = true;
+		service_documentation = module:get_option_string("oauth2_service_documentation", "https://modules.prosody.im/mod_http_oauth2.html");
+
+		-- OpenID
+		userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
+		jwks_uri = nil; -- REQUIRED in OpenID Discovery but not in OAuth 2.0 Metadata
+		id_token_signing_alg_values_supported = { "HS256" }; -- The algorithm RS256 MUST be included, but we use HS256 and client_secret as shared key.
+	}
+	return authorization_server_metadata;
+end
+
 module:provides("http", {
 	name = "oauth2-discovery";
 	default_path = "/.well-known/oauth-authorization-server";
 	cors = { enabled = true };
 	route = {
-		["GET"] = {
-			headers = { content_type = "application/json" };
-			body = json.encode {
-				-- RFC 8414: OAuth 2.0 Authorization Server Metadata
-				issuer = get_issuer();
-				authorization_endpoint = handle_authorization_request and module:http_url() .. "/authorize" or nil;
-				token_endpoint = handle_token_grant and module:http_url() .. "/token" or nil;
-				registration_endpoint = handle_register_request and module:http_url() .. "/register" or nil;
-				scopes_supported = usermanager.get_all_roles
-					and array(it.keys(usermanager.get_all_roles(module.host))):push("xmpp"):append(array(openid_claims:items()));
-				response_types_supported = array(it.keys(response_type_handlers));
-				token_endpoint_auth_methods_supported = array({ "client_secret_post"; "client_secret_basic" });
-				op_policy_uri = module:get_option_string("oauth2_policy_url", nil);
-				op_tos_uri = module:get_option_string("oauth2_terms_url", nil);
-				revocation_endpoint = handle_revocation_request and module:http_url() .. "/revoke" or nil;
-				revocation_endpoint_auth_methods_supported = array({ "client_secret_basic" });
-				code_challenge_methods_supported = array(it.keys(verifier_transforms));
-				grant_types_supported = array(it.keys(response_type_handlers)):map(tmap { token = "implicit"; code = "authorization_code" });
-				response_modes_supported = array(it.keys(response_type_handlers)):map(tmap { token = "fragment"; code = "query" });
-				authorization_response_iss_parameter_supported = true;
-				service_documentation = module:get_option_string("oauth2_service_documentation", "https://modules.prosody.im/mod_http_oauth2.html");
-
-				-- OpenID
-				userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
-				jwks_uri = nil; -- REQUIRED in OpenID Discovery but not in OAuth 2.0 Metadata
-				id_token_signing_alg_values_supported = { "HS256" }; -- The algorithm RS256 MUST be included, but we use HS256 and client_secret as shared key.
-			};
-		};
+		["GET"] = function()
+			return {
+				headers = { content_type = "application/json" };
+				body = json.encode(get_authorization_server_metadata());
+			}
+		end
 	};
 });
 
