@@ -113,19 +113,38 @@ Registering a client is described in
 In addition to the requirements in the RFC, the following requirements
 are enforced:
 
--   `client_name` and `client_uri` **MUST** be present.
--   `client_uri` **MUST** be a `https://` URL.
--   `redirect_uris` **MUST** contain at least one valid URI.
--   If `application_type` equals `web` (or is not included) then all
-    `redirect_uris` **MUST** be `https://` URIs and **MUST** use the
-    same hostname part as the `client_uri`.
--   If `application_type` equals `native` then all `redirect_uris`
-    **MUST** match one of:
-    -   Loopback HTTP URI, e.g. `http://127.0.0.1/` or `http://[::1]`
-    -   Application-specific scheme, e.g. `com.example.app:/`
-    -   The special OOB URI `urn:ietf:wg:oauth:2.0:oob`
--   Informative URIs such as policy and terms of service **MUST** use
-    the same scheme (i.e. `https://`) and hostname as the `client_uri`.
+`client_name`
+:   **MUST** be present, is shown to users in consent screen.
+
+`client_uri`
+:   **MUST** be present and **MUST** be a `https://` URL.
+
+`redirect_uris`
+
+:   **MUST** contain at least one valid URI. Different rules apply
+    depending on the value of `application_type`:
+
+    `web`
+    :   `redirect_uris` **MUST** match one of: - Loopback HTTP URI,
+        e.g. `http://127.0.0.1/` or `http://[::1]` -
+        Application-specific scheme, e.g. `com.example.app:/` - The
+        special OOB URI `urn:ietf:wg:oauth:2.0:oob`
+
+`application_type`
+
+:   Optional, defaults to `web`. Determines further restrictions for
+    `redirect_uris`. The following values are supported:
+
+    `web` *(default)*
+    :   For web clients.
+
+    `native`
+    :   For native e.g. desktop clients etc.
+
+`tos_uri`, `policy_uri`
+:   Informative URLs pointing to Terms of Service and Service Policy
+    document **MUST** use the same scheme (i.e. `https://`) and hostname
+    as the `client_uri`.
 
 #### Registration Example
 
