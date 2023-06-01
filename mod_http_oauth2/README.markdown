@@ -125,10 +125,17 @@ are enforced:
     depending on the value of `application_type`:
 
     `web`
-    :   `redirect_uris` **MUST** match one of: - Loopback HTTP URI,
-        e.g. `http://127.0.0.1/` or `http://[::1]` -
-        Application-specific scheme, e.g. `com.example.app:/` - The
-        special OOB URI `urn:ietf:wg:oauth:2.0:oob`
+    :   `redirect_uris` **MUST** be `https://` URIs and **MUST** use the
+        same hostname part as the `client_uri`.
+
+    `native`
+
+    :   `redirect_uris` **MUST** match one of:
+
+        -   Loopback HTTP URI, e.g. `http://127.0.0.1/` or
+            `http://[::1]`
+        -   Application-specific scheme, e.g. `com.example.app:/`
+        -   The special OOB URI `urn:ietf:wg:oauth:2.0:oob`
 
 `application_type`
 
