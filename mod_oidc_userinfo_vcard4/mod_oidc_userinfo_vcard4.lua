@@ -3,6 +3,11 @@
 --
 local nodeprep = require "util.encodings".stringprep.nodeprep;
 
+module:add_item("openid-claim", "address");
+module:add_item("openid-claim", "email");
+module:add_item("openid-claim", "phone");
+module:add_item("openid-claim", "profile");
+
 local mod_pep = module:depends "pep";
 
 local gender_map = { M = "male"; F = "female"; O = "other"; N = "nnot applicable"; U = "unknown" }
