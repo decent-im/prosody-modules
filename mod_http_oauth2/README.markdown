@@ -121,7 +121,7 @@ are enforced:
     same hostname part as the `client_uri`.
 -   If `application_type` equals `native` then all `redirect_uris`
     **MUST** match one of:
-    -   Loopback `http://` URI, e.g. `https://127.0.0.1:8080/`
+    -   Loopback HTTP URI, e.g. `http://127.0.0.1/` or `http://[::1]`
     -   Application-specific scheme, e.g. `com.example.app:/`
     -   The special OOB URI `urn:ietf:wg:oauth:2.0:oob`
 -   Informative URIs such as policy and terms of service **MUST** use
