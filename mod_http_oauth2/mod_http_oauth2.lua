@@ -1,21 +1,22 @@
-local hashes = require "util.hashes";
+local usermanager = require "core.usermanager";
+local url = require "socket.url";
+local array = require "util.array";
 local cache = require "util.cache";
+local encodings = require "util.encodings";
+local errors = require "util.error";
+local hashes = require "util.hashes";
 local http = require "util.http";
+local id = require "util.id";
+local it = require "util.iterators";
 local jid = require "util.jid";
 local json = require "util.json";
-local usermanager = require "core.usermanager";
-local errors = require "util.error";
-local url = require "socket.url";
-local id = require "util.id";
-local encodings = require "util.encodings";
-local base64 = encodings.base64;
-local random = require "util.random";
 local schema = require "util.jsonschema";
+local jwt = require "util.jwt";
+local random = require "util.random";
 local set = require "util.set";
-local jwt = require"util.jwt";
-local it = require "util.iterators";
-local array = require "util.array";
 local st = require "util.stanza";
+
+local base64 = encodings.base64;
 
 local function b64url(s)
 	return (base64.encode(s):gsub("[+/=]", { ["+"] = "-", ["/"] = "_", ["="] = "" }))
