@@ -551,7 +551,7 @@ local function get_auth_state(request)
 	         and request.body
 	         and request.body ~= ""
 	         and request.headers.content_type == "application/x-www-form-urlencoded"
-	         and strict_formdecode(request.body);
+	         and http.formdecode(request.body);
 
 	if type(form) ~= "table" then return {}; end
 
