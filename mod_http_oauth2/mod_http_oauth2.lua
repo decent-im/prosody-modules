@@ -97,6 +97,17 @@ if registration_key then
 	sign_client, verify_client = jwt.init(registration_algo, registration_key, registration_key, registration_options);
 end
 
+-- verify and prepare client structure
+local function check_client(client_id)
+	if not verify_client then
+		return nil, "client-registration-not-enabled";
+	end
+
+	local ok, client = verify_client(client_id);
+	if not ok then return ok, client; end
+	return client;
+end
+
 -- scope : string | array | set
 --
 -- at each step, allow the same or a subset of scopes
@@ -409,8 +420,8 @@ function grant_type_handlers.authorization_code(params)
 		return oauth_error("invalid_scope", "unknown scope requested");
 	end
 
-	local client_ok, client = verify_client(params.client_id);
-	if not client_ok then
+	local client = check_client(params.client_id);
+	if not client then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
@@ -444,8 +455,8 @@ function grant_type_handlers.refresh_token(params)
 	if not params.client_secret then return oauth_error("invalid_request", "missing 'client_secret'"); end
 	if not params.refresh_token then return oauth_error("invalid_request", "missing 'refresh_token'"); end
 
-	local client_ok, client = verify_client(params.client_id);
-	if not client_ok then
+	local client = check_client(params.client_id);
+	if not client then
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
@@ -704,9 +715,9 @@ local function handle_authorization_request(event)
 		return render_error(oauth_error("invalid_request", "Missing 'client_id' parameter"));
 	end
 
-	local ok, client = verify_client(params.client_id);
+	local client = check_client(params.client_id);
 
-	if not ok then
+	if not client then
 		return render_error(oauth_error("invalid_request", "Invalid 'client_id' parameter"));
 	end
 
