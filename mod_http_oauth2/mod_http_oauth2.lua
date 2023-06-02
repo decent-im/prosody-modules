@@ -104,7 +104,11 @@ local function check_client(client_id)
 	end
 
 	local ok, client = verify_client(client_id);
-	if not ok then return ok, client; end
+	if not ok then
+		return ok, client;
+	end
+
+	client.client_hash = b64url(hashes.sha256(client_id));
 	return client;
 end
 
@@ -221,7 +225,13 @@ end
 -- properties that are deemed useful e.g. in case tokens issued to a certain
 -- client needs to be revoked
 local function client_subset(client)
-	return { name = client.client_name; uri = client.client_uri; id = client.software_id; version = client.software_version };
+	return {
+		name = client.client_name;
+		uri = client.client_uri;
+		id = client.software_id;
+		version = client.software_version;
+		hash = client.client_hash;
+	};
 end
 
 local function new_access_token(token_jid, role, scope_string, client, id_token, refresh_token_info)
