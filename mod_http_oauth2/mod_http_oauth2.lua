@@ -28,6 +28,24 @@ local function tmap(t)
 	end
 end
 
+local function strict_formdecode(query)
+	if not query then
+		return nil;
+	end
+	local params = http.formdecode(query);
+	if type(params) ~= "table" then
+		return nil, "no-pairs";
+	end
+	local dups = {};
+	for _, pair in ipairs(params) do
+		if dups[pair.name] then
+			return nil, "duplicate";
+		end
+		dups[pair.name] = true;
+	end
+	return params;
+end
+
 local function read_file(base_path, fn, required)
 	local f, err = io.open(base_path .. "/" .. fn);
 	if not f then
@@ -370,7 +388,7 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 
 	local redirect = url.parse(redirect_uri);
 
-	local query = http.formdecode(redirect.query or "");
+	local query = strict_formdecode(redirect.query);
 	if type(query) ~= "table" then query = {}; end
 	table.insert(query, { name = "code", value = code });
 	table.insert(query, { name = "iss", value = get_issuer() });
@@ -533,7 +551,7 @@ local function get_auth_state(request)
 	         and request.body
 	         and request.body ~= ""
 	         and request.headers.content_type == "application/x-www-form-urlencoded"
-	         and http.formdecode(request.body);
+	         and strict_formdecode(request.body);
 
 	if type(form) ~= "table" then return {}; end
 
@@ -643,7 +661,7 @@ local function error_response(request, redirect_uri, err)
 	if not redirect_uri or redirect_uri == oob_uri then
 		return render_error(err);
 	end
-	local q = request.url.query and http.formdecode(request.url.query);
+	local q = strict_formdecode(request.url.query);
 	local redirect_query = url.parse(redirect_uri);
 	local sep = redirect_query.query and "&" or "?";
 	redirect_uri = redirect_uri
@@ -697,7 +715,7 @@ function handle_token_grant(event)
 	event.response.headers.content_type = "application/json";
 	event.response.headers.cache_control = "no-store";
 	event.response.headers.pragma = "no-cache";
-	local params = http.formdecode(event.request.body);
+	local params = strict_formdecode(event.request.body);
 	if not params then
 		return oauth_error("invalid_request");
 	end
@@ -723,7 +741,7 @@ local function handle_authorization_request(event)
 	if not request.url.query then
 		return render_error(oauth_error("invalid_request", "Missing query parameters"));
 	end
-	local params = http.formdecode(request.url.query);
+	local params = strict_formdecode(request.url.query);
 	if not params then
 		return render_error(oauth_error("invalid_request", "Invalid query parameters"));
 	end
@@ -825,7 +843,7 @@ local function handle_revocation_request(event)
 		end
 	end
 
-	local form_data = http.formdecode(event.request.body or "");
+	local form_data = strict_formdecode(event.request.body);
 	if not form_data or not form_data.token then
 		response.headers.accept = "application/x-www-form-urlencoded";
 		return 415;
