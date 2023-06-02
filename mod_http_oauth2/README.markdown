@@ -223,7 +223,7 @@ oauth2_policy_url = "https://example.com/service-policy.pdf"
 This module does not provide an interface for users to manage what they have
 granted access to their account! (e.g. to view and revoke clients they have
 previously authorized). It is recommended to join this module with
-mod_client_management to provide such access. However, at the time of writing,
+[mod_client_management] to provide such access. However, at the time of writing,
 no XMPP clients currently support the protocol used by that module. We plan to
 work on additional interfaces in the future.
 
