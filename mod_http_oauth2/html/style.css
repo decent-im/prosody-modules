@@ -34,10 +34,12 @@ p
 	color: #202984;
 	margin: 0.75em;
 }
-.oob tt {
+.oob input {
 	font-size: xx-large;
 	font-family: monospace;
-
+	background-color: inherit;
+	border: none;
+	padding: 1ex 2em;
 }
 
 input {
