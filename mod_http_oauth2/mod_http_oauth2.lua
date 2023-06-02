@@ -66,6 +66,7 @@ local function render_page(template, data, sensitive)
 			["Referrer-Policy"] = "no-referrer";
 			["X-Frame-Options"] = "DENY";
 			["Cache-Control"] = (sensitive and "no-store" or "no-cache")..", private";
+			["Pragma"] = "no-cache";
 		};
 		body = _render_html(template, data);
 	};
@@ -360,6 +361,8 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 	return {
 		status_code = 303;
 		headers = {
+			cache_control = "no-store";
+			pragma = "no-cache";
 			location = url.build(redirect);
 		};
 	}
@@ -382,6 +385,8 @@ function response_type_handlers.token(client, params, granted_jid)
 	return {
 		status_code = 303;
 		headers = {
+			cache_control = "no-store";
+			pragma = "no-cache";
 			location = url.build(redirect);
 		};
 	}
@@ -620,6 +625,8 @@ local function error_response(request, redirect_uri, err)
 	return {
 		status_code = 303;
 		headers = {
+			cache_control = "no-store";
+			pragma = "no-cache";
 			location = redirect_uri;
 		};
 	};
@@ -660,6 +667,8 @@ function handle_token_grant(event)
 	local credentials = get_request_credentials(event.request);
 
 	event.response.headers.content_type = "application/json";
+	event.response.headers.cache_control = "no-store";
+	event.response.headers.pragma = "no-cache";
 	local params = http.formdecode(event.request.body);
 	if not params then
 		return oauth_error("invalid_request");
@@ -774,6 +783,8 @@ end
 
 local function handle_revocation_request(event)
 	local request, response = event.request, event.response;
+	response.headers.cache_control = "no-store";
+	response.headers.pragma = "no-cache";
 	if request.headers.authorization then
 		local credentials = get_request_credentials(request);
 		if not credentials or credentials.type ~= "basic" then
@@ -966,7 +977,11 @@ local function handle_register_request(event)
 
 	return {
 		status_code = 201;
-		headers = { content_type = "application/json" };
+		headers = {
+			cache_control = "no-store";
+			pragma = "no-cache";
+			content_type = "application/json";
+		};
 		body = json.encode(response);
 	};
 end
