@@ -480,6 +480,13 @@ function grant_type_handlers.refresh_token(params)
 		return oauth_error("invalid_grant", "invalid refresh token");
 	end
 
+	local refresh_token_client = refresh_token_info.grant.data.oauth2_client;
+	if not refresh_token_client.hash or refresh_token_client.hash ~= client.client_hash then
+		module:log("warn", "OAuth client %q (%s) tried to use refresh token belonging to %q (%s)", client.client_name, client.client_hash,
+			refresh_token_client.name, refresh_token_client.hash);
+		return oauth_error("unauthorized_client", "incorrect credentials");
+	end
+
 	local refresh_scopes = refresh_token_info.grant.data.oauth2_scopes;
 
 	if params.scope then
