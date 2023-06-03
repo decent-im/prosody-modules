@@ -35,6 +35,8 @@ local function get_user_agent(sasl_handler, token_info)
 	if not (sasl_agent or token_agent) then return; end
 	return {
 		software = sasl_agent and sasl_agent.software or token_agent and token_agent.name or nil;
+		software_id = token_agent and token_agent.id or nil;
+		software_version = token_agent and token_agent.version or nil;
 		uri = token_agent and token_agent.uri or nil;
 		device = sasl_agent and sasl_agent.device or nil;
 	};
@@ -348,7 +350,7 @@ module:hook("iq-get/self/xmpp:prosody.im/protocol/manage-clients:list", function
 		local user_agent = st.stanza("user-agent");
 		if client.user_agent then
 			if client.user_agent.software then
-				user_agent:text_tag("software", client.user_agent.software);
+				user_agent:text_tag("software", client.user_agent.software, { id = client.user_agent.software_id; version = client.user_agent.software_version });
 			end
 			if client.user_agent.device then
 				user_agent:text_tag("device", client.user_agent.device);
