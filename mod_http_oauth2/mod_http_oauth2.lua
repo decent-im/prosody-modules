@@ -568,7 +568,7 @@ local function get_auth_state(request)
 			user = {
 				username = username;
 				host = module.host;
-				token = new_user_token({ username = username, host = module.host });
+				token = new_user_token({ username = username; host = module.host; auth_time = os.time() });
 			};
 		};
 	elseif form.user_token and form.consent then
@@ -832,6 +832,7 @@ local function handle_authorization_request(event)
 		iss = get_issuer();
 		sub = url.build({ scheme = "xmpp"; path = user_jid });
 		aud = params.client_id;
+		auth_time = auth_state.user.auth_time;
 		nonce = params.nonce;
 	});
 	local response_type = params.response_type;
