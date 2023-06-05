@@ -776,6 +776,25 @@ local function handle_authorization_request(event)
 		end);
 	end
 
+	-- The 'prompt' parameter from OpenID Core
+	local prompt = set.new(parse_scopes(params.prompt or "select_account login consent"));
+	if prompt:contains("none") then
+		-- Client wants no interaction, only confirmation of prior login and
+		-- consent, but this is not implemented.
+		return error_response(request, redirect_uri, oauth_error("interaction_required"));
+	elseif not prompt:contains("select_account") then
+		-- TODO If the login page is split into account selection followed by login
+		-- (e.g. password), and then the account selection could be skipped iff the
+		-- 'login_hint' parameter is present.
+		return error_response(request, redirect_uri, oauth_error("account_selection_required"));
+	elseif not prompt:contains("login") then
+		-- Currently no cookies or such are used, so login is required every time.
+		return error_response(request, redirect_uri, oauth_error("login_required"));
+	elseif not prompt:contains("consent") then
+		-- Are there any circumstances when consent would be implied or assumed?
+		return error_response(request, redirect_uri, oauth_error("consent_required"));
+	end
+
 	local auth_state = get_auth_state(request);
 	if not auth_state.user then
 		-- Render login page
