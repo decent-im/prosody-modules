@@ -1,12 +1,12 @@
 ---
 labels:
 - Stage-Alpha
-summary: 'OAuth2 API'
 rockspec:
   build:
     copy_directories:
     - html
-...
+summary: OAuth 2.0 Authorization Server API
+---
 
 ## Introduction
 
