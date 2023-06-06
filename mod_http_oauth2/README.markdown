@@ -175,10 +175,16 @@ curl -sSf https://xmpp.example.net/oauth2/register \
 
 ### Supported flows
 
+-   Authorization Code grant, optionally with Proof Key for Code Exchange
+-   Resource owner password grant
+-   Implicit flow *(disabled by default)*
+-   Refresh Token grants
+
 Various flows can be disabled and enabled with
 `allowed_oauth2_grant_types` and `allowed_oauth2_response_types`:
 
 ```lua
+-- These examples reflect the defaults
 allowed_oauth2_grant_types = {
 	"authorization_code"; -- authorization code grant
 	"password"; -- resource owner password grant
@@ -190,16 +196,17 @@ allowed_oauth2_response_types = {
 }
 ```
 
-The [Proof Key for Code Exchange][RFC 7636] mitigation method can be
-made required:
+The [Proof Key for Code Exchange][RFC 7636] mitigation method is
+optional by default but can be made required:
 
 ```lua
-oauth2_require_code_challenge = true
+oauth2_require_code_challenge = true -- default is false
 ```
 
 Further, individual challenge methods can be enabled or disabled:
 
 ```lua
+-- These reflects the default
 allowed_oauth2_code_challenge_methods = {
     "plain"; -- the insecure one
     "S256";
@@ -214,6 +221,7 @@ for use by OAuth clients:
 ```lua
 oauth2_terms_url = "https://example.com/terms-of-service.html"
 oauth2_policy_url = "https://example.com/service-policy.pdf"
+-- These are unset by default
 ```
 
 ## Deployment notes
