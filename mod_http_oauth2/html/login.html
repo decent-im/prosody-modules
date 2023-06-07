@@ -16,7 +16,7 @@
 		<p>{state.error}</p>
 	</div>}
 	<form method="post">
-		<input type="text" name="username" placeholder="Username" aria-label="Username" required {extra.no_username_hint&autofocus}{extra.username_hint& value="{extra.username_hint?}"}><br/>
+		<input type="text" name="username" placeholder="Username" aria-label="Username" required {extra.username_hint~autofocus}{extra.username_hint& value="{extra.username_hint?}"}><br/>
 		<input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required {extra.username_hint&autofocus}><br/>
 		<input type="submit" value="Sign in">
 	</form>

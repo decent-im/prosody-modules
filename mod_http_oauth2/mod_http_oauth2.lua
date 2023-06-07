@@ -801,7 +801,6 @@ local function handle_authorization_request(event)
 		local extra = {};
 		if params.login_hint then
 			extra.username_hint = (jid.prepped_split(params.login_hint));
-			extra.no_username_hint = not extra.username_hint;
 		end
 		return render_page(templates.login, { state = auth_state; client = client; extra = extra });
 	elseif auth_state.consent == nil then
