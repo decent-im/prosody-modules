@@ -484,14 +484,16 @@ components:
       xml:
         attribute: true
     to:
-      description: recipient
+      description: the intended recipient for the stanza
       example: alice@example.com
+      format: xmpp-jid
       type: string
       xml:
         attribute: true
     from:
-      description: the sender
-      example: bob@localhost.example
+      description: the sender of the stanza
+      example: bob@example.net
+      format: xmpp-jid
       type: string
       xml:
         attribute: true
@@ -565,6 +567,7 @@ components:
       type: string
       format: date-time
       description: Timestamp of when a stanza was delayed, in ISO 8601 / XEP-0082 format.
+      title: 'XEP-0203: Delayed Delivery'
       xml:
         name: delay
         namespace: urn:xmpp:delay

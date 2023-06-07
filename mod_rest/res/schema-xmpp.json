@@ -108,6 +108,7 @@
          }
       },
       "delay" : {
+         "description" : "Timestamp of when a stanza was delayed, in ISO 8601 / XEP-0082 format.",
          "format" : "date-time",
          "title" : "XEP-0203: Delayed Delivery",
          "type" : "string",
@@ -204,7 +205,7 @@
       },
       "to" : {
          "description" : "the intended recipient for the stanza",
-         "example" : "alice@another.example",
+         "example" : "alice@example.com",
          "format" : "xmpp-jid",
          "type" : "string",
          "xml" : {
