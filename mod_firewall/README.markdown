@@ -10,6 +10,8 @@ rockspec:
       mod_firewall.definitions: definitions.lib.lua
       mod_firewall.marks: marks.lib.lua
       mod_firewall.test: test.lib.lua
+    copy_directories:
+      - scripts
 ---
 
 ------------------------------------------------------------------------
