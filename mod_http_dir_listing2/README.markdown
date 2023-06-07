@@ -3,7 +3,7 @@ summary: HTTP directory listing
 rockspec:
   build:
     copy_directories:
-      - html
+      - resources
 ---
 
 Introduction
