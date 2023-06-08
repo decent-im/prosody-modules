@@ -97,6 +97,13 @@ TO: <*>@<*>/<*>
 TYPE: groupchat
 PASS.
 
+# Mediated MUC invitations are naturally from 'strangers' and have special
+# handling. We lean towards accepting them, unless overridden by custom rules.
+NOT FROM FULL JID?
+NOT INSPECT: body
+INSPECT: {http://jabber.org/protocol/muc#user}x/invite
+JUMP CHAIN=user/spam_check_muc_invite
+
 # Non-chat message types often generate pop-ups in clients,
 # so we won't accept them from strangers
 NOT TYPE: chat
@@ -138,6 +145,18 @@ JUMP CHAIN=user/spam_check_subscription_request_custom
 
 ##################################################################
 
+#### Rules for MUC invitations ###################################
+
+::user/spam_check_muc_invite
+
+# This chain can be used to inspect the invitation and determine
+# the appropriate action. Otherwise, we proceed with the default
+# action below.
+JUMP CHAIN=user/spam_check_muc_invite_custom
+
+# Allow mediated MUC invitations by default
+PASS.
+
 #### Stanzas reaching this chain will be rejected ################
 ::user/spam_reject
 
@@ -151,7 +170,7 @@ BOUNCE=policy-violation
 
 ##################################################################
 
-#### Stanzas that may be spam, but we're not sure either way######
+#### Stanzas that may be spam, but we're not sure either way #####
 ::user/spam_handle_unknown
 
 # This chain can be used by other scripts
