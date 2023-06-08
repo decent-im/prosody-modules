@@ -220,11 +220,22 @@ function action_handlers.UNMARK_ORIGIN(name)
 end
 
 function action_handlers.MARK_USER(name)
-	return [[if session.firewall_marks then session.firewall_marks.]]..idsafe(name)..[[ = current_timestamp; end]], { "timestamp" };
+	return ([[if session.firewall_marks then
+			fire_event("firewall/marked/user", {
+				username = session.username;
+				mark = %q;
+				timestamp = current_timestamp;
+			});
+		end]]):format(idsafe(name)), { "timestamp" };
 end
 
 function action_handlers.UNMARK_USER(name)
-	return [[if session.firewall_marks then session.firewall_marks.]]..idsafe(name)..[[ = nil; end]], { "timestamp" };
+	return ([[if session.firewall_marks then
+			fire_event("firewall/unmarked/user", {
+				username = session.username;
+				mark = %q;
+			});
+		end]]):format(idsafe(name));
 end
 
 function action_handlers.ADD_TO(spec)
