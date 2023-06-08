@@ -316,7 +316,7 @@ local definition_handlers = module:require("definitions");
 local condition_handlers = module:require("conditions");
 local action_handlers = module:require("actions");
 
-if module:get_option_boolean("firewall_experimental_user_marks", false) then
+if module:get_option_boolean("firewall_experimental_user_marks", true) then
 	module:require"marks";
 end
 
