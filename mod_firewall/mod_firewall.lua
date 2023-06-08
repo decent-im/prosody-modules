@@ -742,3 +742,43 @@ function module.command(arg)
 		print("end -- End of file "..filename);
 	end
 end
+
+
+-- Console
+
+local console_env = module:shared("/*/admin_shell/env");
+
+console_env.firewall = {};
+
+function console_env.firewall:mark(user_jid, mark_name)
+	local username, host = jid.split(user_jid);
+	if not username or not hosts[host] then
+		return nil, "Invalid JID supplied";
+	elseif not idsafe(mark_name) then
+		return nil, "Invalid characters in mark name";
+	end
+	if not module:context(host):fire_event("firewall/marked/user", {
+		username = session.username;
+		mark = mark_name;
+		timestamp = os.time();
+	}) then
+		return nil, "Mark not set - is mod_firewall loaded on that host?";
+	end
+	return true, "User marked";
+end
+
+function console_env.firewall:unmark(jid, mark_name)
+	local username, host = jid.split(user_jid);
+	if not username or not hosts[host] then
+		return nil, "Invalid JID supplied";
+	elseif not idsafe(mark_name) then
+		return nil, "Invalid characters in mark name";
+	end
+	if not module:context(host):fire_event("firewall/unmarked/user", {
+		username = session.username;
+		mark = mark_name;
+	}) then
+		return nil, "Mark not removed - is mod_firewall loaded on that host?";
+	end
+	return true, "User unmarked";
+end

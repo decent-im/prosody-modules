@@ -18,7 +18,8 @@ module:hook("firewall/marked/user", function (event)
 	if not ok then
 		module:log("error", "Failed to mark user %q with %q: %s", event.username, event.mark, err);
 	end
-end, 1);
+	return true;
+end, -1);
 
 module:hook("firewall/unmarked/user", function (event)
 	local user = user_sessions[event.username];
@@ -30,4 +31,5 @@ module:hook("firewall/unmarked/user", function (event)
 	if not ok then
 		module:log("error", "Failed to unmark user %q with %q: %s", event.username, event.mark, err);
 	end
-end, 1);
+	return true;
+end, -1);
