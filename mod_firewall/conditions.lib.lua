@@ -67,6 +67,10 @@ function condition_handlers.FROM(from)
 	return compile_jid_match("from", from), { "split_from" };
 end
 
+function condition_handlers.FROM_FULL_JID()
+	return compile_jid_match_part("from_resource", nil), { "split_from" };
+end
+
 function condition_handlers.FROM_EXACTLY(from)
 	local metadeps = {};
 	return ("from == %s"):format(metaq(from, metadeps)), { "from", unpack(metadeps) };
