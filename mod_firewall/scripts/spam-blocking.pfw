@@ -100,7 +100,6 @@ PASS.
 # Mediated MUC invitations are naturally from 'strangers' and have special
 # handling. We lean towards accepting them, unless overridden by custom rules.
 NOT FROM FULL JID?
-NOT INSPECT: body
 INSPECT: {http://jabber.org/protocol/muc#user}x/invite
 JUMP CHAIN=user/spam_check_muc_invite
 
