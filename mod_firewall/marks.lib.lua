@@ -3,21 +3,14 @@ local mark_map_storage = module:open_store("firewall_marks", "map");
 
 local user_sessions = prosody.hosts[module.host].sessions;
 
-module:hook("resource-bind", function (event)
-	local session = event.session;
-	local username = session.username;
-	local user = user_sessions[username];
-	local marks = user.firewall_marks;
-	if not marks then
-		marks = mark_storage:get(username) or {};
-		user.firewall_marks = marks; -- luacheck: ignore 122
-	end
-	session.firewall_marks = marks;
-end);
-
 module:hook("firewall/marked/user", function (event)
 	local user = user_sessions[event.username];
 	local marks = user and user.firewall_marks;
+	if user and not marks then
+		-- Load marks from storage to cache on the user object
+		marks = mark_storage:get(event.username) or {};
+		user.firewall_marks = marks; --luacheck: ignore 122
+	end
 	if marks then
 		marks[event.mark] = event.timestamp;
 	end
