@@ -225,7 +225,7 @@ function action_handlers.MARK_USER(name)
 				mark = %q;
 				timestamp = current_timestamp;
 			});
-		]]):format(idsafe(name)), { "timestamp" };
+		]]):format(assert(idsafe(name), "Invalid characters in mark name: "..name)), { "timestamp" };
 end
 
 function action_handlers.UNMARK_USER(name)
@@ -233,7 +233,7 @@ function action_handlers.UNMARK_USER(name)
 				username = session.username;
 				mark = %q;
 			});
-		]]):format(idsafe(name));
+		]]):format(assert(idsafe(name), "Invalid characters in mark name: "..name));
 end
 
 function action_handlers.ADD_TO(spec)
