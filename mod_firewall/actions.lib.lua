@@ -220,20 +220,29 @@ function action_handlers.UNMARK_ORIGIN(name)
 end
 
 function action_handlers.MARK_USER(name)
-	return ([[fire_event("firewall/marked/user", {
+	return ([[if session.username and session.host == current_host then
+			fire_event("firewall/marked/user", {
 				username = session.username;
 				mark = %q;
 				timestamp = current_timestamp;
 			});
-		]]):format(assert(idsafe(name), "Invalid characters in mark name: "..name)), { "timestamp" };
+		else
+			log("warn", "Attempt to MARK a remote user - only local users may be marked");
+		end]]):format(assert(idsafe(name), "Invalid characters in mark name: "..name)), {
+			"current_host";
+			"timestamp";
+		};
 end
 
 function action_handlers.UNMARK_USER(name)
-	return ([[fire_event("firewall/unmarked/user", {
+	return ([[if session.username and session.host == current_host then
+			fire_event("firewall/unmarked/user", {
 				username = session.username;
 				mark = %q;
 			});
-		]]):format(assert(idsafe(name), "Invalid characters in mark name: "..name));
+		else
+			log("warn", "Attempt to UNMARK a remote user - only local users may be marked");
+		end]]):format(assert(idsafe(name), "Invalid characters in mark name: "..name));
 end
 
 function action_handlers.ADD_TO(spec)
