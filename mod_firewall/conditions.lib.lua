@@ -68,7 +68,7 @@ function condition_handlers.FROM(from)
 end
 
 function condition_handlers.FROM_FULL_JID()
-	return compile_jid_match_part("from_resource", nil), { "split_from" };
+	return "not "..compile_jid_match_part("from_resource", nil), { "split_from" };
 end
 
 function condition_handlers.FROM_EXACTLY(from)
