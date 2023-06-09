@@ -38,13 +38,10 @@ Configuration
 There is no configuration for this module, just add it to
 modules\_enabled as normal.
 
-Compatibility
-=============
+# Compatibility
 
-  ----- -------
-  0.12  Works
-  ----- -------
-  0.11  Should work
-  ----- -------
-  trunk Works
-  ----- -------
+  ------- -------------
+  0.12    Works
+  0.11    Should work
+  trunk   Works
+  ------- -------------
