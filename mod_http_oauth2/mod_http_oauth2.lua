@@ -72,7 +72,7 @@ local templates = {
 
 local site_name = module:get_option_string("site_name", module.host);
 
-local _render_html = require"util.interpolation".new("%b{}", st.xml_escape);
+local render_html = require"util.interpolation".new("%b{}", st.xml_escape);
 local function render_page(template, data, sensitive)
 	data = data or {};
 	data.site_name = site_name;
@@ -86,7 +86,7 @@ local function render_page(template, data, sensitive)
 			["Cache-Control"] = (sensitive and "no-store" or "no-cache")..", private";
 			["Pragma"] = "no-cache";
 		};
-		body = _render_html(template, data);
+		body = render_html(template, data);
 	};
 	return resp;
 end
@@ -1140,7 +1140,7 @@ module:provides("http", {
 			headers = {
 				["Content-Type"] = "text/css";
 			};
-			body = _render_html(templates.css, module:get_option("oauth2_template_style"));
+			body = render_html(templates.css, module:get_option("oauth2_template_style"));
 		} or nil;
 		["GET /script.js"] = templates.js and {
 			headers = {
