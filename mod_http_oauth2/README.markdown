@@ -18,9 +18,10 @@ OAuth and OIDC are web standards that allow you to provide clients and
 third-party applications limited access to your account, without sharing your
 password with them.
 
-With this module deployed, software that supports OAuth can obtain "access
-tokens" from Prosody which can then be used to connect to XMPP accounts using
-the 'OAUTHBEARER' SASL mechanism or via non-XMPP interfaces such as [mod_rest].
+With this module deployed, software that supports OAuth can obtain
+"access tokens" from Prosody which can then be used to connect to XMPP
+accounts using the [OAUTHBEARER SASL mechanism][rfc7628] or via non-XMPP
+interfaces such as [mod_rest].
 
 Although this module has been around for some time, it has recently been
 significantly extended and largely rewritten to support OAuth/OIDC more fully.
@@ -36,9 +37,10 @@ Known client implementations:
 -   [example shell script for mod_rest](https://hg.prosody.im/prosody-modules/file/tip/mod_rest/example/rest.sh)
 -   *(we need you!)*
 
-Support for OAUTHBEARER has been added to the Lua XMPP library, [verse](https://code.matthewwild.co.uk/verse).
-If you know of additional implementations, or are motivated to work on one,
-please let us know! We'd be happy to help (e.g. by providing a test server).
+Support for [OAUTHBEARER][rfc7628] has been added to the Lua XMPP
+library, [verse](https://code.matthewwild.co.uk/verse).  If you know of
+additional implementations, or are motivated to work on one, please let
+us know! We'd be happy to help (e.g. by providing a test server).
 
 ## Standards support
 
