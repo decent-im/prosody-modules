@@ -72,6 +72,8 @@ local templates = {
 
 local site_name = module:get_option_string("site_name", module.host);
 
+local security_policy = module:get_option_string("oauth2_security_policy", "default-src 'self'");
+
 local render_html = require"util.interpolation".new("%b{}", st.xml_escape);
 local function render_page(template, data, sensitive)
 	data = data or {};
@@ -80,7 +82,7 @@ local function render_page(template, data, sensitive)
 		status_code = data.error and data.error.code or 200;
 		headers = {
 			["Content-Type"] = "text/html; charset=utf-8";
-			["Content-Security-Policy"] = "default-src 'self'";
+			["Content-Security-Policy"] = security_policy;
 			["Referrer-Policy"] = "no-referrer";
 			["X-Frame-Options"] = "DENY";
 			["Cache-Control"] = (sensitive and "no-store" or "no-cache")..", private";

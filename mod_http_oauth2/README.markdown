@@ -85,6 +85,13 @@ oauth2_template_style = {
 }
 ```
 
+If you know what features your templates use use you can adjust the
+`Content-Security-Policy` header to only allow what is needed:
+
+```lua
+oauth2_security_policy = "default-src 'self'" -- this is the default
+```
+
 ### Token parameters
 
 The following options configure the lifetime of tokens issued by the module.
