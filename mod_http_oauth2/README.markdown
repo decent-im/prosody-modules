@@ -61,7 +61,7 @@ The module presents a web page to users to allow them to authenticate when
 a client requests access. Built-in pages are provided, but you may also theme
 or entirely override them.
 
-This module honours the 'site_name' configuration option that is also used by
+This module honours the `site_name` configuration option that is also used by
 a number of other modules:
 
 ```lua
@@ -75,7 +75,7 @@ oauth2_template_path = "/etc/prosody/custom-oauth2-templates"
 ```
 
 Some templates support additional variables, that can be provided by the
-'oauth2_template_style' option:
+`oauth2_template_style` option:
 
 ```lua
 oauth2_template_style = {
