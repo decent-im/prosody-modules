@@ -680,7 +680,11 @@ local function error_response(request, redirect_uri, err)
 	};
 end
 
-local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_types", {"authorization_code", "password", "refresh_token"})
+local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_types", {
+	"authorization_code";
+	"password"; -- TODO Disable. The resource owner password credentials grant [RFC6749] MUST NOT be used.
+	"refresh_token";
+})
 for handler_type in pairs(grant_type_handlers) do
 	if not allowed_grant_type_handlers:contains(handler_type) then
 		module:log("debug", "Grant type %q disabled", handler_type);
