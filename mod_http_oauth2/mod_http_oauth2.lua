@@ -1121,6 +1121,7 @@ module:provides("http", {
 		-- Step 2. User-facing login and consent view
 		["GET /authorize"] = handle_authorization_request;
 		["POST /authorize"] = handle_authorization_request;
+		["OPTIONS /authorize"] = { status_code = 403; body = "" };
 
 		-- Step 3. User is redirected to the 'redirect_uri' along with an
 		-- authorization code.  In the insecure 'implicit' flow, the access token
