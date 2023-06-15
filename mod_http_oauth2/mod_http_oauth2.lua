@@ -463,6 +463,7 @@ function grant_type_handlers.authorization_code(params)
 	if err then error(err); end
 	-- MUST NOT use the authorization code more than once, so remove it to
 	-- prevent a second attempted use
+	-- TODO if a second attempt *is* made, revoke any tokens issued
 	codes:set(params.client_id .. "#" .. params.code, nil);
 	if not code or type(code) ~= "table" or code_expired(code) then
 		module:log("debug", "authorization_code invalid or expired: %q", code);
