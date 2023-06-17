@@ -60,6 +60,9 @@ local function read_file(base_path, fn, required)
 	return data;
 end
 
+local allowed_locales = module:get_option_array("allowed_oauth2_locales", {});
+-- TODO Allow translations or per-locale templates somehow.
+
 local template_path = module:get_option_path("oauth2_template_path", "html");
 local templates = {
 	login = read_file(template_path, "login.html", true);
@@ -936,12 +939,21 @@ local registration_schema = {
 		software_id = { type = "string"; format = "uuid" };
 		software_version = { type = "string" };
 	};
-	luaPatternProperties = {
-		-- Localized versions of descriptive properties and URIs
-		["^client_name#"] = { description = "Localized version of 'client_name'"; type = "string" };
-		["^[a-z_]+_uri#"] = { type = "string"; format = "uri" };
-	};
 }
+
+-- Limit per-locale fields to allowed locales, partly to keep size of client_id
+-- down, partly because we don't yet use them for anything.
+-- Only relevant for user-visible strings and URIs.
+if allowed_locales[1] then
+	local props = registration_schema.properties;
+	for _, locale in ipairs(allowed_locales) do
+		props["client_name#" .. locale] = props["client_name"];
+		props["client_uri#" .. locale] = props["client_uri"];
+		props["logo_uri#" .. locale] = props["logo_uri"];
+		props["tos_uri#" .. locale] = props["tos_uri"];
+		props["policy_uri#" .. locale] = props["policy_uri"];
+	end
+end
 
 local function redirect_uri_allowed(redirect_uri, client_uri, app_type)
 	local uri = url.parse(redirect_uri);
@@ -981,19 +993,6 @@ function create_client(client_metadata)
 	for field, prop_schema in pairs(registration_schema.properties) do
 		if field ~= "client_uri" and prop_schema.format == "uri" and client_metadata[field] then
 			if not redirect_uri_allowed(client_metadata[field], client_uri, "web") then
-				return nil, oauth_error("invalid_client_metadata", "Invalid, insecure or inappropriate informative URI");
-			end
-		end
-	end
-
-	for k, v in pairs(client_metadata) do
-		local base_k = k:match"^([^#]+)#" or k;
-		if not registration_schema.properties[base_k] or k:find"^client_uri#" then
-			-- Ignore and strip unknown extra properties
-			client_metadata[k] = nil;
-		elseif k:find"_uri#" then
-			-- Localized URIs should be secure too
-			if not redirect_uri_allowed(v, client_uri, "web") then
 				return nil, oauth_error("invalid_client_metadata", "Invalid, insecure or inappropriate informative URI");
 			end
 		end
@@ -1204,6 +1203,7 @@ function get_authorization_server_metadata()
 		response_modes_supported = array(it.keys(response_type_handlers)):map(tmap { token = "fragment"; code = "query" });
 		authorization_response_iss_parameter_supported = true;
 		service_documentation = module:get_option_string("oauth2_service_documentation", "https://modules.prosody.im/mod_http_oauth2.html");
+		ui_locales_supported = allowed_locales[1] and allowed_locales;
 
 		-- OpenID
 		userinfo_endpoint = handle_register_request and module:http_url() .. "/userinfo" or nil;
