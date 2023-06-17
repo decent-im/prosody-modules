@@ -1317,7 +1317,29 @@ components:
         condition:
           description: Specific error condition.
           type: string
-          # enum: [ full list available in RFC 6120 ]
+          enum:
+            - bad-request
+            - conflict
+            - feature-not-implemented
+            - forbidden
+            - gone
+            - internal-server-error
+            - item-not-found
+            - jid-malformed
+            - not-acceptable
+            - not-allowed
+            - not-authorized
+            - policy-violation
+            - recipient-unavailable
+            - redirect
+            - registration-required
+            - remote-server-not-found
+            - remote-server-timeout
+            - resource-constraint
+            - service-unavailable
+            - subscription-required
+            - undefined-condition
+            - unexpected-request
         code:
           description: Legacy numeric error code. Similar to HTTP status codes.
           type: integer
