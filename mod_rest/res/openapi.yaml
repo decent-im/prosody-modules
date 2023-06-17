@@ -1346,6 +1346,11 @@ components:
         text:
           description: Description of error intended for human eyes.
           type: string
+        by:
+          description: Originator of the error, when different from the stanza @from attribute
+          type: string
+          xml:
+            attribute: true
   securitySchemes:
     token:
       description: Tokens from mod_http_oauth2.
