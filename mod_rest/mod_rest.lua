@@ -308,6 +308,7 @@ local function handle_request(event, path)
 			return post_errors.new("unauthz");
 		end
 		from = jid.join(origin.username, origin.host, origin.resource);
+		origin.full_jid = from;
 		origin.type = "c2s";
 		origin.log = module._log;
 	end
