@@ -698,6 +698,12 @@
                   "forward" : {
                      "$ref" : "#/properties/message/properties/forwarded"
                   },
+                  "id" : {
+                     "type" : "string",
+                     "xml" : {
+                        "attribute" : true
+                     }
+                  },
                   "queryid" : {
                      "type" : "string",
                      "xml" : {
