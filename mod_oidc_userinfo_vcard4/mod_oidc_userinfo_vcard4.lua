@@ -1,8 +1,6 @@
 -- Provide OpenID UserInfo data to mod_http_oauth2
 -- Alternatively, separate module for the whole HTTP endpoint?
 --
-local nodeprep = require "util.encodings".stringprep.nodeprep;
-
 module:add_item("openid-claim", "address");
 module:add_item("openid-claim", "email");
 module:add_item("openid-claim", "phone");
