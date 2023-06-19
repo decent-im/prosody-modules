@@ -979,6 +979,13 @@ function create_client(client_metadata)
 		end
 	end
 
+	-- MUST ignore any metadata that it does not understand
+	for propname in pairs(client_metadata) do
+		if not registration_schema.properties[propname] then
+			client_metadata[propname] = nil;
+		end
+	end
+
 	local client_uri = url.parse(client_metadata.client_uri);
 	if not client_uri or client_uri.scheme ~= "https" or loopbacks:contains(client_uri.host) then
 		return nil, oauth_error("invalid_client_metadata", "Missing, invalid or insecure client_uri");
