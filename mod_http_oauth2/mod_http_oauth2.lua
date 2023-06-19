@@ -934,8 +934,6 @@ local registration_schema = {
 		contacts = { type = "array"; minItems = 1; items = { type = "string"; format = "email" } };
 		tos_uri = { type = "string"; format = "uri"; pattern = "^https:" };
 		policy_uri = { type = "string"; format = "uri"; pattern = "^https:" };
-		jwks_uri = { type = "string"; format = "uri"; pattern = "^https:" };
-		jwks = { type = "object"; description = "JSON Web Key Set, RFC 7517" };
 		software_id = { type = "string"; format = "uuid" };
 		software_version = { type = "string" };
 	};
