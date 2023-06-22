@@ -162,7 +162,7 @@ are enforced:
     document **MUST** use the same scheme (i.e. `https://`) and hostname
     as the `client_uri`.
 
-#### Registration Example
+#### Registration Examples
 
 In short registration works by POST-ing a JSON structure describing your
 client to an endpoint:
@@ -178,6 +178,33 @@ curl -sSf https://xmpp.example.net/oauth2/register \
    "redirect_uris" : [
       "https://app.example.com/redirect"
    ]
+}
+'
+```
+
+Another example with more fields:
+
+``` bash
+curl -sSf https://xmpp.example.net/oauth2/register \
+    -H Content-Type:application/json \
+    -H Accept:application/json \
+    --data '
+{
+   "application_type" : "native",
+   "client_name" : "Desktop Chat App",
+   "client_uri" : "https://app.example.org/",
+   "contacts" : [
+      "support@example.org"
+   ],
+   "policy_uri" : "https://app.example.org/about/privacy",
+   "redirect_uris" : [
+      "http://localhost:8080/redirect",
+      "org.example.app:/redirect"
+   ],
+   "scope" : "xmpp",
+   "software_id" : "32a0a8f3-4016-5478-905a-c373156eca73",
+   "software_version" : "3.4.1",
+   "tos_uri" : "https://app.example.org/about/terms"
 }
 '
 ```
