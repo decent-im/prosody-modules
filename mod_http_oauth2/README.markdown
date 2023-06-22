@@ -131,20 +131,7 @@ are enforced:
 `redirect_uris`
 
 :   **MUST** contain at least one valid URI. Different rules apply
-    depending on the value of `application_type`:
-
-    `web`
-    :   `redirect_uris` **MUST** be `https://` URIs and **MUST** use the
-        same hostname part as the `client_uri`.
-
-    `native`
-
-    :   `redirect_uris` **MUST** match one of:
-
-        -   Loopback HTTP URI, e.g. `http://127.0.0.1/` or
-            `http://[::1]`
-        -   Application-specific scheme, e.g. `com.example.app:/`
-        -   The special OOB URI `urn:ietf:wg:oauth:2.0:oob`
+    depending on the value of `application_type`, see below.
 
 `application_type`
 
@@ -152,10 +139,21 @@ are enforced:
     `redirect_uris`. The following values are supported:
 
     `web` *(default)*
-    :   For web clients.
+    :   For web clients. With this, `redirect_uris` **MUST** be
+        `https://` URIs and **MUST** use the same hostname part as the
+        `client_uri`.
 
     `native`
-    :   For native e.g. desktop clients etc.
+
+    `native`
+
+    :   For native e.g. desktop clients etc. `redirect_uris` **MUST**
+        match one of:
+
+        -   Loopback HTTP URI, e.g. `http://127.0.0.1/` or
+            `http://[::1]`
+        -   Application-specific scheme, e.g. `com.example.app:/`
+        -   The special OOB URI `urn:ietf:wg:oauth:2.0:oob`
 
 `tos_uri`, `policy_uri`
 :   Informative URLs pointing to Terms of Service and Service Policy
