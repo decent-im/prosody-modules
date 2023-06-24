@@ -46,7 +46,15 @@ local function handle_stanza(event)
 		throttle = new_throttle(period*burst, burst);
 		room.throttle = throttle;
 	end
-	if not throttle:poll(1) then
+	local cost = 1;
+	local body = stanza:get_child_text("body");
+	if body then
+		-- TODO calculate a text diagonal cross-section or some mathemagical
+		-- number, maybe some cost multipliers
+		local body_lines = select(2, body:gsub("\n[^\n]*", ""));
+		cost = cost + body_lines;
+	end
+	if not throttle:poll(cost) then
 		module:log("debug", "Dropping stanza for %s@%s from %s, over rate limit", dest_room, dest_host, from_jid);
 		if not dropped_jids then
 			dropped_jids = { [from_jid] = true, from_jid };
@@ -60,7 +68,6 @@ local function handle_stanza(event)
 			return true;
 		end
 		local reply = st.error_reply(stanza, "wait", "policy-violation", "The room is currently overactive, please try again later");
-		local body = stanza:get_child_text("body");
 		if body then
 			reply:up():tag("body"):text(body):up();
 		end
