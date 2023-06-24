@@ -13,6 +13,8 @@ local period = math.max(module:get_option_number("muc_event_rate", 0.5), 0);
 local burst = math.max(module:get_option_number("muc_burst_factor", 6), 1);
 
 local max_nick_length = module:get_option_number("muc_max_nick_length", 23); -- Default chosen through scientific methods
+local max_line_count = module:get_option_number("muc_max_line_count", 23); -- Default chosen through s/scientific methods/copy and paste/
+
 local join_only = module:get_option_boolean("muc_limit_joins_only", false);
 local dropped_count = 0;
 local dropped_jids;
@@ -52,6 +54,11 @@ local function handle_stanza(event)
 		-- TODO calculate a text diagonal cross-section or some mathemagical
 		-- number, maybe some cost multipliers
 		local body_lines = select(2, body:gsub("\n[^\n]*", ""));
+		if body_lines > max_line_count then
+			origin.send(st.error_reply(stanza, "modify", "policy-violation", "Your message is too long, please write a shorter one"):up()
+				:tag("x", { xmlns = xmlns_muc; }));
+			return true;
+		end
 		cost = cost + body_lines;
 	end
 	if not throttle:poll(cost) then
