@@ -1,17 +1,4 @@
 -- Fetches Atom feeds and publishes to PubSub nodes
---
--- Config:
--- Component "pubsub.example.com" "pubsub"
--- modules_enabled = {
---   "pubsub_feeds";
--- }
--- feeds = { -- node -> url
---   prosody_blog = "http://blog.prosody.im/feed/atom.xml";
--- }
--- feed_pull_interval = 20 -- minutes
---
--- Reference
--- http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.4.html
 
 local pubsub = module:depends"pubsub";
 
