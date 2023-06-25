@@ -68,13 +68,13 @@ function module.load()
 	end
 end
 
-function update_entry(item)
+function update_entry(item, data)
 	local node = item.node;
-	module:log("debug", "parsing %d bytes of data in node %s", #item.data or 0, node)
-	local feed, err = parse_feed(item.data);
+	module:log("debug", "parsing %d bytes of data in node %s", #data or 0, node)
+	local feed, err = parse_feed(data);
 	if not feed then
 		module:log("error", "Could not parse feed %q: %s", item.url, err);
-		module:log("debug", "Feed data:\n%s\n.", item.data);
+		module:log("debug", "Feed data:\n%s\n.", data);
 		return;
 	end
 	local entries = {};
@@ -152,13 +152,12 @@ end
 
 function fetch(item, callback) -- HTTP Pull
 	local headers = { };
-	if item.data and item.etag then
+	if item.etag then
 		headers["If-None-Match"] = item.etag;
 	end
 	http.request(item.url, { headers = headers }, function(data, code, resp)
 		if code == 200 then
-			item.data = data;
-			if callback then callback(item) end
+			if callback then callback(item, data) end
 			if resp.headers then
 				item.etag = resp.headers.etag
 			end
@@ -270,8 +269,7 @@ function handle_http_request(event)
 				end
 				module:log("debug", "Valid signature");
 			end
-			feed.data = body;
-			update_entry(feed);
+			update_entry(feed, body);
 			return 202;
 		end
 		return 400;
