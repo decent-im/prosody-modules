@@ -35,16 +35,15 @@ that clients can subscribe to using
 [XEP-0060](http://xmpp.org/extensions/xep-0060.html). Results are in
 [ATOM 1.0 format](http://atomenabled.org/) for easy consumption.
 
-# PubSubHubbub
+# WebSub {#pubsubhubbub}
 
-This module also implements a
-[PubSubHubbub](http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html)
-subscriber. This allows feeds that have an associated "hub" to push
-updates when they are published.
+This module also implements [WebSub](https://www.w3.org/TR/websub/),
+formerly known as
+[PubSubHubbub](http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html).
+This allows "feed hubs" to instantly push feed updates to subscribers.
 
-Not all feeds support this.
-
-It needs to expose a HTTP callback endpoint to work.
+This may be removed in the future since it does not seem to be oft used
+anymore.
 
 # Option summary
 
@@ -52,10 +51,11 @@ It needs to expose a HTTP callback endpoint to work.
   ---------------------- -------------------------------------------------------------------------
   `feeds`                A list of virtual nodes to create and their associated Atom or RSS URL.
   `feed_pull_interval`   Number of minutes between polling for new results (default 15)
-  `use_pubsubhubub`      Set to `false` to disable PubSubHubbub
+  `use_pubsubhubub`      Set to `true` to enable WebSub
 
 # Compatibility
 
-  ----- -------
-  0.9   Works
-  ----- -------
+  ------ -------
+  0.12    Works
+  0.11    Works
+  ------ -------

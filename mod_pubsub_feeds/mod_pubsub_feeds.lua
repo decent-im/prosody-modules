@@ -36,7 +36,7 @@ local function parse_feed(data)
 	return nil, "unsupported-format";
 end
 
-local use_pubsubhubub = module:get_option_boolean("use_pubsubhubub", true);
+local use_pubsubhubub = module:get_option_boolean("use_pubsubhubub", false);
 if use_pubsubhubub then
 	module:depends"http";
 end
