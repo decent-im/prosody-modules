@@ -14,6 +14,7 @@
 
 	<h1>{site_name}</h1>
 	<fieldset>
+	<form method="post">
 	<legend>Authorize new application</legend>
 	<p>A new application wants to connect to your account.</p>
 	<dl>
@@ -29,6 +30,11 @@
 		{client.policy_uri&
 		<dt>Policy</dt>
 		<dd><a href="{client.policy_uri}">View policy</a></dd>}
+
+		<dt>Requested permissions</dt>
+		<dd>{scopes#
+			<input class="scope" type="checkbox" id="scope_{idx}" name="scope" value="{item}" checked><label class="scope" for="scope_{idx}">{item}</label>}
+		</dd>
 	</dl>
 
 	<p>To allow <em>{client.client_name}</em> to access your account
@@ -36,10 +42,6 @@
 	   select 'Allow'. Otherwise, select 'Deny'.
 	</p>
 
-	<form method="post">
-		<details><summary>Requested permissions</summary>{scopes#
-			<input class="scope" type="checkbox" id="scope_{idx}" name="scope" value="{item}" checked><label class="scope" for="scope_{idx}">{item}</label>}
-		</details>
 		<input type="hidden" name="user_token" value="{state.user.token}">
 		<button type="submit" name="consent" value="denied">Deny</button>
 		<button type="submit" name="consent" value="granted">Allow</button>
