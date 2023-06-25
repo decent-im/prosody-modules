@@ -81,9 +81,9 @@ function update_entry(item)
 	for entry in feed:childtags("entry") do
 		table.insert(entries, entry);
 	end
-	local ok, items = pubsub.service:get_items(node, true);
+	local ok, last_id = pubsub.service:get_last_item(node, true);
 	if not ok then
-		module:log("error", "PubSub node %q missing: %s", node, items);
+		module:log("error", "PubSub node %q missing: %s", node, last_id);
 		return
 	end
 
@@ -102,7 +102,7 @@ function update_entry(item)
 			entry:text_tag("id", id);
 		end
 
-		if items[id] then
+		if last_id == id then
 			-- This should be the first item that we already have.
 			start_from = i-1;
 			break
