@@ -61,7 +61,12 @@ function module.load()
 		end
 		new_feed_list[node] = true;
 		if not feed_list[node] then
-			feed_list[node] = { url = url; node = node; last_update = 0 };
+			local ok, err = pubsub.service:create(node, true);
+			if ok then
+				feed_list[node] = { url = url; node = node; last_update = 0 };
+			else
+				module:log("error", "Could not create node %s: %s", node, err);
+			end
 		else
 			feed_list[node].url = url;
 		end
@@ -91,12 +96,8 @@ function update_entry(item)
 	end
 	local ok, items = pubsub.service:get_items(node, true);
 	if not ok then
-		local ok, err = pubsub.service:create(node, true);
-		if not ok then
-			module:log("error", "Could not create node %s: %s", node, err);
-			return;
-		end
-		items = {};
+		module:log("error", "PubSub node %q missing: %s", node, items);
+		return
 	end
 
 	local start_from = #entries;
