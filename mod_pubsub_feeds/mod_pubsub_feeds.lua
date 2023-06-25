@@ -46,7 +46,8 @@ local formdecode = http.formdecode;
 local formencode = http.formencode;
 
 local feed_list = module:shared("feed_list");
-local refresh_interval = module:get_option_number("feed_pull_interval", 15) * 60;
+local legacy_refresh_interval = module:get_option_number("feed_pull_interval", 15);
+local refresh_interval = module:get_option_number("feed_pull_interval_seconds", legacy_refresh_interval*60);
 local lease_length = tostring(math.floor(module:get_option_number("feed_lease_length", 86400)));
 
 function module.load()

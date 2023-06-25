@@ -47,11 +47,11 @@ anymore.
 
 # Option summary
 
-  Option                 Description
-  ---------------------- -------------------------------------------------------------------------
-  `feeds`                A list of virtual nodes to create and their associated Atom or RSS URL.
-  `feed_pull_interval`   Number of minutes between polling for new results (default 15)
-  `use_pubsubhubub`      Set to `true` to enable WebSub
+  Option                         Description
+  ------------------------------ --------------------------------------------------------------------------
+  `feeds`                        A list of virtual nodes to create and their associated Atom or RSS URL.
+  `feed_pull_interval_seconds`   Number of seconds between polling for new results (default 15 *minutes*)
+  `use_pubsubhubub`              Set to `true` to enable WebSub
 
 # Compatibility
 
