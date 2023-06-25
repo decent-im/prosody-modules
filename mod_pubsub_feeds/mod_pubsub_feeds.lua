@@ -49,7 +49,7 @@ function module.load()
 		new_feed_list[node] = true;
 		if not feed_list[node] then
 			local ok, err = pubsub.service:create(node, true);
-			if ok then
+			if ok or err == "conflict" then
 				feed_list[node] = { url = url; node = node; last_update = 0 };
 			else
 				module:log("error", "Could not create node %s: %s", node, err);
