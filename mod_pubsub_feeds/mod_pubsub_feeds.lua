@@ -98,36 +98,50 @@ function update_entry(item)
 		end
 		items = {};
 	end
-	for i = #entries, 1, -1 do -- Feeds are usually in reverse order
+
+	local start_from = #entries;
+	for i, entry in ipairs(entries) do
+		local id = entry:get_child_text("id");
+		if not id then
+			local link = entry:get_child("link");
+			if link then
+				module:log("debug", "Feed %q item %s is missing an id, using <link> instead", feed.url, entry:top_tag());
+				id = link and link.attr.href;
+			else
+				module:log("debug", "Feed %q item %s is missing an id, using a HMAC of the item instead", feed.url, entry:top_tag());
+				id = feed.url .. "#" .. hmac_sha1(feed.url, tostring(entry), true) .. "@" .. dt_datetime(timestamp);
+			end
+			entry:text_tag("id", id);
+		end
+
+		if items[id] then
+			-- This should be the first item that we already have.
+			start_from = i-1;
+			break
+		end
+	end
+
+	for i = start_from, 1, -1 do -- Feeds are usually in reverse order
 		local entry = entries[i];
 		entry.attr.xmlns = xmlns_atom;
 
-		local e_published = entry:get_child_text("published");
-		e_published = e_published and dt_parse(e_published);
-		local e_updated = entry:get_child_text("updated");
-		e_updated = e_updated and dt_parse(e_updated);
+		local id = entry:get_child_text("id");
 
-		local timestamp = e_updated or e_published or nil;
-		--module:log("debug", "timestamp is %s, item.last_update is %s", tostring(timestamp), tostring(item.last_update));
+		local timestamp = dt_parse(entry:get_child_text("published"));
+		if not timestamp then
+			timestamp = time();
+			entry:text_tag("published", dt_datetime(timestamp));
+		end
+
 		if not timestamp or not item.last_update or timestamp > item.last_update then
-			local id = entry:get_child_text("id");
-			if not id then
-				local link = entry:get_child("link");
-				id = link and link.attr.href;
-			end
-			if not id then
-				-- Sigh, no link?
-				id = feed.url .. "#" .. hmac_sha1(feed.url, tostring(entry), true) .. "@" .. dt_datetime(timestamp);
-			end
-			if not items[id] then
-				local xitem = st.stanza("item", { id = id, xmlns = "http://jabber.org/protocol/pubsub" }):add_child(entry);
-				-- TODO Put data from /feed into item/source
+			local xitem = st.stanza("item", { id = id, xmlns = "http://jabber.org/protocol/pubsub" }):add_child(entry);
+			-- TODO Put data from /feed into item/source
 
-				--module:log("debug", "publishing to %s, id %s", node, id);
-				local ok, err = pubsub.service:publish(node, true, id, xitem);
-				if not ok then
-					module:log("error", "Publishing to node %s failed: %s", node, err);
-				end
+			local ok, err = pubsub.service:publish(node, true, id, xitem);
+			if not ok then
+				module:log("error", "Publishing to node %s failed: %s", node, err);
+			elseif timestamp then
+				item.last_update = timestamp;
 			end
 		end
 	end
@@ -157,12 +171,11 @@ function fetch(item, callback) -- HTTP Pull
 		if code == 200 then
 			item.data = data;
 			if callback then callback(item) end
-			item.last_update = time();
 			if resp.headers then
 				item.etag = resp.headers.etag
 			end
 		elseif code == 304 then
-			item.last_update = time();
+			module:log("debug", "No updates to %q", item.url);
 		elseif code == 301 and resp.headers.location then
 			module:log("info", "Feed %q has moved to %q", item.url, resp.headers.location);
 		elseif code <= 100 then
@@ -271,7 +284,6 @@ function handle_http_request(event)
 			end
 			feed.data = body;
 			update_entry(feed);
-			feed.last_update = time();
 			return 202;
 		end
 		return 400;
