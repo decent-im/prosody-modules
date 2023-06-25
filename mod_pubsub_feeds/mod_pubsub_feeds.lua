@@ -109,8 +109,8 @@ function update_entry(item)
 				module:log("debug", "Feed %q item %s is missing an id, using <link> instead", item.url, entry:top_tag());
 				id = link and link.attr.href;
 			else
-				module:log("debug", "Feed %q item %s is missing an id, using a HMAC of the item instead", item.url, entry:top_tag());
-				id = item.url .. "#" .. hmac_sha1(item.url, tostring(entry), true) .. "@" .. dt_datetime(timestamp);
+				module:log("error", "Feed %q item %s is missing both id and link, this feed is unusable", item.url, entry:top_tag());
+				return;
 			end
 			entry:text_tag("id", id);
 		end
