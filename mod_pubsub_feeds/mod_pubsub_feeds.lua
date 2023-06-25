@@ -151,10 +151,10 @@ function update_entry(item, data)
 end
 
 function fetch(item, callback) -- HTTP Pull
-	local headers = { };
-	if item.etag then
-		headers["If-None-Match"] = item.etag;
-	end
+	local headers = {
+		["If-None-Match"] = item.etag;
+		["Accept"] = "application/atom+xml, application/x-rss+xml, application/xml";
+	};
 	http.request(item.url, { headers = headers }, function(data, code, resp)
 		if code == 200 then
 			if callback then callback(item, data) end
