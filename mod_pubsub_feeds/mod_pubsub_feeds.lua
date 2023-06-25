@@ -106,11 +106,11 @@ function update_entry(item)
 		if not id then
 			local link = entry:get_child("link");
 			if link then
-				module:log("debug", "Feed %q item %s is missing an id, using <link> instead", feed.url, entry:top_tag());
+				module:log("debug", "Feed %q item %s is missing an id, using <link> instead", item.url, entry:top_tag());
 				id = link and link.attr.href;
 			else
-				module:log("debug", "Feed %q item %s is missing an id, using a HMAC of the item instead", feed.url, entry:top_tag());
-				id = feed.url .. "#" .. hmac_sha1(feed.url, tostring(entry), true) .. "@" .. dt_datetime(timestamp);
+				module:log("debug", "Feed %q item %s is missing an id, using a HMAC of the item instead", item.url, entry:top_tag());
+				id = item.url .. "#" .. hmac_sha1(item.url, tostring(entry), true) .. "@" .. dt_datetime(timestamp);
 			end
 			entry:text_tag("id", id);
 		end
