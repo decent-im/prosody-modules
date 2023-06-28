@@ -128,17 +128,42 @@ local lazy = module:get_option_boolean(module.name .. "_lazy_calendar", true);
 
 local presence_logged = module:get_option_boolean("muc_log_presences", false);
 
-local function hide_presence(request)
+local function show_presence(request) --> boolean|nil
+	-- boolean -> yes or no
+	-- nil -> dunno
 	if not presence_logged then
-		return false;
+		-- No presence stored, skip
+		return nil;
 	end
 	if request.url.query then
 		local data = httplib.formdecode(request.url.query);
-		if data then
-			return data.p == "h"
+		if type(data) == "table" then
+			if data.p == "s" or data.p == "h" then
+				return data.p == "s";
+			end
 		end
 	end
-	return false;
+end
+
+local function presence_with(request)
+	local show = show_presence(request);
+	if show == true then
+		return nil; -- no filter, everything
+	elseif show == false or show == nil then
+		-- only messages
+		return "message<groupchat";
+	end
+end
+
+local function presence_query(request) -- > ?p=[sh]
+	local show = show_presence(request);
+	if show == true then
+		return { p = "s" }
+	elseif show == false then
+		return { p = "h" }
+	else
+		return nil;
+	end
 end
 
 local function get_dates(room) --> { integer, ... }
@@ -254,7 +279,8 @@ local function years_page(event, path)
 		room = room_obj._data;
 		jid = room_obj.jid;
 		jid_node = jid_split(room_obj.jid);
-		hide_presence = hide_presence(request);
+		q = presence_query(request);
+		show_presence = show_presence(request);
 		presence_available = presence_logged;
 		dates = date_list;
 		links = {
@@ -300,7 +326,7 @@ local function logs_page(event, path)
 	local iter, err = archive:find(room, {
 		["start"] = day_start;
 		["end"]   = day_start + 86399;
-		["with"]  = hide_presence(request) and "message<groupchat" or nil;
+		["with"]  = presence_with(request);
 	});
 	if not iter then
 		module:log("warn", "Could not search archive: %s", err or "no error");
@@ -475,7 +501,8 @@ local function logs_page(event, path)
 		room = room_obj._data;
 		jid = room_obj.jid;
 		jid_node = jid_split(room_obj.jid);
-		hide_presence = hide_presence(request);
+		q = presence_query(request);
+		show_presence = show_presence(request);
 		presence_available = presence_logged;
 		lang = room_obj.get_language and room_obj:get_language();
 		lines = logs;
@@ -524,7 +551,8 @@ local function list_rooms(event)
 		static = "./@static";
 		title = module:get_option_string("name", "Prosody Chatrooms");
 		jid = module.host;
-		hide_presence = hide_presence(request);
+		q = presence_query(request);
+		show_presence = show_presence(request);
 		presence_available = presence_logged;
 		rooms = room_list;
 		dates = {}; -- COMPAT util.interpolation {nil|func#...} bug
