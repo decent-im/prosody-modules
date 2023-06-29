@@ -3,7 +3,18 @@ local it = require "util.iterators";
 local set = require "util.set";
 local st = require "util.stanza";
 
-module:default_permission("prosody:user", "xmpp:federate");
+local normal_user_role = "prosody:registered";
+local limited_user_role = "prosody:guest";
+
+local features = require "core.features";
+
+-- COMPAT
+if not features.available:contains("split-user-roles") then
+	normal_user_role = "prosody:user";
+	limited_user_role = "prosody:restricted";
+end
+
+module:default_permission(normal_user_role, "xmpp:federate");
 module:hook("route/remote", function (event)
 	if not module:may("xmpp:federate", event) then
 		if event.stanza.attr.type ~= "result" and event.stanza.attr.type ~= "error" then
@@ -93,12 +104,12 @@ end);
 
 --module:default_permission("prosody:restricted", "xmpp:account:read");
 --module:default_permission("prosody:restricted", "xmpp:account:write");
-module:default_permission("prosody:restricted", "xmpp:account:messages:read");
-module:default_permission("prosody:restricted", "xmpp:account:messages:write");
+module:default_permission(limited_user_role, "xmpp:account:messages:read");
+module:default_permission(limited_user_role, "xmpp:account:messages:write");
 for _, property_list in ipairs({ iq_namespaces, legacy_storage_nodes, pep_nodes }) do
 	for account_property in set.new(array.collect(it.values(property_list))) do
-		module:default_permission("prosody:restricted", "xmpp:account:"..account_property..":read");
-		module:default_permission("prosody:restricted", "xmpp:account:"..account_property..":write");
+		module:default_permission(limited_user_role, "xmpp:account:"..account_property..":read");
+		module:default_permission(limited_user_role, "xmpp:account:"..account_property..":write");
 	end
 end
 

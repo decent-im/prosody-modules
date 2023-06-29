@@ -19,7 +19,11 @@ local deny_user_invite_roles = module:get_option_set("deny_user_invites_by_roles
 
 if module.may then
 	if allow_user_invites then
-		module:default_permission("prosody:user", ":invite-new-users");
+		if require "core.features".available:contains("split-user-roles") then
+			module:default_permission("prosody:registered", ":invite-new-users");
+		else -- COMPAT
+			module:default_permission("prosody:user", ":invite-new-users");
+		end
 	end
 	if not allow_user_invite_roles:empty() or not deny_user_invite_roles:empty() then
 		return error("allow_user_invites_by_roles and deny_user_invites_by_roles are deprecated options");
