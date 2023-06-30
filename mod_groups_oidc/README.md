@@ -5,6 +5,7 @@ labels:
 rockspec:
   dependencies:
   - mod_http_oauth2 >= 200
+  - mod_groups_internal
 ---
 
 This module exposes [mod_groups_internal] groups to
