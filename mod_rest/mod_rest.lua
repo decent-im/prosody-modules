@@ -294,6 +294,7 @@ end
 
 local function handle_request(event, path)
 	local request, response = event.request, event.response;
+	local log = request.log or module._log;
 	local from;
 	local origin;
 	local echo = path == "echo";
@@ -310,7 +311,7 @@ local function handle_request(event, path)
 		from = jid.join(origin.username, origin.host, origin.resource);
 		origin.full_jid = from;
 		origin.type = "c2s";
-		origin.log = module._log;
+		origin.log = log;
 	end
 	local payload, err = parse_request(request, path);
 	if not payload then
@@ -353,7 +354,7 @@ local function handle_request(event, path)
 		["xml:lang"] = payload.attr["xml:lang"],
 	};
 
-	module:log("debug", "Received[rest]: %s", payload:top_tag());
+	log("debug", "Received[rest]: %s", payload:top_tag());
 	local send_type = decide_type((request.headers.accept or "") ..",".. (request.headers.content_type or ""), supported_outputs)
 
 	if echo then
@@ -396,7 +397,7 @@ local function handle_request(event, path)
 
 		local p = module:send_iq(payload, origin, iq_timeout):next(
 			function (result)
-				module:log("debug", "Sending[rest]: %s", result.stanza:top_tag());
+				log("debug", "Sending[rest]: %s", result.stanza:top_tag());
 				response.headers.content_type = send_type;
 				if responses[1] then
 					local tail = responses[#responses];
@@ -411,11 +412,11 @@ local function handle_request(event, path)
 			end,
 			function (error)
 				if not errors.is_err(error) then
-					module:log("error", "Uncaught native error: %s", error);
+					log("error", "Uncaught native error: %s", error);
 					return select(2, errors.coerce(nil, error));
 				elseif error.context and error.context.stanza then
 					response.headers.content_type = send_type;
-					module:log("debug", "Sending[rest]: %s", error.context.stanza:top_tag());
+					log("debug", "Sending[rest]: %s", error.context.stanza:top_tag());
 					return encode(send_type, error.context.stanza);
 				else
 					return error;
@@ -431,7 +432,7 @@ local function handle_request(event, path)
 		return p;
 	else
 		function origin.send(stanza)
-			module:log("debug", "Sending[rest]: %s", stanza:top_tag());
+			log("debug", "Sending[rest]: %s", stanza:top_tag());
 			response.headers.content_type = send_type;
 			response:send(encode(send_type, stanza));
 			return true;
