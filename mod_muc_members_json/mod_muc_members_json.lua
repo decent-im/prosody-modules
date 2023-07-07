@@ -36,6 +36,7 @@ local function get_hats(member_info, muc_config)
 	if muc_config.member_hat then
 		hats[muc_config.member_hat.id] = {
 			title = muc_config.member_hat.title;
+			active = true;
 		};
 	end
 	if muc_config.team_hats and member_info.roles then
@@ -44,6 +45,7 @@ local function get_hats(member_info, muc_config)
 			if hat then
 				hats[hat.id] = {
 					title = hat.title;
+					active = true;
 				};
 			end
 		end
