@@ -294,10 +294,16 @@ end
 local function logs_page(event, path)
 	local request, response = event.request, event.response;
 
-	local room, date = path:match("^([^/]+)/([^/]*)/?$");
-	if not room then
+	-- /room --> 303 /room/
+	-- /room/ --> calendar view
+	-- /room/yyyy-mm-dd --> logs view
+	-- /room/yyyy-mm-dd/* --> 404
+	local room, date = path:match("^([^/]+)/([^/]*)$");
+	if not room and not path:find"/" then
 		response.headers.location = url.build({ path = path .. "/" });
 		return 303;
+	elseif not room then
+		return 404;
 	end
 	room = nodeprep(room);
 	if not room then
