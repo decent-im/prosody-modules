@@ -68,6 +68,7 @@ local templates = {
 	login = read_file(template_path, "login.html", true);
 	consent = read_file(template_path, "consent.html", true);
 	oob = read_file(template_path, "oob.html", true);
+	device = read_file(template_path, "device.html", true);
 	error = read_file(template_path, "error.html", true);
 	css = read_file(template_path, "style.css");
 	js = read_file(template_path, "script.js");
@@ -119,6 +120,8 @@ if registration_key then
 	verification_key = hashes.hmac_sha256(registration_key, module.host);
 	sign_client, verify_client = jwt.init(registration_algo, registration_key, registration_key, registration_options);
 end
+
+local new_device_token, verify_device_token = jwt.init("HS256", random.bytes(32), nil, { default_ttl = 600 });
 
 -- verify and prepare client structure
 local function check_client(client_id)
@@ -231,6 +234,7 @@ end
 -- code to the user for them to copy-paste into the client, which can then
 -- continue as if it received it via redirect.
 local oob_uri = "urn:ietf:wg:oauth:2.0:oob";
+local device_uri = "urn:ietf:params:oauth:grant-type:device_code";
 
 local loopbacks = set.new({ "localhost", "127.0.0.1", "::1" });
 
@@ -317,6 +321,15 @@ local function get_redirect_uri(client, query_redirect_uri) -- record client, st
 		-- When only a single URI is registered, that's the default
 		return client.redirect_uris[1];
 	end
+	if query_redirect_uri == device_uri and client.grant_types then
+		for _, grant_type in ipairs(client.grant_types) do
+			if grant_type == device_uri then
+				return query_redirect_uri;
+			end
+		end
+		-- Tried to use device authorization flow without registering it.
+		return;
+	end
 	-- Verify the client-provided URI matches one previously registered
 	for _, redirect_uri in ipairs(client.redirect_uris) do
 		if query_redirect_uri == redirect_uri then
@@ -341,6 +354,13 @@ end
 local grant_type_handlers = {};
 local response_type_handlers = {};
 local verifier_transforms = {};
+
+function grant_type_handlers.implicit()
+	-- Placeholder to make discovery work correctly.
+	-- Access tokens are delivered via redirect when using the implict flow, not
+	-- via the token endpoint, so how did you get here?
+	return oauth_error("invalid_request");
+end
 
 function grant_type_handlers.password(params)
 	local request_jid = assert(params.username, oauth_error("invalid_request", "missing 'username' (JID)"));
@@ -371,6 +391,13 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 	end
 
 	local code = id.medium();
+	if params.redirect_uri == device_uri then
+		local is_device, device_state = verify_device_token(params.state);
+		if is_device then
+			-- reconstruct the device_code
+			code = b64url(hashes.hmac_sha256(verification_key, device_state.user_code));
+		end
+	end
 	local ok = codes:set(params.client_id .. "#" .. code, {
 		expires = os.time() + 600;
 		granted_jid = granted_jid;
@@ -387,6 +414,8 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
 	if redirect_uri == oob_uri then
 		return render_page(templates.oob, { client = client; authorization_code = code }, true);
+	elseif redirect_uri == device_uri then
+		return render_page(templates.device, { client = client }, true);
 	elseif not redirect_uri then
 		return oauth_error("invalid_redirect_uri");
 	end
@@ -528,6 +557,34 @@ function grant_type_handlers.refresh_token(params)
 	refresh_token_info.token = params.refresh_token;
 
 	return json.encode(new_access_token(refresh_token_info.jid, role, new_scopes, client, nil, refresh_token_info));
+end
+
+grant_type_handlers[device_uri] = function(params)
+	if not params.client_id then return oauth_error("invalid_request", "missing 'client_id'"); end
+	if not params.client_secret then return oauth_error("invalid_request", "missing 'client_secret'"); end
+	if not params.device_code then return oauth_error("invalid_request", "missing 'device_code'"); end
+
+	local client = check_client(params.client_id);
+	if not client then
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+
+	if not verify_client_secret(params.client_id, params.client_secret) then
+		module:log("debug", "client_secret mismatch");
+		return oauth_error("invalid_client", "incorrect credentials");
+	end
+
+	local code = codes:get(params.client_id .. "#" .. params.device_code);
+	if type(code) ~= "table" or code_expired(code) then
+		return oauth_error("expired_token");
+	elseif code.error then
+		return code.error;
+	elseif not code.granted_jid then
+		return oauth_error("authorization_pending");
+	end
+	codes:set(client.client_hash .. "#" .. params.device_code, nil);
+
+	return json.encode(new_access_token(code.granted_jid, code.granted_role, code.granted_scopes, client, code.id_token));
 end
 
 -- RFC 7636 Proof Key for Code Exchange by OAuth Public Clients
@@ -688,6 +745,7 @@ local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_
 	"authorization_code";
 	"password"; -- TODO Disable. The resource owner password credentials grant [RFC6749] MUST NOT be used.
 	"refresh_token";
+	device_uri;
 })
 for handler_type in pairs(grant_type_handlers) do
 	if not allowed_grant_type_handlers:contains(handler_type) then
@@ -727,7 +785,7 @@ function handle_token_grant(event)
 	event.response.headers.pragma = "no-cache";
 	local params = strict_formdecode(event.request.body);
 	if not params then
-		return oauth_error("invalid_request");
+		return oauth_error("invalid_request", "Could not parse request body as 'application/x-www-form-urlencoded'");
 	end
 
 	if credentials and credentials.type == "basic" then
@@ -739,7 +797,7 @@ function handle_token_grant(event)
 	local grant_type = params.grant_type
 	local grant_handler = grant_type_handlers[grant_type];
 	if not grant_handler then
-		return oauth_error("invalid_request");
+		return oauth_error("invalid_request", "No such grant type.");
 	end
 	return grant_handler(params);
 end
@@ -820,6 +878,16 @@ local function handle_authorization_request(event)
 		return render_page(templates.consent, { state = auth_state; client = client; scopes = scopes+roles }, true);
 	elseif not auth_state.consent then
 		-- Notify client of rejection
+		if redirect_uri == device_uri then
+			local is_device, device_state = verify_device_token(params.state);
+			if is_device then
+				local device_code = b64url(hashes.hmac_sha256(verification_key, device_state.user_code));
+				local code = codes:get(params.client_id .. "#" .. device_code);
+				code.error = oauth_error("access_denied");
+				code.expires = os.time() + 60;
+				codes:set(params.client_id .. "#" .. device_code, code);
+			end
+		end
 		return error_response(request, redirect_uri, oauth_error("access_denied"));
 	end
 	-- else auth_state.consent == true
@@ -854,6 +922,110 @@ local function handle_authorization_request(event)
 		return error_response(request, redirect_uri, ret);
 	end
 	return ret;
+end
+
+local function handle_device_authorization_request(event)
+	local request = event.request;
+
+	local credentials = get_request_credentials(request);
+
+	local params = strict_formdecode(request.body);
+	if not params then
+		return render_error(oauth_error("invalid_request", "Invalid query parameters"));
+	end
+
+	if credentials and credentials.type == "basic" then
+		-- client_secret_basic converted internally to client_secret_post
+		params.client_id = http.urldecode(credentials.username);
+		local client_secret = http.urldecode(credentials.password);
+
+		if not verify_client_secret(params.client_id, client_secret) then
+			module:log("debug", "client_secret mismatch");
+			return oauth_error("invalid_client", "incorrect credentials");
+		end
+	else
+		return 401;
+	end
+
+	local client = check_client(params.client_id);
+
+	if not client then
+		return render_error(oauth_error("invalid_request", "Invalid 'client_id' parameter"));
+	end
+
+	if not set.new(client.grant_types):contains(device_uri) then
+		return render_error(oauth_error("invalid_client", "Client not registered for device authorization grant"));
+	end
+
+	local requested_scopes = parse_scopes(params.scope or "");
+	if client.scope then
+		local client_scopes = set.new(parse_scopes(client.scope));
+		requested_scopes:filter(function(scope)
+			return client_scopes:contains(scope);
+		end);
+	end
+
+	-- TODO better code generator, this one should be easy to type from a
+	-- screen onto a phone
+	local user_code = (id.tiny() .. "-" .. id.tiny()):upper();
+	local collisions = 0;
+	while codes:get(user_code) do
+		collisions = collisions + 1;
+		if collisions > 10 then
+			return oauth_error("temporarily_unavailable");
+		end
+		user_code = (id.tiny() .. "-" .. id.tiny()):upper();
+	end
+	-- device code should be derivable after consent but not guessable by the user
+	local device_code = b64url(hashes.hmac_sha256(verification_key, user_code));
+	local verification_uri = module:http_url() .. "/device";
+	local verification_uri_complete = verification_uri .. "?" .. http.formencode({ user_code = user_code });
+
+	local dc_ok = codes:set(params.client_id .. "#" .. device_code, { expires = os.time() + 1200 });
+	local uc_ok = codes:set(user_code,
+		{ user_code = user_code; expires = os.time() + 600; client_id = params.client_id;
+    scope = requested_scopes:concat(" ") });
+	if not dc_ok or not uc_ok then
+		return oauth_error("temporarily_unavailable");
+	end
+
+	return {
+		headers = { content_type = "application/json"; cache_control = "no-store"; pragma = "no-cache" };
+		body = json.encode {
+			device_code = device_code;
+			user_code = user_code;
+			verification_uri = verification_uri;
+			verification_uri_complete = verification_uri_complete;
+			expires_in = 600;
+			interval = 5;
+		};
+	}
+end
+
+local function handle_device_verification_request(event)
+	local request = event.request;
+	local params = strict_formdecode(request.url.query);
+	if not params or not params.user_code then
+		return render_page(templates.device, { client = false });
+	end
+
+	local device_info = codes:get(params.user_code);
+	if not device_info or code_expired(device_info) or not codes:set(params.user_code, nil) then
+		return render_error(oauth_error("expired_token", "Incorrect or expired code"));
+	end
+
+	return {
+		status_code = 303;
+		headers = {
+			location = module:http_url() .. "/authorize" .. "?" .. http.formencode({
+				client_id = device_info.client_id;
+				redirect_uri = device_uri;
+				response_type = "code";
+				scope = device_info.scope;
+				state = new_device_token({ user_code = params.user_code });
+			});
+		};
+	}
 end
 
 local function handle_revocation_request(event)
@@ -915,6 +1087,7 @@ local registration_schema = {
 					"refresh_token";
 					"urn:ietf:params:oauth:grant-type:jwt-bearer";
 					"urn:ietf:params:oauth:grant-type:saml2-bearer";
+					device_uri;
 				};
 			};
 			default = { "authorization_code" };
@@ -1069,6 +1242,8 @@ if not registration_key then
 	module:log("info", "No 'oauth2_registration_key', dynamic client registration disabled")
 	handle_authorization_request = nil
 	handle_register_request = nil
+	handle_device_authorization_request = nil
+	handle_device_verification_request = nil
 end
 
 local function handle_userinfo_request(event)
@@ -1129,6 +1304,10 @@ module:provides("http", {
 
 		-- Step 1. Create OAuth client
 		["POST /register"] = handle_register_request;
+
+		-- Device flow
+		["POST /device"] = handle_device_authorization_request;
+		["GET /device"] = handle_device_verification_request;
 
 		-- Step 2. User-facing login and consent view
 		["GET /authorize"] = handle_authorization_request;
@@ -1203,11 +1382,9 @@ function get_authorization_server_metadata()
 		op_tos_uri = module:get_option_string("oauth2_terms_url", nil);
 		revocation_endpoint = handle_revocation_request and module:http_url() .. "/revoke" or nil;
 		revocation_endpoint_auth_methods_supported = array({ "client_secret_basic" });
+		device_authorization_endpoint = handle_device_authorization_request and module:http_url() .. "/device";
 		code_challenge_methods_supported = array(it.keys(verifier_transforms));
-		grant_types_supported = array(it.keys(response_type_handlers)):map(tmap {
-			token = "implicit";
-			code = "authorization_code";
-		});
+		grant_types_supported = array(it.keys(grant_type_handlers));
 		response_modes_supported = array(it.keys(response_type_handlers)):map(tmap { token = "fragment"; code = "query" });
 		authorization_response_iss_parameter_supported = true;
 		service_documentation = module:get_option_string("oauth2_service_documentation", "https://modules.prosody.im/mod_http_oauth2.html");
