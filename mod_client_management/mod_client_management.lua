@@ -426,7 +426,13 @@ module:once(function ()
 				key = "user_agent";
 				width = "1p";
 				mapper = function(user_agent)
-					return user_agent and user_agent.software;
+					if user_agent and user_agent.software then
+						if user_agent.software_version then
+							return user_agent.software .. "/" .. user_agent.software_version;
+						else
+							return user_agent.software;
+						end
+					end
 				end;
 			};
 			{
