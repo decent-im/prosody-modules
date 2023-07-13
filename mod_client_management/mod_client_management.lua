@@ -420,6 +420,7 @@ module:once(function ()
 		end
 
 		local colspec = {
+			{ title = "ID"; key = "id"; width = math.max(#"client/", #"grant/") + #id.short() };
 			{
 				title = "Software";
 				key = "user_agent";
