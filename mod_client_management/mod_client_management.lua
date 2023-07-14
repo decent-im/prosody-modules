@@ -278,6 +278,17 @@ function get_active_clients(username)
 	return active_clients;
 end
 
+local function user_agent_tostring(user_agent)
+	if user_agent then
+		if user_agent.software then
+			if user_agent.software_version then
+				return user_agent.software .. "/" .. user_agent.software_version;
+			end
+			return user_agent.software;
+		end
+	end
+end
+
 function revoke_client_access(username, client_selector)
 	if client_selector then
 		local c_type, c_id = client_selector:match("^(%w+)/(.+)$");
@@ -314,7 +325,7 @@ function revoke_client_access(username, client_selector)
 		elseif c_type == "software" then
 			local active_clients = get_active_clients(username);
 			for _, client in ipairs(active_clients) do
-				if client.user_agent and client.user_agent.software == c_id then
+				if client.user_agent and client.user_agent.software == c_id or user_agent_tostring(client.user_agent) then
 					return revoke_client_access(username, client.id);
 				end
 			end
@@ -432,15 +443,7 @@ module:once(function ()
 				title = "Software";
 				key = "user_agent";
 				width = "1p";
-				mapper = function(user_agent)
-					if user_agent and user_agent.software then
-						if user_agent.software_version then
-							return user_agent.software .. "/" .. user_agent.software_version;
-						else
-							return user_agent.software;
-						end
-					end
-				end;
+				mapper = user_agent_tostring;
 			};
 			{
 				title = "Last seen";
