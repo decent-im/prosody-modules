@@ -465,4 +465,18 @@ module:once(function ()
 		print(string.rep("-", self.session.width));
 		return true, ("%d clients"):format(#clients);
 	end
+
+	function console_env.user:revoke_client(user_jid, selector) -- luacheck: ignore 212/self
+		local username, host = jid.split(user_jid);
+		local mod = prosody.hosts[host] and prosody.hosts[host].modules.client_management;
+		if not mod then
+			return false, ("Host does not exist on this server, or does not have mod_client_management loaded");
+		end
+
+		local revoked, err = revocation_errors.coerce(mod.revoke_client_access(username, selector));
+		if not revoked then
+			return false, err.text or err;
+		end
+		return true, "Client access revoked";
+	end
 end);
