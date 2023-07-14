@@ -325,7 +325,7 @@ function revoke_client_access(username, client_selector)
 		elseif c_type == "software" then
 			local active_clients = get_active_clients(username);
 			for _, client in ipairs(active_clients) do
-				if client.user_agent and client.user_agent.software == c_id or user_agent_tostring(client.user_agent) then
+				if client.user_agent and client.user_agent.software == c_id or user_agent_tostring(client.user_agent) == c_id then
 					return revoke_client_access(username, client.id);
 				end
 			end
