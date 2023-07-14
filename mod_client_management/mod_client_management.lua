@@ -311,6 +311,13 @@ function revoke_client_access(username, client_selector)
 			local ok = tokenauth.revoke_grant(username, c_id);
 			if not ok then return nil, "internal-server-error"; end
 			return true;
+		elseif c_type == "software" then
+			local active_clients = get_active_clients(username);
+			for _, client in ipairs(active_clients) do
+				if client.user_agent and client.user_agent.software == c_id then
+					return revoke_client_access(username, client.id);
+				end
+			end
 		end
 	end
 
