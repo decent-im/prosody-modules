@@ -1058,6 +1058,7 @@ local function handle_revocation_request(event)
 end
 
 local registration_schema = {
+	title = "OAuth 2.0 Dynamic Client Registration Protocol";
 	type = "object";
 	required = {
 		-- These are shown to users in the template
@@ -1067,13 +1068,21 @@ local registration_schema = {
 		"redirect_uris";
 	};
 	properties = {
-		redirect_uris = { type = "array"; minItems = 1; uniqueItems = true; items = { type = "string"; format = "uri" } };
+		redirect_uris = {
+			title = "List of Redirect URIs";
+			type = "array";
+			minItems = 1;
+			uniqueItems = true;
+			items = { title = "Redirect URI"; type = "string"; format = "uri" };
+		};
 		token_endpoint_auth_method = {
+			title = "Token Endpoint Authentication Method";
 			type = "string";
 			enum = { "none"; "client_secret_post"; "client_secret_basic" };
 			default = "client_secret_basic";
 		};
 		grant_types = {
+			title = "Grant Types";
 			type = "array";
 			minItems = 1;
 			uniqueItems = true;
@@ -1092,23 +1101,82 @@ local registration_schema = {
 			};
 			default = { "authorization_code" };
 		};
-		application_type = { type = "string"; enum = { "native"; "web" }; default = "web" };
+		application_type = {
+			title = "Application Type";
+			description = "Determines which kinds of redirect URIs the client may register. \z
+			The value 'web' limits the client to https:// URLs with the same hostname as in 'client_uri' \z
+			while the value 'native' allows either loopback http:// URLs or application specific URIs.";
+			type = "string";
+			enum = { "native"; "web" };
+			default = "web";
+		};
 		response_types = {
+			title = "Response Types";
 			type = "array";
 			minItems = 1;
 			uniqueItems = true;
 			items = { type = "string"; enum = { "code"; "token" } };
 			default = { "code" };
 		};
-		client_name = { type = "string" };
-		client_uri = { type = "string"; format = "uri"; pattern = "^https:" };
-		logo_uri = { type = "string"; format = "uri"; pattern = "^https:" };
-		scope = { type = "string" };
-		contacts = { type = "array"; minItems = 1; items = { type = "string"; format = "email" } };
-		tos_uri = { type = "string"; format = "uri"; pattern = "^https:" };
-		policy_uri = { type = "string"; format = "uri"; pattern = "^https:" };
-		software_id = { type = "string"; format = "uuid" };
-		software_version = { type = "string" };
+		client_name = {
+			title = "Client Name";
+			description = "Human-readable name of the client, presented to the user in the consent dialog.";
+			type = "string";
+		};
+		client_uri = {
+			title = "Client URL";
+			description = "Should be an link to a page with information about the client.";
+			type = "string";
+			format = "uri";
+			pattern = "^https:";
+		};
+		logo_uri = {
+			title = "Logo URL";
+			description = "URL to the clients logotype (not currently used).";
+			type = "string";
+			format = "uri";
+			pattern = "^https:";
+		};
+		scope = {
+			title = "Scopes";
+			description = "Space-separated list of scopes the client promises to restrict itself to.";
+			type = "string";
+		};
+		contacts = {
+			title = "Contact Addresses";
+			description = "Addresses, typically email or URLs where the client developers can be contacted.";
+			type = "array";
+			minItems = 1;
+			items = { type = "string"; format = "email" };
+		};
+		tos_uri = {
+			title = "Terms of Service URL";
+			description = "Link to Terms of Service for the client, presented to the user in the consent dialog. \z
+			MUST be a https:// URL with hostname matching that of 'client_uri'.";
+			type = "string";
+			format = "uri";
+			pattern = "^https:";
+		};
+		policy_uri = {
+			title = "Privacy Policy URL";
+			description = "Link to a Privacy Policy for the client. MUST be a https:// URL with hostname matching that of 'client_uri'.";
+			type = "string";
+			format = "uri";
+			pattern = "^https:";
+		};
+		software_id = {
+			title = "Software ID";
+			description = "Unique identifier for the client software, common for all instances. Typically an UUID.";
+			type = "string";
+			format = "uuid";
+		};
+		software_version = {
+			title = "Software Version";
+			description = "Version of the software creating being registered. \z
+			E.g. to allow revoking all related tokens in the event of a security incident.";
+			type = "string";
+			example = "2.3.1";
+		};
 	};
 }
 
