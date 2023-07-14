@@ -451,7 +451,7 @@ module:once(function ()
 				width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
 				align = "right";
 				mapper = function(last_seen)
-					return os.date(os.difftime(os.time(), last_seen) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
+					return last_seen and os.date(os.difftime(os.time(), last_seen) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
 				end;
 			};
 			{
