@@ -15,6 +15,8 @@ local burst = math.max(module:get_option_number("muc_burst_factor", 6), 1);
 local max_nick_length = module:get_option_number("muc_max_nick_length", 23); -- Default chosen through scientific methods
 local max_line_count = module:get_option_number("muc_max_line_count", 23); -- Default chosen through s/scientific methods/copy and paste/
 local max_char_count = module:get_option_number("muc_max_char_count", 5664); -- Default chosen by multiplying a number by 23
+local base_cost = math.max(module:get_option_number("muc_limit_base_cost", 1), 0);
+local line_multiplier = math.max(module:get_option_number("muc_line_count_multiplier", 0.1), 0);
 
 local join_only = module:get_option_boolean("muc_limit_joins_only", false);
 local dropped_count = 0;
@@ -49,7 +51,7 @@ local function handle_stanza(event)
 		throttle = new_throttle(period*burst, burst);
 		room.throttle = throttle;
 	end
-	local cost = 1;
+	local cost = base_cost;
 	local body = stanza:get_child_text("body");
 	if body then
 		-- TODO calculate a text diagonal cross-section or some mathemagical
@@ -65,7 +67,7 @@ local function handle_stanza(event)
 				:tag("x", { xmlns = xmlns_muc; }));
 			return true;
 		end
-		cost = cost + body_lines;
+		cost = cost + (body_lines * line_multiplier);
 	end
 	if not throttle:poll(cost) then
 		module:log("debug", "Dropping stanza for %s@%s from %s, over rate limit", dest_room, dest_host, from_jid);
