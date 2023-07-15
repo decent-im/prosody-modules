@@ -30,8 +30,10 @@ Configuration
 
 Add the module to the MUC host (not the global modules\_enabled):
 
-        Component "conference.example.com" "muc"
-            modules_enabled = { "muc_limits" }
+```lua
+Component "conference.example.com" "muc"
+    modules_enabled = { "muc_limits" }
+```
 
 You can define (globally or per-MUC component) the following options:
 
