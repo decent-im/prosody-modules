@@ -1172,7 +1172,7 @@ local registration_schema = {
 		};
 		software_version = {
 			title = "Software Version";
-			description = "Version of the software creating being registered. \z
+			description = "Version of the client software being registered. \z
 			E.g. to allow revoking all related tokens in the event of a security incident.";
 			type = "string";
 			example = "2.3.1";
