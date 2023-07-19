@@ -1,5 +1,9 @@
 local st = require "util.stanza";
 
+module:hook("muc-disco#info", function(event)
+	table.insert(event.form, { name = "muc#roomconfig_allowpm"; value = "moderators" });
+end);
+
 module:hook("muc-private-message", function(event)
 	local stanza, room = event.stanza, event.room;
 	local from_occupant = room:get_occupant_by_nick(stanza.attr.from);
