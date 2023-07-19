@@ -398,7 +398,7 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 			code = b64url(hashes.hmac_sha256(verification_key, device_state.user_code));
 		end
 	end
-	local ok = codes:set(params.client_id .. "#" .. code, {
+	local ok = codes:set("authorization_code:" .. params.client_id .. "#" .. code, {
 		expires = os.time() + 600;
 		granted_jid = granted_jid;
 		granted_scopes = granted_scopes;
@@ -491,12 +491,12 @@ function grant_type_handlers.authorization_code(params)
 		module:log("debug", "client_secret mismatch");
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
-	local code, err = codes:get(params.client_id .. "#" .. params.code);
+	local code, err = codes:get("authorization_code:" .. params.client_id .. "#" .. params.code);
 	if err then error(err); end
 	-- MUST NOT use the authorization code more than once, so remove it to
 	-- prevent a second attempted use
 	-- TODO if a second attempt *is* made, revoke any tokens issued
-	codes:set(params.client_id .. "#" .. params.code, nil);
+	codes:set("authorization_code:" .. params.client_id .. "#" .. params.code, nil);
 	if not code or type(code) ~= "table" or code_expired(code) then
 		module:log("debug", "authorization_code invalid or expired: %q", code);
 		return oauth_error("invalid_client", "incorrect credentials");
@@ -574,7 +574,7 @@ grant_type_handlers[device_uri] = function(params)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	local code = codes:get(params.client_id .. "#" .. params.device_code);
+	local code = codes:get("device_code:" .. params.device_code);
 	if type(code) ~= "table" or code_expired(code) then
 		return oauth_error("expired_token");
 	elseif code.error then
@@ -582,7 +582,7 @@ grant_type_handlers[device_uri] = function(params)
 	elseif not code.granted_jid then
 		return oauth_error("authorization_pending");
 	end
-	codes:set(client.client_hash .. "#" .. params.device_code, nil);
+	codes:set("device_code:" .. params.device_code, nil);
 
 	return json.encode(new_access_token(code.granted_jid, code.granted_role, code.granted_scopes, client, code.id_token));
 end
@@ -882,10 +882,10 @@ local function handle_authorization_request(event)
 			local is_device, device_state = verify_device_token(params.state);
 			if is_device then
 				local device_code = b64url(hashes.hmac_sha256(verification_key, device_state.user_code));
-				local code = codes:get(params.client_id .. "#" .. device_code);
+				local code = codes:get("device_code:" .. params.client_id .. "#" .. device_code);
 				code.error = oauth_error("access_denied");
 				code.expires = os.time() + 60;
-				codes:set(params.client_id .. "#" .. device_code, code);
+				codes:set("device_code:" .. params.client_id .. "#" .. device_code, code);
 			end
 		end
 		return error_response(request, redirect_uri, oauth_error("access_denied"));
@@ -969,7 +969,7 @@ local function handle_device_authorization_request(event)
 	-- screen onto a phone
 	local user_code = (id.tiny() .. "-" .. id.tiny()):upper();
 	local collisions = 0;
-	while codes:get(user_code) do
+	while codes:get("authorization_code:" .. device_uri .. "#" .. user_code) do
 		collisions = collisions + 1;
 		if collisions > 10 then
 			return oauth_error("temporarily_unavailable");
@@ -981,8 +981,8 @@ local function handle_device_authorization_request(event)
 	local verification_uri = module:http_url() .. "/device";
 	local verification_uri_complete = verification_uri .. "?" .. http.formencode({ user_code = user_code });
 
-	local dc_ok = codes:set(params.client_id .. "#" .. device_code, { expires = os.time() + 1200 });
-	local uc_ok = codes:set(user_code,
+	local dc_ok = codes:set("device_code:" .. params.client_id .. "#" .. device_code, { expires = os.time() + 1200 });
+	local uc_ok = codes:set("user_code:" .. user_code,
 		{ user_code = user_code; expires = os.time() + 600; client_id = params.client_id;
     scope = requested_scopes:concat(" ") });
 	if not dc_ok or not uc_ok then
@@ -1009,8 +1009,8 @@ local function handle_device_verification_request(event)
 		return render_page(templates.device, { client = false });
 	end
 
-	local device_info = codes:get(params.user_code);
-	if not device_info or code_expired(device_info) or not codes:set(params.user_code, nil) then
+	local device_info = codes:get("user_code:" .. params.user_code);
+	if not device_info or code_expired(device_info) or not codes:set("user_code:" .. params.user_code, nil) then
 		return render_error(oauth_error("expired_token", "Incorrect or expired code"));
 	end
 
