@@ -13,6 +13,10 @@ module:hook("muc-private-message", function(event)
 		return -- messaging moderators is ok
 	end
 
+	if to_occupant.bare_jid == from_occupant.bare_jid then
+		return -- to yourself is okay, used by some clients to sync read state in public channels
+	end
+
 	room:route_to_occupant(from_occupant, st.error_reply(stanza, "cancel", "policy-violation", "Private messages are disabled", room.jid))
 	return false;
 end, 1);
