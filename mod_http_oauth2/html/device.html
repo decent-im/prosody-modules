@@ -11,6 +11,9 @@
 	<h1>{site_name}</h1>
 	<fieldset>
 	<legend>Device Authorization</legend>
+	{error&<div class="error">
+		<p>{error.text}</p>
+	</div>}
 {client&
 	<p>Authorization completed. You can go back to
 	<em>{client.client_name}</em>.</p>}

@@ -1011,7 +1011,10 @@ local function handle_device_verification_request(event)
 
 	local device_info = codes:get("user_code:" .. params.user_code);
 	if not device_info or code_expired(device_info) or not codes:set("user_code:" .. params.user_code, nil) then
-		return render_error(oauth_error("expired_token", "Incorrect or expired code"));
+		return render_page(templates.device, {
+			client = false;
+			error = oauth_error("expired_token", "Incorrect or expired code");
+		});
 	end
 
 	return {
