@@ -101,14 +101,24 @@ local function moderate(actor, room_jid, stanza_id, retract, reason)
 		announcement:add_direct_child(moderated_occupant_id);
 	end
 
+	local actor_occupant = room:get_occupant_by_real_jid(actor) or room:new_occupant(jid.bare(actor), actor_nick);
+	if room.get_occupant_id then
+		-- This isn't a regular broadcast message going through the events occupant_id.lib hooks so we do this here
+		announcement:add_direct_child(st.stanza("occupant-id", { xmlns = xmlns_occupant_id; id = room:get_occupant_id(actor_occupant) }))
+	end
+
 	if muc_log_archive.set and retract then
 		local tombstone = st.message({ from = original.attr.from, type = "groupchat", id = original.attr.id })
 			:tag("moderated", { xmlns = xmlns_moderate, by = actor_nick })
 				:tag("retracted", { xmlns = xmlns_retract, stamp = dt.datetime() }):up();
 
-		if room.get_occupant_id and moderated_occupant_id then
-			-- Copy occupant id from moderated message
-			tombstone:add_child(moderated_occupant_id);
+		if room.get_occupant_id then
+			tombstone:add_direct_child(st.stanza("occupant-id", { xmlns = xmlns_occupant_id; id = room:get_occupant_id(actor_occupant) }))
+
+			if moderated_occupant_id then
+				-- Copy occupant id from moderated message
+				tombstone:add_child(moderated_occupant_id);
+			end
 		end
 
 		if reason then
