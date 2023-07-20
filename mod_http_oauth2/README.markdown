@@ -212,6 +212,7 @@ curl -sSf https://xmpp.example.net/oauth2/register \
 ### Supported flows
 
 -   Authorization Code grant, optionally with Proof Key for Code Exchange
+-   Device Authorization Grant
 -   Resource owner password grant
 -   Implicit flow *(disabled by default)*
 -   Refresh Token grants
@@ -223,6 +224,7 @@ Various flows can be disabled and enabled with
 -- These examples reflect the defaults
 allowed_oauth2_grant_types = {
 	"authorization_code"; -- authorization code grant
+	"urn:ietf:params:oauth:grant-type:device_code";
 	"password"; -- resource owner password grant
 }
 
