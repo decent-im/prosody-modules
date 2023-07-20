@@ -27,6 +27,7 @@ end
 -- Namespaces
 local xmlns_fasten = "urn:xmpp:fasten:0";
 local xmlns_moderate = "urn:xmpp:message-moderate:0";
+local xmlns_occupant_id = "urn:xmpp:occupant-id:0";
 local xmlns_retract = "urn:xmpp:message-retract:0";
 
 -- Discovering support
@@ -95,10 +96,20 @@ local function moderate(actor, room_jid, stanza_id, retract, reason)
 		announcement:text_tag("reason", reason);
 	end
 
+	local moderated_occupant_id = original:get_child("occupant-id", xmlns_occupant_id);
+	if room.get_occupant_id and moderated_occupant_id then
+		announcement:add_direct_child(moderated_occupant_id);
+	end
+
 	if muc_log_archive.set and retract then
 		local tombstone = st.message({ from = original.attr.from, type = "groupchat", id = original.attr.id })
 			:tag("moderated", { xmlns = xmlns_moderate, by = actor_nick })
 				:tag("retracted", { xmlns = xmlns_retract, stamp = dt.datetime() }):up();
+
+		if room.get_occupant_id and moderated_occupant_id then
+			-- Copy occupant id from moderated message
+			tombstone:add_child(moderated_occupant_id);
+		end
 
 		if reason then
 			tombstone:text_tag("reason", reason);
