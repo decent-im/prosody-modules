@@ -213,7 +213,7 @@ curl -sSf https://xmpp.example.net/oauth2/register \
 
 -   Authorization Code grant, optionally with Proof Key for Code Exchange
 -   Device Authorization Grant
--   Resource owner password grant
+-   Resource owner password grant *(likely to be phased out in the future)*
 -   Implicit flow *(disabled by default)*
 -   Refresh Token grants
 
