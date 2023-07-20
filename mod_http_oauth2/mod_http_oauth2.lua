@@ -747,6 +747,12 @@ local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_
 	"refresh_token";
 	device_uri;
 })
+if allowed_grant_type_handlers:contains("device_code") then
+	-- expand short form because that URI is long
+	module:log("debug", "Expanding %q to %q in '%s'", "device_code", device_uri, "allowed_oauth2_grant_types");
+	allowed_grant_type_handlers:remove("device_code");
+	allowed_grant_type_handlers:add(device_uri);
+end
 for handler_type in pairs(grant_type_handlers) do
 	if not allowed_grant_type_handlers:contains(handler_type) then
 		module:log("debug", "Grant type %q disabled", handler_type);

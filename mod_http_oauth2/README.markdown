@@ -224,7 +224,7 @@ Various flows can be disabled and enabled with
 -- These examples reflect the defaults
 allowed_oauth2_grant_types = {
 	"authorization_code"; -- authorization code grant
-	"urn:ietf:params:oauth:grant-type:device_code";
+	"device_code";
 	"password"; -- resource owner password grant
 }
 
