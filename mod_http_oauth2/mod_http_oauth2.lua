@@ -270,17 +270,22 @@ local function new_access_token(token_jid, role, scope_string, client, id_token,
 		token_data = nil;
 	end
 
-	local refresh_token;
 	local grant = refresh_token_info and refresh_token_info.grant;
 	if not grant then
 		-- No existing grant, create one
 		grant = tokens.create_grant(token_jid, token_jid, default_refresh_ttl, token_data);
-		-- Create refresh token for the grant if desired
-		refresh_token = refresh_token_info ~= false and tokens.create_token(token_jid, grant, nil, nil, "oauth2-refresh");
-	else
-		-- Grant exists, reuse existing refresh token
-		refresh_token = refresh_token_info.token;
 	end
+
+	if refresh_token_info then
+		-- out with the old refresh tokens
+		local ok, err = tokens.revoke_token(refresh_token_info.token);
+		if not ok then
+			module:log("error", "Could not revoke refresh token: %s", err);
+			return 500;
+		end
+	end
+	-- in with the new refresh token
+	local refresh_token = refresh_token_info ~= false and tokens.create_token(token_jid, grant.id, nil, nil, "oauth2-refresh");
 
 	if role == "xmpp" then
 		-- Special scope meaning the users default role.
