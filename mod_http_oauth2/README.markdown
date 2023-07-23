@@ -100,8 +100,8 @@ The following options configure the lifetime of tokens issued by the module.
 The defaults are recommended.
 
 ```lua
-oauth2_access_token_ttl = 86400 -- 24 hours
-oauth2_refresh_token_ttl = nil -- unlimited unless revoked by the user
+oauth2_access_token_ttl = 3600 -- one hour
+oauth2_refresh_token_ttl = 604800 -- one week
 ```
 
 ### Dynamic client registration

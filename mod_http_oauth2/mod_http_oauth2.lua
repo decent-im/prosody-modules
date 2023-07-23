@@ -101,8 +101,8 @@ local authorization_server_metadata = nil;
 
 local tokens = module:depends("tokenauth");
 
-local default_access_ttl = module:get_option_number("oauth2_access_token_ttl", 86400);
-local default_refresh_ttl = module:get_option_number("oauth2_refresh_token_ttl", nil);
+local default_access_ttl = module:get_option_number("oauth2_access_token_ttl", 3600);
+local default_refresh_ttl = module:get_option_period("oauth2_refresh_token_ttl", 604800);
 
 -- Used to derive client_secret from client_id, set to enable stateless dynamic registration.
 local registration_key = module:get_option_string("oauth2_registration_key");
