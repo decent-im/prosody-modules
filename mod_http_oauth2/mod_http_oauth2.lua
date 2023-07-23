@@ -216,9 +216,8 @@ local codes = cache.new(10000, function (_, code)
 	return code_expired(code)
 end);
 
--- Periodically clear out unredeemed codes.  Does not need to be exact, expired
--- codes are rejected if tried. Mostly just to keep memory usage in check.
-module:hourly("Clear expired authorization codes", function()
+-- Clear out unredeemed codes so they don't linger in memory.
+module:daily("Clear expired authorization codes", function()
 	local k, code = codes:tail();
 	while code and code_expired(code) do
 		codes:set(k, nil);
