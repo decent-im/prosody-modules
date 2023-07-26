@@ -39,6 +39,9 @@ if not external_only then
 		else
 			http_files = module:depends"http_files";
 		end
+	elseif prosody.process_type and module.get_option_period then
+		module:depends("http");
+		http_files = require "net.http.files";
 	end
 	-- Calculate automatic base_url default
 	base_url = module.http_url and module:http_url();
