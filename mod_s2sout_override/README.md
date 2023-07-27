@@ -18,6 +18,11 @@ even UNIX sockets.
 URIs with IP addresses like `tcp://127.0.0.1:9999` will bypass A/AAAA
 DNS lookups.
 
+The special target `"*"` may be used to redirect all servers that don't have
+an exact match.
+
+Standard DNS SRV resolution can be restored by specifying a truthy value.
+
 ```lua
 -- Global section
 modules_enabled = {
@@ -28,7 +33,12 @@ modules_enabled = {
 s2sout_override = {
     ["example.com"] = "tcp://other.host.example:5299";
     ["xmpp.example.net"] = "tcp://localhost:5999";
-    ["secure.example"] = = "tls://127.0.0.1:5270";
+    ["secure.example"] = "tls://127.0.0.1:5270";
+
+    -- catch-all:
+    ["*"] = "tls://127.0.0.1:5370";
+    -- bypass the catch-all, use standard DNS SRV:
+    ["jabber.example"] = true;
 }
 ```
 

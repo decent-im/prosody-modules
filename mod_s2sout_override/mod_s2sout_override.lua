@@ -6,7 +6,7 @@ local basic_resolver = require "net.resolvers.basic";
 local override_for = module:get_option(module.name, {}); -- map of host to "tcp://example.com:5269"
 
 module:hook("s2sout-pre-connect", function(event)
-	local override = override_for[event.session.to_host];
+	local override = override_for[event.session.to_host] or override_for["*"];
 	if type(override) == "string" then
 		override = url.parse(override);
 	end
