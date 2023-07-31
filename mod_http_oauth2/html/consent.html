@@ -7,16 +7,18 @@
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-	<main>
 	{state.error&<div class="error">
 		<p>{state.error}</p>
 	</div>}
 
+	<header>
 	<h1>{site_name}</h1>
+	</header>
+	<main>
 	<fieldset>
-	<form method="post">
 	<legend>Authorize new application</legend>
 	<p>A new application wants to connect to your account.</p>
+	<form method="post">
 	<dl>
 		<dt>Name</dt>
 		<dd>{client.client_name}</dd>
