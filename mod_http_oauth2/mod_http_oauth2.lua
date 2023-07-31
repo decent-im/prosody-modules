@@ -1041,6 +1041,8 @@ local function handle_device_verification_request(event)
 	}
 end
 
+local strict_auth_revoke = module:get_option_boolean("oauth2_require_auth_revoke", false);
+
 local function handle_revocation_request(event)
 	local request, response = event.request, event.response;
 	response.headers.cache_control = "no-store";
@@ -1055,6 +1057,11 @@ local function handle_revocation_request(event)
 		if not verify_client_secret(credentials.username, credentials.password) then
 			return 401;
 		end
+		-- TODO check that it's their token I guess?
+	elseif strict_auth_revoke then
+		-- Why require auth to revoke a leaked token?
+		response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
+		return 401;
 	end
 
 	local form_data = strict_formdecode(event.request.body);
