@@ -1,6 +1,5 @@
 body
 {
-	margin-top:14%;
 	text-align:center;
 	background-color:#f8f8f8;
 	font-family:sans-serif
@@ -106,6 +105,9 @@ button, input[type=submit]
 
 @media(min-width: 768px)
 {
+	body {
+		margin-top:14vh;
+	}
 	header, main, footer
 	{
 		margin-left: auto;
