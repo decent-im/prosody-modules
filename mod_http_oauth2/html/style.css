@@ -21,7 +21,7 @@ p
 
 .error
 {
-	margin: 0.75em;
+	margin: 0.75em auto;
 	background-color: #f8d7da;
 	color: #842029;
 	border: solid 1px #f5c2c7;

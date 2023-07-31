@@ -7,10 +7,11 @@
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-	{state.error&<div class="error">
+{state.error&
+	<dialog open="" class="error">
 		<p>{state.error}</p>
-	</div>}
-
+		<form method="dialog"><button>dismiss</button></form>
+	</dialog>}
 	<header>
 	<h1>{site_name}</h1>
 	</header>
