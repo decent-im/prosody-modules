@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{site_name} - Sign in</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
 	<main>
@@ -16,9 +16,9 @@
 		<p>{state.error}</p>
 	</div>}
 	<form method="post">
-		<input type="text" name="username" placeholder="Username" aria-label="Username" required {extra.username_hint~autofocus}{extra.username_hint& value="{extra.username_hint?}"}><br/>
-		<input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required {extra.username_hint&autofocus}><br/>
-		<input type="submit" value="Sign in">
+		<input type="text" name="username" placeholder="Username" aria-label="Username" required {extra.username_hint~autofocus}{extra.username_hint& value="{extra.username_hint?}"} /><br/>
+		<input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required {extra.username_hint&autofocus} /><br />
+		<input type="submit" value="Sign in" />
 	</form>
 	</fieldset>
 	</main>
