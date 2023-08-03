@@ -400,6 +400,8 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 		if is_device then
 			-- reconstruct the device_code
 			code = b64url(hashes.hmac_sha256(verification_key, device_state.user_code));
+		else
+			return oauth_error("invalid_request");
 		end
 	end
 	local ok = codes:set("authorization_code:" .. params.client_id .. "#" .. code, {
