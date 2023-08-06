@@ -394,17 +394,19 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 		return oauth_error("invalid_request", "PKCE required");
 	end
 
+	local prefix = "authorization_code:";
 	local code = id.medium();
 	if params.redirect_uri == device_uri then
 		local is_device, device_state = verify_device_token(params.state);
 		if is_device then
 			-- reconstruct the device_code
+			prefix = "device_code:";
 			code = b64url(hashes.hmac_sha256(verification_key, device_state.user_code));
 		else
 			return oauth_error("invalid_request");
 		end
 	end
-	local ok = codes:set("authorization_code:" .. params.client_id .. "#" .. code, {
+	local ok = codes:set(prefix.. params.client_id .. "#" .. code, {
 		expires = os.time() + 600;
 		granted_jid = granted_jid;
 		granted_scopes = granted_scopes;
@@ -580,7 +582,7 @@ grant_type_handlers[device_uri] = function(params)
 		return oauth_error("invalid_client", "incorrect credentials");
 	end
 
-	local code = codes:get("device_code:" .. params.device_code);
+	local code = codes:get("device_code:" .. params.client_id .. "#" .. params.device_code);
 	if type(code) ~= "table" or code_expired(code) then
 		return oauth_error("expired_token");
 	elseif code.error then
@@ -588,7 +590,7 @@ grant_type_handlers[device_uri] = function(params)
 	elseif not code.granted_jid then
 		return oauth_error("authorization_pending");
 	end
-	codes:set("device_code:" .. params.device_code, nil);
+	codes:set("device_code:" .. params.client_id .. "#" .. params.device_code, nil);
 
 	return json.encode(new_access_token(code.granted_jid, code.granted_role, code.granted_scopes, client, code.id_token));
 end
@@ -993,9 +995,10 @@ local function handle_device_authorization_request(event)
 	local verification_uri = module:http_url() .. "/device";
 	local verification_uri_complete = verification_uri .. "?" .. http.formencode({ user_code = user_code });
 
-	local dc_ok = codes:set("device_code:" .. params.client_id .. "#" .. device_code, { expires = os.time() + 1200 });
+	local expires = os.time() + 600;
+	local dc_ok = codes:set("device_code:" .. params.client_id .. "#" .. device_code, { expires = expires });
 	local uc_ok = codes:set("user_code:" .. user_code,
-		{ user_code = user_code; expires = os.time() + 600; client_id = params.client_id;
+		{ user_code = user_code; expires = expires; client_id = params.client_id;
     scope = requested_scopes:concat(" ") });
 	if not dc_ok or not uc_ok then
 		return oauth_error("temporarily_unavailable");
