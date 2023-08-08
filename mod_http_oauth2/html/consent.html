@@ -36,18 +36,18 @@
 
 		<dt>Requested permissions</dt>
 		<dd>{scopes#
-			<input class="scope" type="checkbox" id="scope_{idx}" name="scope" value="{item}" checked><label class="scope" for="scope_{idx}">{item}</label>}
+			<input class="scope" type="checkbox" id="scope_{idx}" name="scope" value="{item}" checked="" /><label class="scope" for="scope_{idx}">{item}</label>}
 		</dd>
 	</dl>
 
 	<p>To allow <em>{client.client_name}</em> to access your account
-	   <em>{state.user.username}@{state.user.host}</em> and associated data,
-	   select 'Allow'. Otherwise, select 'Deny'.
+	<em>{state.user.username}@{state.user.host}</em> and associated data,
+	select 'Allow'. Otherwise, select 'Deny'.
 	</p>
 
-		<input type="hidden" name="user_token" value="{state.user.token}">
-		<button type="submit" name="consent" value="denied">Deny</button>
-		<button type="submit" name="consent" value="granted">Allow</button>
+	<input type="hidden" name="user_token" value="{state.user.token}">
+	<button type="submit" name="consent" value="denied">Deny</button>
+	<button type="submit" name="consent" value="granted">Allow</button>
 	</form>
 	</fieldset>
 	</main>
