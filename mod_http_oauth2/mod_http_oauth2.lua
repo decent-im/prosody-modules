@@ -1236,6 +1236,16 @@ function create_client(client_metadata)
 		return nil, oauth_error("invalid_request", "Failed schema validation.");
 	end
 
+	local client_uri = url.parse(client_metadata.client_uri);
+	if not client_uri or client_uri.scheme ~= "https" or loopbacks:contains(client_uri.host) then
+		return nil, oauth_error("invalid_client_metadata", "Missing, invalid or insecure client_uri");
+	end
+
+	if not client_metadata.application_type and redirect_uri_allowed(client_metadata.redirect_uris[1], client_uri, "native") then
+		client_metadata.application_type = "native";
+		-- else defaults to "web"
+	end
+
 	-- Fill in default values
 	for propname, propspec in pairs(registration_schema.properties) do
 		if client_metadata[propname] == nil and type(propspec) == "table" and propspec.default ~= nil then
@@ -1248,11 +1258,6 @@ function create_client(client_metadata)
 		if not registration_schema.properties[propname] then
 			client_metadata[propname] = nil;
 		end
-	end
-
-	local client_uri = url.parse(client_metadata.client_uri);
-	if not client_uri or client_uri.scheme ~= "https" or loopbacks:contains(client_uri.host) then
-		return nil, oauth_error("invalid_client_metadata", "Missing, invalid or insecure client_uri");
 	end
 
 	for _, redirect_uri in ipairs(client_metadata.redirect_uris) do
