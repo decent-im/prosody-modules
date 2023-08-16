@@ -437,6 +437,10 @@ module:once(function ()
 			return true, "No clients associated with this account";
 		end
 
+		local function date_or_time(last_seen)
+			return last_seen and os.date(os.difftime(os.time(), last_seen) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
+		end
+
 		local colspec = {
 			{ title = "ID"; key = "id"; width = "1p" };
 			{
@@ -446,13 +450,18 @@ module:once(function ()
 				mapper = user_agent_tostring;
 			};
 			{
+				title = "First seen";
+				key = "first_seen";
+				width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
+				align = "right";
+				mapper = date_or_time;
+			};
+			{
 				title = "Last seen";
 				key = "last_seen";
 				width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
 				align = "right";
-				mapper = function(last_seen)
-					return last_seen and os.date(os.difftime(os.time(), last_seen) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
-				end;
+				mapper = date_or_time;
 			};
 			{
 				title = "Authentication";
