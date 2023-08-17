@@ -55,7 +55,7 @@ Notable supported standards:
 - [RFC 9207: OAuth 2.0 Authorization Server Issuer Identification](https://www.rfc-editor.org/rfc/rfc9207.html)
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
 - [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html) (_partial, e.g. missing JWKS_)
-- [OpenID Connect Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html) 
+- [OpenID Connect Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html)
 
 ## Configuration
 
@@ -146,9 +146,6 @@ are enforced:
         `client_uri`.
 
     `native`
-
-    `native`
-
     :   For native e.g. desktop clients etc. `redirect_uris` **MUST**
         match one of:
 
