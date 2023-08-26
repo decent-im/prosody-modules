@@ -7,6 +7,8 @@
 # - https://httpie.io/
 # - https://hg.sr.ht/~zash/httpie-oauth2
 
+# shellcheck disable=SC1091
+
 # Settings
 HOST=""
 DOMAIN=""
