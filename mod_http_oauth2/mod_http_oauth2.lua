@@ -1432,7 +1432,7 @@ module:provides("http", {
 			headers = {
 				["Content-Type"] = "text/css";
 			};
-			body = render_html(templates.css, module:get_option("oauth2_template_style"));
+			body = templates.css;
 		} or nil;
 		["GET /script.js"] = templates.js and {
 			headers = {

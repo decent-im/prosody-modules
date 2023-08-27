@@ -78,15 +78,6 @@ To provide custom templates, specify the path to the template directory:
 oauth2_template_path = "/etc/prosody/custom-oauth2-templates"
 ```
 
-Some templates support additional variables, that can be provided by the
-`oauth2_template_style` option:
-
-```lua
-oauth2_template_style = {
-  background_colour = "#ffffff";
-}
-```
-
 If you know what features your templates use use you can adjust the
 `Content-Security-Policy` header to only allow what is needed:
 
