@@ -21,6 +21,6 @@ Install and enable it like any other module. It has no configuration.
 # Compatibility
 
   ------ -------------------------------------------
-  0.12   Bidi available natively with [mod_s2s_bidi]
+  0.12   Bidi available natively with [mod_s2s_bidi][doc:modules:mod_s2s_bidi]
   0.11   Works
   ------ -------------------------------------------
