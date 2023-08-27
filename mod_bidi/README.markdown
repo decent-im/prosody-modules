@@ -4,6 +4,11 @@ labels:
 summary: 'XEP-0288: Bidirectional Server-to-Server Connections'
 ...
 
+::: {.alert .alert-warning}
+This module is unreliable when used with Prosody 0.12, switch to
+\[mod_s2s_bidi\]\[doc:modules:mod_s2s_bidi\]
+:::
+
 Introduction
 ============
 
