@@ -864,7 +864,7 @@ local function handle_authorization_request(event)
 		-- Client wants no interaction, only confirmation of prior login and
 		-- consent, but this is not implemented.
 		return error_response(request, redirect_uri, oauth_error("interaction_required"));
-	elseif not prompt:contains("select_account") then
+	elseif not prompt:contains("select_account") and not params.login_hint then
 		-- TODO If the login page is split into account selection followed by login
 		-- (e.g. password), and then the account selection could be skipped iff the
 		-- 'login_hint' parameter is present.
