@@ -11,7 +11,7 @@ summary: OAuth 2.0 Authorization Server API
 ## Introduction
 
 This module implements an [OAuth2](https://oauth.net/2/)/[OpenID Connect
-(OIDC)](https://openid.net/connect/) provider HTTP frontend on top of
+(OIDC)](https://openid.net/connect/) Authorization Server on top of
 Prosody's usual internal authentication backend.
 
 OAuth and OIDC are web standards that allow you to provide clients and
