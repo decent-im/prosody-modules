@@ -252,6 +252,7 @@ function get_active_clients(username)
 				type = "access";
 				first_seen = grant.created;
 				last_seen = grant.accessed;
+				expires = grant.expires;
 				active = {
 					grant = grant;
 				};
@@ -438,8 +439,10 @@ module:once(function ()
 		end
 
 		local function date_or_time(last_seen)
-			return last_seen and os.date(os.difftime(os.time(), last_seen) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
+			return last_seen and os.date(math.abs(os.difftime(os.time(), last_seen)) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
 		end
+
+		local date_or_time_width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
 
 		local colspec = {
 			{ title = "ID"; key = "id"; width = "1p" };
@@ -452,14 +455,21 @@ module:once(function ()
 			{
 				title = "First seen";
 				key = "first_seen";
-				width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
+				width = date_or_time_width;
 				align = "right";
 				mapper = date_or_time;
 			};
 			{
 				title = "Last seen";
 				key = "last_seen";
-				width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
+				width = date_or_time_width;
+				align = "right";
+				mapper = date_or_time;
+			};
+			{
+				title = "Expires";
+				key = "expires";
+				width = date_or_time_width;
 				align = "right";
 				mapper = date_or_time;
 			};
