@@ -28,6 +28,7 @@ modules_enabled = {
 -   Basic functionality with Prosody 0.11.x and later
 -   Full functionality with Prosody 0.12.x and `internal` or `sql`
     storage^[Replacing moderated messages with tombstones requires new storage API methods.]
+-   Works with [mod_storage_xmlarchive]
 
 ## Clients
 
