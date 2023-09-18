@@ -35,6 +35,12 @@ clients:
 prosodyctl shell user clients user@example.com
 ```
 
+To revoke access from particular client:
+
+```shell
+prosodyctl shell user revoke_client user@example.com grant/xxxxx
+```
+
 ## Compatibility
 
 Requires Prosody trunk (as of 2023-03-29). Not compatible with Prosody 0.12

@@ -33,8 +33,12 @@ local permissions = {};
 
 local role_inheritance = {
 	["prosody:operator"] = "prosody:admin";
-	["prosody:admin"] = "prosody:user";
-	["prosody:user"] = "prosody:restricted";
+	["prosody:admin"] = "prosody:member";
+	["prosody:member"] = "prosody:registered";
+	["prosody:registered"] = "prosody:guest";
+
+	-- COMPAT
+	["prosody:user"] = "prosody:registered";
 };
 
 local function role_may(host, role_name, permission)

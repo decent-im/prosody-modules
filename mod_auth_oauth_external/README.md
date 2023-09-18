@@ -50,6 +50,8 @@ oauth_external_username_field = "xmpp_username"
     logging in the field specified by `oauth_external_username_field`.
     Commonly the [OpenID `UserInfo`
     endpoint](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo)
+    If left unset, only `SASL PLAIN` is supported and the username
+    provided there is assumed correct.
 
 `oauth_external_username_field`
 :   String. Default is `"preferred_username"`. Field in the JSON
@@ -72,21 +74,30 @@ oauth_external_username_field = "xmpp_username"
 :   String. Client ID used to identify Prosody during the resource owner
     password grant.
 
+`oauth_external_client_secret`
+:   String. Client secret used to identify Prosody during the resource
+    owner password grant.
+
+`oauth_external_scope`
+:   String. Defaults to `"openid"`. Included in request for resource
+    owner password grant.
+
 # Compatibility
 
 ## Prosody
 
   Version   Status
-  --------- ---------------
+  --------- -----------------------------------------------
   trunk     works
-  0.12.x    does not work
-  0.11.x    does not work
+  0.12.x    OAUTHBEARER will not work, otherwise untested
+  0.11.x    OAUTHBEARER will not work, otherwise untested
 
 ## Identity Provider
 
 Tested with
 
 -   [KeyCloak](https://www.keycloak.org/)
+-   [Mastodon](https://joinmastodon.org/)
 
 # Future work
 

@@ -1,17 +1,23 @@
 ---
 labels:
-- 'Stage-Beta'
+- 'Stage-Merged'
 summary: 'Allow account registration using invite tokens'
 ...
 
 Introduction
 ============
 
+::: {.alert .alert-info}
+This module has been merged into Prosody as
+[mod_invites_register][doc:modules:mod_invites_register]. Users of
+Prosody **0.12** and later should not install this version.
+:::
+
 This module is part of the suite of modules that implement invite-based
 account registration for Prosody. The other modules are:
 
-- [mod_invites]
-- [mod_invites_adhoc]
+- [mod_invites][doc:modules:mod_invites]
+- [mod_invites_adhoc][doc:modules:mod_invites_adhoc]
 - [mod_invites_page]
 - [mod_invites_register_web]
 - [mod_invites_api]

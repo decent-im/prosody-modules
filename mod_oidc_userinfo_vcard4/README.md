@@ -4,7 +4,7 @@ labels:
 - Stage-Alpha
 rockspec:
   dependencies:
-  - mod_http_oauth2
+  - mod_http_oauth2 >= 200
 ---
 
 This module extracts profile details from the user's [vcard4][XEP-0292]

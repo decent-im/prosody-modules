@@ -10,8 +10,8 @@ local st = require "util.stanza";
 
 local strict = module:get_option_boolean("enforce_client_ids", false);
 
-module:default_permission("prosody:user", ":list-clients");
-module:default_permission("prosody:user", ":manage-clients");
+module:default_permission("prosody:registered", ":list-clients");
+module:default_permission("prosody:registered", ":manage-clients");
 
 local tokenauth = module:depends("tokenauth");
 local mod_fast = module:depends("sasl2_fast");
@@ -35,6 +35,8 @@ local function get_user_agent(sasl_handler, token_info)
 	if not (sasl_agent or token_agent) then return; end
 	return {
 		software = sasl_agent and sasl_agent.software or token_agent and token_agent.name or nil;
+		software_id = token_agent and token_agent.id or nil;
+		software_version = token_agent and token_agent.version or nil;
 		uri = token_agent and token_agent.uri or nil;
 		device = sasl_agent and sasl_agent.device or nil;
 	};
@@ -250,6 +252,7 @@ function get_active_clients(username)
 				type = "access";
 				first_seen = grant.created;
 				last_seen = grant.accessed;
+				expires = grant.expires;
 				active = {
 					grant = grant;
 				};
@@ -274,6 +277,17 @@ function get_active_clients(username)
 	end);
 
 	return active_clients;
+end
+
+local function user_agent_tostring(user_agent)
+	if user_agent then
+		if user_agent.software then
+			if user_agent.software_version then
+				return user_agent.software .. "/" .. user_agent.software_version;
+			end
+			return user_agent.software;
+		end
+	end
 end
 
 function revoke_client_access(username, client_selector)
@@ -309,6 +323,13 @@ function revoke_client_access(username, client_selector)
 			local ok = tokenauth.revoke_grant(username, c_id);
 			if not ok then return nil, "internal-server-error"; end
 			return true;
+		elseif c_type == "software" then
+			local active_clients = get_active_clients(username);
+			for _, client in ipairs(active_clients) do
+				if client.user_agent and client.user_agent.software == c_id or user_agent_tostring(client.user_agent) == c_id then
+					return revoke_client_access(username, client.id);
+				end
+			end
 		end
 	end
 
@@ -348,7 +369,7 @@ module:hook("iq-get/self/xmpp:prosody.im/protocol/manage-clients:list", function
 		local user_agent = st.stanza("user-agent");
 		if client.user_agent then
 			if client.user_agent.software then
-				user_agent:text_tag("software", client.user_agent.software);
+				user_agent:text_tag("software", client.user_agent.software, { id = client.user_agent.software_id; version = client.user_agent.software_version });
 			end
 			if client.user_agent.device then
 				user_agent:text_tag("device", client.user_agent.device);
@@ -417,23 +438,40 @@ module:once(function ()
 			return true, "No clients associated with this account";
 		end
 
+		local function date_or_time(last_seen)
+			return last_seen and os.date(math.abs(os.difftime(os.time(), last_seen)) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
+		end
+
+		local date_or_time_width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
+
 		local colspec = {
+			{ title = "ID"; key = "id"; width = "1p" };
 			{
 				title = "Software";
 				key = "user_agent";
 				width = "1p";
-				mapper = function(user_agent)
-					return user_agent and user_agent.software;
-				end;
+				mapper = user_agent_tostring;
+			};
+			{
+				title = "First seen";
+				key = "first_seen";
+				width = date_or_time_width;
+				align = "right";
+				mapper = date_or_time;
 			};
 			{
 				title = "Last seen";
 				key = "last_seen";
-				width = math.max(#os.date("%Y-%m-%d"), #os.date("%H:%M:%S"));
+				width = date_or_time_width;
 				align = "right";
-				mapper = function(last_seen)
-					return os.date(os.difftime(os.time(), last_seen) >= 86400 and "%Y-%m-%d" or "%H:%M:%S", last_seen);
-				end;
+				mapper = date_or_time;
+			};
+			{
+				title = "Expires";
+				key = "expires";
+				width = date_or_time_width;
+				align = "right";
+				mapper = date_or_time;
 			};
 			{
 				title = "Authentication";
@@ -455,5 +493,19 @@ module:once(function ()
 		end
 		print(string.rep("-", self.session.width));
 		return true, ("%d clients"):format(#clients);
+	end
+
+	function console_env.user:revoke_client(user_jid, selector) -- luacheck: ignore 212/self
+		local username, host = jid.split(user_jid);
+		local mod = prosody.hosts[host] and prosody.hosts[host].modules.client_management;
+		if not mod then
+			return false, ("Host does not exist on this server, or does not have mod_client_management loaded");
+		end
+
+		local revoked, err = revocation_errors.coerce(mod.revoke_client_access(username, selector));
+		if not revoked then
+			return false, err.text or err;
+		end
+		return true, "Client access revoked";
 	end
 end);

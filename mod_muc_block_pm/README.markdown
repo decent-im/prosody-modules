@@ -1,12 +1,11 @@
 ---
-summary: Prevent unaffiliated MUC participants from sending PMs
+summary: Prevent MUC participants from sending PMs
 ---
 
 # Introduction
 
-This module prevents unaffiliated users from sending private messages in
-chat rooms, unless someone with an affiliation (member, admin etc)
-messages them first.
+This module prevents *participants* from sending private messages to
+anyone except *moderators*.
 
 # Configuration
 
@@ -23,6 +22,5 @@ modules_enabled = {
 
     Branch State
   -------- -----------------
-       0.9 Works
-      0.10 Should work
-      0.11 Should work
+      0.11 Will **not** work
+      0.12 Should work

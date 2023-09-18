@@ -1,3 +1,7 @@
+---
+summary: Let moderators remove spam and abuse messages
+---
+
 # Introduction
 
 This module implements [XEP-0425: Message Moderation].
@@ -24,6 +28,7 @@ modules_enabled = {
 -   Basic functionality with Prosody 0.11.x and later
 -   Full functionality with Prosody 0.12.x and `internal` or `sql`
     storage^[Replacing moderated messages with tombstones requires new storage API methods.]
+-   Works with [mod_storage_xmlarchive]
 
 ## Clients
 
@@ -33,7 +38,7 @@ modules_enabled = {
 
 ### Feature requests
 
--   [Conv](https://github.com/iNPUTmice/Conversations/issues/3722)[ersa](https://github.com/iNPUTmice/Conversations/issues/3920)[tions](https://github.com/iNPUTmice/Conversations/issues/4227)
+-   [Conversations](https://codeberg.org/iNPUTmice/Conversations/issues/20)
 -   [Dino](https://github.com/dino/dino/issues/1133)
 -   [Poezio](https://lab.louiz.org/poezio/poezio/-/issues/3543)
 -   [Profanity](https://github.com/profanity-im/profanity/issues/1336)

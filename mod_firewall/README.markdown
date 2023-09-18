@@ -10,6 +10,8 @@ rockspec:
       mod_firewall.definitions: definitions.lib.lua
       mod_firewall.marks: marks.lib.lua
       mod_firewall.test: test.lib.lua
+    copy_directories:
+      - scripts
 ---
 
 ------------------------------------------------------------------------
@@ -253,12 +255,13 @@ Similarly, a message stanza with no type is equivalent to one of type
 
 ### Sender/recipient matching
 
-  Condition     Matches
-  ------------- -------------------------------------------------------
-  `FROM`        The JID in the 'from' attribute matches the given JID.
-  `TO`          The JID in the 'to' attribute matches the given JID.
-  `TO SELF`     The stanza is sent by any of a user's resources to their own bare JID.
-  `TO FULL JID` The stanza is addressed to a valid full JID on the local server (full JIDs include a resource at the end, and only exist for the lifetime of a single session, therefore the recipient must be online, or this check will not match).
+  Condition       Matches
+  --------------- -------------------------------------------------------
+  `FROM`          The JID in the 'from' attribute matches the given JID.
+  `TO`            The JID in the 'to' attribute matches the given JID.
+  `TO SELF`       The stanza is sent by any of a user's resources to their own bare JID.
+  `TO FULL JID`   The stanza is addressed to a **valid** full JID on the local server (full JIDs include a resource at the end, and only exist for the lifetime of a single session, therefore the recipient **must be online**, or this check will not match).
+  `FROM FULL JID` The stanza is from a full JID (unlike `TO FULL JID` this check is on the format of the JID only).
 
 The TO and FROM conditions both accept wildcards in the JID when it is
 enclosed in angle brackets ('\<...\>'). For example:

@@ -4,7 +4,7 @@ Creates MUCs with default configuration settings upon Prosody startup.
 
 ## Configuration
 
-Under your MUC component, add a `muc_defaults` option with the relevant settings.
+Under your MUC component, add a `default_mucs` option with the relevant settings.
 
 ```
 Component "conference.example.org" "muc"
@@ -12,7 +12,7 @@ Component "conference.example.org" "muc"
             "muc_defaults";
    }
 
-   muc_defaults = {
+   default_mucs = {
       {
          jid_node = "trollbox",
          affiliations = {

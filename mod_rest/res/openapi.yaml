@@ -1,6 +1,5 @@
 ---
 openapi: 3.0.1
-
 info:
   title: mod_rest API
   version: 0.3.2
@@ -10,14 +9,12 @@ info:
     and a simplified JSON mapping.
   license:
     name: MIT
-
 paths:
-
   /rest:
     post:
       summary: Send stanzas and receive responses. Webhooks work the same way.
       tags:
-      - generic
+        - generic
       security:
         - basic: []
         - token: []
@@ -25,35 +22,33 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/common'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-        '202':
+        "202":
           $ref: '#/components/responses/sent'
-
   /rest/{kind}/{type}/{to}:
     post:
       summary: Even more RESTful mapping with certain components in the path.
       tags:
-      - generic
+        - generic
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/kind'
-      - $ref: '#/components/parameters/type'
-      - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/kind'
+        - $ref: '#/components/parameters/type'
+        - $ref: '#/components/parameters/to'
       requestBody:
         $ref: '#/components/requestBodies/common'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
   /rest/echo:
     post:
       summary: Build as stanza and return it for inspection.
       tags:
-      - debug
+        - debug
       security:
         - basic: []
         - token: []
@@ -61,22 +56,21 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/common'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
   /rest/ping/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Ping a local or remote server or other entity
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/to'
       responses:
-        '200':
+        "200":
           description: Test reachability of some address
           content:
             application/json:
@@ -85,21 +79,19 @@ paths:
             application/xmpp+xml:
               schema:
                 $ref: '#/components/schemas/iq_pong'
-
-
   /rest/version/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Ask what software version is used.
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/to'
       responses:
-        '200':
+        "200":
           description: Version query response
           content:
             application/json:
@@ -108,155 +100,146 @@ paths:
             application/xmpp+xml:
               schema:
                 $ref: '#/components/schemas/iq_result_version'
-
   /rest/disco/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Query a remote entity for supported features
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/to'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
   /rest/items/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Query an entity for related services, chat rooms or other items
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/to'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
   /rest/extdisco/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Query for external services (usually STUN and TURN)
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
-      - name: type
-        in: query
-        schema:
-          type: string
-          example: stun
+        - $ref: '#/components/parameters/to'
+        - name: type
+          in: query
+          schema:
+            type: string
+            example: stun
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
-
   /rest/archive/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Query a message archive
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
-      - name: with
-        in: query
-        schema:
-          type: string
-      - name: start
-        in: query
-        schema:
-          type: string
-      - name: end
-        in: query
-        schema:
-          type: string
-      - name: before-id
-        in: query
-        schema:
-          type: string
-      - name: after-id
-        in: query
-        schema:
-          type: string
-      - name: ids
-        in: query
-        schema:
-          type: string
-        description: comma-separated list of archive ids
-      - name: after
-        in: query
-        schema:
-          type: string
-      - name: before
-        in: query
-        schema:
-          type: string
-      - name: max
-        in: query
-        schema:
-          type: integer
+        - $ref: '#/components/parameters/to'
+        - name: with
+          in: query
+          schema:
+            type: string
+        - name: start
+          in: query
+          schema:
+            type: string
+        - name: end
+          in: query
+          schema:
+            type: string
+        - name: before-id
+          in: query
+          schema:
+            type: string
+        - name: after-id
+          in: query
+          schema:
+            type: string
+        - name: ids
+          in: query
+          schema:
+            type: string
+          description: comma-separated list of archive ids
+        - name: after
+          in: query
+          schema:
+            type: string
+        - name: before
+          in: query
+          schema:
+            type: string
+        - name: max
+          in: query
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
   /rest/lastactivity/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Query last activity of an entity. Sometimes used as "uptime" for servers.
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/to'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
   /rest/stats/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Query an entity for statistics
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/to'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
   /rest/upload_request/{to}:
     get:
       tags:
-      - query
+        - query
       summary: Lorem ipsum
       security:
-      - basic: []
-      - token: []
-      - oauth2: []
+        - basic: []
+        - token: []
+        - oauth2: []
       parameters:
-      - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/to'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/success'
-
 components:
   schemas:
     stanza:
@@ -271,7 +254,6 @@ components:
         - $ref: '#/components/schemas/message'
         - $ref: '#/components/schemas/presence'
         - $ref: '#/components/schemas/iq'
-
     message:
       type: object
       xml:
@@ -281,18 +263,17 @@ components:
           description: Which kind of stanza
           type: string
           enum:
-          - message
+            - message
         type:
           type: string
           enum:
-          - chat
-          - error
-          - groupchat
-          - headline
-          - normal
+            - chat
+            - error
+            - groupchat
+            - headline
+            - normal
           xml:
             attribute: true
-
         to:
           $ref: '#/components/schemas/to'
         from:
@@ -301,7 +282,6 @@ components:
           $ref: '#/components/schemas/id'
         lang:
           $ref: '#/components/schemas/lang'
-
         body:
           $ref: '#/components/schemas/body'
         subject:
@@ -310,7 +290,6 @@ components:
           $ref: '#/components/schemas/thread'
         invite:
           $ref: '#/components/schemas/invite'
-
         state:
           $ref: '#/components/schemas/state'
         nick:
@@ -319,7 +298,6 @@ components:
           $ref: '#/components/schemas/delay'
         replace:
           $ref: '#/components/schemas/replace'
-
         html:
           $ref: '#/components/schemas/html'
         oob:
@@ -344,19 +322,14 @@ components:
           $ref: '#/components/schemas/displayed'
         encryption:
           $ref: '#/components/schemas/encryption'
-
         archive:
           $ref: '#/components/schemas/archive_result'
-
         dataform:
           $ref: '#/components/schemas/dataform'
-
         forwarded:
           $ref: '#/components/schemas/forwarded'
-
         error:
           $ref: '#/components/schemas/error'
-
     presence:
       type: object
       properties:
@@ -364,7 +337,7 @@ components:
           description: Which kind of stanza
           type: string
           enum:
-          - presence
+            - presence
         type:
           type: string
           enum:
@@ -385,14 +358,12 @@ components:
           $ref: '#/components/schemas/id'
         lang:
           $ref: '#/components/schemas/lang'
-
         show:
           $ref: '#/components/schemas/show'
         status:
           $ref: '#/components/schemas/status'
         priority:
           $ref: '#/components/schemas/priority'
-
         caps:
           $ref: '#/components/schemas/caps'
         nick:
@@ -403,13 +374,10 @@ components:
           $ref: '#/components/schemas/vcard_update'
         idle_since:
           $ref: '#/components/schemas/idle_since'
-
         muc:
           $ref: '#/components/schemas/muc'
-
         error:
           $ref: '#/components/schemas/error'
-
     iq:
       type: object
       properties:
@@ -417,14 +385,14 @@ components:
           description: Which kind of stanza
           type: string
           enum:
-          - iq
+            - iq
         type:
           type: string
           enum:
-          - get
-          - set
-          - result
-          - error
+            - get
+            - set
+            - result
+            - error
           xml:
             attribute: true
         to:
@@ -435,7 +403,6 @@ components:
           $ref: '#/components/schemas/id'
         lang:
           $ref: '#/components/schemas/lang'
-
         ping:
           $ref: '#/components/schemas/ping'
         version:
@@ -448,7 +415,6 @@ components:
           $ref: '#/components/schemas/items'
         command:
           $ref: '#/components/schemas/command'
-
         stats:
           $ref: '#/components/schemas/stats'
         payload:
@@ -463,10 +429,8 @@ components:
           $ref: '#/components/schemas/upload_request'
         upload_slot:
           $ref: '#/components/schemas/upload_slot'
-
         error:
           $ref: '#/components/schemas/error'
-
     iq_pong:
       description: Test reachability of some XMPP address
       type: object
@@ -476,10 +440,9 @@ components:
         type:
           type: string
           enum:
-          - result
+            - result
           xml:
             attribute: true
-
     iq_result_version:
       description: Version query response
       type: object
@@ -489,60 +452,56 @@ components:
         type:
           type: string
           enum:
-          - result
+            - result
           xml:
             attribute: true
         version:
           $ref: '#/components/schemas/version'
-
     kind:
       description: Which kind of stanza
       type: string
       enum:
-      - message
-      - presence
-      - iq
-
+        - message
+        - presence
+        - iq
     type:
       description: Stanza type
       type: string
       enum:
-      - chat
-      - normal
-      - headline
-      - groupchat
-      - get
-      - set
-      - result
-      - available
-      - unavailable
-      - subscribe
-      - subscribed
-      - unsubscribe
-      - unsubscribed
+        - chat
+        - normal
+        - headline
+        - groupchat
+        - get
+        - set
+        - result
+        - available
+        - unavailable
+        - subscribe
+        - subscribed
+        - unsubscribe
+        - unsubscribed
       xml:
         attribute: true
-
     to:
-      description: recipient
+      description: the intended recipient for the stanza
       example: alice@example.com
+      format: xmpp-jid
       type: string
       xml:
         attribute: true
-
     from:
-      description: the sender
-      example: bob@localhost.example
+      description: the sender of the stanza
+      example: bob@example.net
+      format: xmpp-jid
       type: string
       xml:
         attribute: true
-
     id:
       description: Reasonably unique id. mod_rest generates one if left out.
       type: string
       xml:
         attribute: true
-
     lang:
       description: Language code
       example: en
@@ -550,17 +509,14 @@ components:
         prefix: xml
         attribute: true
       type: string
-
     body:
       description: Human-readable chat message
       example: Hello, World!
       type: string
-
     subject:
       description: Subject of message or group chat
       example: Talking about stuff
       type: string
-
     thread:
       description: Message thread identifier
       properties:
@@ -572,26 +528,22 @@ components:
           type: string
           xml:
             text: true
-
     show:
       description: indicator of availability, ie away or not
       type: string
       enum:
-      - away
-      - chat
-      - dnd
-      - xa
-
+        - away
+        - chat
+        - dnd
+        - xa
     status:
       description: Textual status message.
       type: string
-
     priority:
       description: Presence priority
       type: integer
       maximum: 127
       minimum: -128
-
     state:
       description: Chat state notifications, e.g. "is typing..."
       type: string
@@ -599,30 +551,27 @@ components:
         namespace: http://jabber.org/protocol/chatstates
         x_name_is_value: true
       enum:
-      - active
-      - inactive
-      - gone
-      - composing
-      - paused
+        - active
+        - inactive
+        - gone
+        - composing
+        - paused
       example: composing
-
     nick:
       type: string
       description: Nickname of the sender
       xml:
         name: nick
         namespace: http://jabber.org/protocol/nick
-
     delay:
       type: string
       format: date-time
-      description: Timestamp of when a stanza was delayed, in ISO 8601 / XEP-0082
-        format.
+      description: Timestamp of when a stanza was delayed, in ISO 8601 / XEP-0082 format.
+      title: 'XEP-0203: Delayed Delivery'
       xml:
         name: delay
         namespace: urn:xmpp:delay
         x_single_attribute: stamp
-
     replace:
       type: string
       description: ID of message being replaced (e.g. for corrections)
@@ -630,7 +579,6 @@ components:
         name: replace
         namespace: urn:xmpp:message-correct:0
         x_single_attribute: id
-
     muc:
       description: Multi-User-Chat related
       type: object
@@ -661,14 +609,12 @@ components:
               format: date-time
               xml:
                 attribute: true
-
-
     invite:
       description: Invite to a group chat
-      title: "XEP-0249: Direct MUC Invitations"
+      title: 'XEP-0249: Direct MUC Invitations'
       type: object
       required:
-      - jid
+        - jid
       xml:
         name: x
         namespace: jabber:x:conference
@@ -698,21 +644,18 @@ components:
           description: Whether the group chat continues a one-to-one chat
           xml:
             attribute: true
-
     html:
       description: HTML version of 'body'
       example: <body><p>Hello!</p></body>
       type: string
-
     ping:
       description: A ping.
       type: boolean
       enum:
-      - true
+        - true
       xml:
         name: ping
         namespace: urn:xmpp:ping
-
     version:
       type: object
       description: Software version query
@@ -727,116 +670,111 @@ components:
           type: string
           example: Linux
       required:
-      - name
-      - version
+        - name
+        - version
       xml:
         name: query
         namespace: jabber:iq:version
-
     disco:
       description: Discover supported features
       oneOf:
-      - description: A full response
-        type: object
-        properties:
-          features:
-            description: List of URIs indicating supported features
-            type: array
-            items:
+        - description: A full response
+          type: object
+          properties:
+            features:
+              description: List of URIs indicating supported features
+              type: array
+              items:
+                type: string
+            identities:
+              description: List of abstract identities or types that describe the entity
+              type: array
+              example:
+                - name: Prosody
+                  type: im
+                  category: server
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  category:
+                    type: string
+            node:
               type: string
-          identities:
-            description: List of abstract identities or types that describe the
-              entity
-            type: array
-            example:
-            - name: Prosody
-              type: im
-              category: server
-            items:
+            extensions:
               type: object
-              properties:
-                name:
-                  type: string
-                type:
-                  type: string
-                category:
-                  type: string
-          node:
-            type: string
-          extensions:
-            type: object
-      - description: A query with a node, or an empty response with a node
-        type: string
-      - description: Either a query, or an empty response
-        type: boolean
-
+        - description: A query with a node, or an empty response with a node
+          type: string
+        - description: Either a query, or an empty response
+          type: boolean
     items:
       description: List of references to other entities
       oneOf:
-      - description: List of items referenced
-        type: array
-        items:
-          properties:
-            jid:
-              type: string
-              description: Address of item
-            node:
-              type: string
-            name:
-              type: string
-              description: Descriptive name
-          required:
-          - jid
-          type: object
-      - type: string
-        description: A query with a node, or an empty reply list with a node
-      - description: An items query or empty list
-        type: boolean
-        enum:
-        - true
-
+        - description: List of items referenced
+          type: array
+          items:
+            properties:
+              jid:
+                type: string
+                description: Address of item
+              node:
+                type: string
+              name:
+                type: string
+                description: Descriptive name
+            required:
+              - jid
+            type: object
+        - type: string
+          description: A query with a node, or an empty reply list with a node
+        - description: An items query or empty list
+          type: boolean
+          enum:
+            - true
     command:
       description: Ad-hoc commands.
       oneOf:
-      - type: object
-        properties:
-          data:
-            $ref: '#/components/schemas/formdata'
-          action:
-            type: string
-          note:
-            type: object
-            properties:
-              text:
-                type: string
-              type:
-                type: string
-                enum:
-                - info
-                - warn
-                - error
-          form:
-            $ref: '#/components/schemas/dataform'
-          sessionid:
-            type: string
-          status:
-            type: string
-          node:
-            type: string
-          actions:
-            type: object
-            properties:
-              complete:
-                type: boolean
-              prev:
-                type: boolean
-              next:
-                type: boolean
-              execute:
-                type: string
-      - type: string
-        description: Call a command by 'node' id, without arguments
-
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/formdata'
+            action:
+              type: string
+            note:
+              type: object
+              properties:
+                text:
+                  type: string
+                type:
+                  type: string
+                  enum:
+                    - info
+                    - warn
+                    - error
+            form:
+              $ref: '#/components/schemas/dataform'
+            sessionid:
+              type: string
+            status:
+              type: string
+            node:
+              type: string
+            actions:
+              type: object
+              properties:
+                complete:
+                  type: boolean
+                prev:
+                  type: boolean
+                next:
+                  type: boolean
+                execute:
+                  type: string
+        - type: string
+          description: Call a command by 'node' id, without arguments
     oob:
       type: object
       description: Reference a media file
@@ -852,7 +790,6 @@ components:
         desc:
           description: Optional description
           type: string
-
     payload:
       title: 'XEP-0335: JSON Containers'
       description: A piece of arbitrary JSON with a type field attached
@@ -870,7 +807,6 @@ components:
         datatype:
           example: urn:example:my-json#payload
           type: string
-
     rsm:
       title: 'XEP-0059: Result Set Management'
       xml:
@@ -892,7 +828,6 @@ components:
           type: string
         first:
           type: string
-
     archive_query:
       title: 'XEP-0313: Message Archive Management'
       type: object
@@ -908,7 +843,6 @@ components:
       xml:
         name: query
         namespace: urn:xmpp:mam:2
-
     archive_result:
       title: 'XEP-0313: Message Archive Management'
       xml:
@@ -922,7 +856,6 @@ components:
             attribute: true
         forward:
           $ref: '#/components/schemas/forwarded'
-
     forwarded:
       title: 'XEP-0297: Stanza Forwarding'
       xml:
@@ -934,7 +867,6 @@ components:
           $ref: '#/components/schemas/message'
         delay:
           $ref: '#/components/schemas/delay'
-
     dataform:
       description: Data form
       type: object
@@ -952,10 +884,10 @@ components:
               value:
                 description: Field value
                 oneOf:
-                - type: string
-                - type: array
-                  items:
-                    type: string
+                  - type: string
+                  - type: array
+                    items:
+                      type: string
               type:
                 description: Type of form field
                 type: string
@@ -974,23 +906,21 @@ components:
         type:
           type: string
           enum:
-          - form
-          - submit
-          - cancel
-          - result
+            - form
+            - submit
+            - cancel
+            - result
         instructions:
           type: string
-
     formdata:
       description: Simplified data form carrying only values
       type: object
       additionalProperties:
         oneOf:
-        - type: string
-        - type: array
-          items:
-            type: string
-
+          - type: string
+          - type: array
+            items:
+              type: string
     stats:
       description: Statistics
       type: array
@@ -1013,7 +943,6 @@ components:
             type: string
             xml:
               attribute: true
-
     lastactivity:
       type: object
       xml:
@@ -1029,7 +958,6 @@ components:
           type: string
           xml:
             text: true
-
     caps:
       type: object
       xml:
@@ -1052,7 +980,6 @@ components:
           type: string
           xml:
             attribute: true
-
     vcard_update:
       type: object
       xml:
@@ -1062,7 +989,6 @@ components:
         photo:
           type: string
           example: adc83b19e793491b1c6ea0fd8b46cd9f32e592fc
-
     reactions:
       type: object
       xml:
@@ -1081,35 +1007,31 @@ components:
           xml:
             wrapped: false
             name: reactions
-
     occupant_id:
       type: string
       xml:
         namespace: urn:xmpp:occupant-id:0
         x_single_attribute: id
         name: occupant-id
-
     attach_to:
       type: string
       xml:
         namespace: urn:xmpp:message-attaching:1
         x_single_attribute: id
         name: attach-to
-
     fallback:
       type: boolean
       xml:
         namespace: urn:xmpp:fallback:0
         x_name_is_value: true
         name: fallback
-
     stanza_ids:
       type: array
       items:
         type: object
         required:
-        - id
-        - by
+          - id
+          - by
         xml:
           namespace: urn:xmpp:sid:0
           name: stanza-id
@@ -1123,7 +1045,6 @@ components:
               attribute: true
             format: xmpp-jid
             type: string
-
     reference:
       type: object
       xml:
@@ -1149,9 +1070,8 @@ components:
             attribute: true
           type: string
       required:
-      - type
-      - uri
-
+        - type
+        - uri
     reply:
       title: 'XEP-0461: Message Replies'
       description: Reference a message being replied to
@@ -1168,20 +1088,17 @@ components:
           type: string
           xml:
             attribute: true
-
     markable:
       type: boolean
       xml:
         namespace: urn:xmpp:chat-markers:0
         x_name_is_value: true
-
     displayed:
       type: string
       description: Message ID of a message that has been displayed
       xml:
         namespace: urn:xmpp:chat-markers:0
         x_single_attribute: id
-
     idle_since:
       type: string
       xml:
@@ -1189,7 +1106,6 @@ components:
         x_single_attribute: since
         name: idle
       format: date-time
-
     gateway:
       type: object
       xml:
@@ -1202,7 +1118,6 @@ components:
           type: string
         jid:
           type: string
-
     extdisco:
       type: object
       xml:
@@ -1219,8 +1134,8 @@ components:
             xml:
               name: service
             required:
-            - type
-            - host
+              - type
+              - host
             properties:
               transport:
                 xml:
@@ -1260,7 +1175,6 @@ components:
                   attribute: true
                 type: string
           type: array
-
     register:
       type: object
       description: Register with a service
@@ -1313,9 +1227,8 @@ components:
         name:
           type: string
       required:
-      - username
-      - password
-
+        - username
+        - password
     upload_slot:
       type: object
       xml:
@@ -1335,17 +1248,17 @@ components:
               items:
                 type: object
                 required:
-                - name
-                - value
+                  - name
+                  - value
                 xml:
                   name: header
                 properties:
                   name:
                     type: string
                     enum:
-                    - Authorization
-                    - Cookie
-                    - Expires
+                      - Authorization
+                      - Cookie
+                      - Expires
                     xml:
                       attribute: true
                   value:
@@ -1363,8 +1276,8 @@ components:
     upload_request:
       type: object
       required:
-      - filename
-      - size
+        - filename
+        - size
       xml:
         name: request
         namespace: urn:xmpp:http:upload:0
@@ -1381,7 +1294,6 @@ components:
           type: integer
           xml:
             attribute: true
-
     encryption:
       title: 'XEP-0380: Explicit Message Encryption'
       type: string
@@ -1389,7 +1301,6 @@ components:
         x_single_attribute: namespace
         name: encryption
         namespace: urn:xmpp:eme:0
-
     error:
       description: Description of something gone wrong. See the Stanza Errors section in RFC 6120.
       type: object
@@ -1398,22 +1309,48 @@ components:
           description: General category of error
           type: string
           enum:
-          - auth
-          - cancel
-          - continue
-          - modify
-          - wait
+            - auth
+            - cancel
+            - continue
+            - modify
+            - wait
         condition:
           description: Specific error condition.
           type: string
-          # enum: [ full list available in RFC 6120 ]
+          enum:
+            - bad-request
+            - conflict
+            - feature-not-implemented
+            - forbidden
+            - gone
+            - internal-server-error
+            - item-not-found
+            - jid-malformed
+            - not-acceptable
+            - not-allowed
+            - not-authorized
+            - policy-violation
+            - recipient-unavailable
+            - redirect
+            - registration-required
+            - remote-server-not-found
+            - remote-server-timeout
+            - resource-constraint
+            - service-unavailable
+            - subscription-required
+            - undefined-condition
+            - unexpected-request
         code:
           description: Legacy numeric error code. Similar to HTTP status codes.
           type: integer
         text:
           description: Description of error intended for human eyes.
           type: string
-
+        by:
+          description: Originator of the error, when different from the stanza @from attribute
+          type: string
+          xml:
+            attribute: true
   securitySchemes:
     token:
       description: Tokens from mod_http_oauth2.
@@ -1435,7 +1372,6 @@ components:
             prosody:user: Regular user privileges
             prosody:admin: Administrator privileges
             prosody:operator: Server operator privileges
-
   requestBodies:
     common:
       required: true
@@ -1449,7 +1385,6 @@ components:
         application/x-www-form-urlencoded:
           schema:
             description: A subset of the JSON schema, only top level string fields.
-
   responses:
     success:
       description: The stanza was sent and returned a response.
@@ -1471,9 +1406,7 @@ components:
             example: Hello
             type: string
     sent:
-      description: The stanza was sent without problem, and without response,
-        so an empty reply.
-
+      description: The stanza was sent without problem, and without response, so an empty reply.
   parameters:
     to:
       name: to
@@ -1493,5 +1426,3 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/type'
-
-...

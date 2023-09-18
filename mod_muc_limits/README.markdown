@@ -30,16 +30,22 @@ Configuration
 
 Add the module to the MUC host (not the global modules\_enabled):
 
-        Component "conference.example.com" "muc"
-            modules_enabled = { "muc_limits" }
+```lua
+Component "conference.example.com" "muc"
+    modules_enabled = { "muc_limits" }
+```
 
 You can define (globally or per-MUC component) the following options:
 
-  Name                     Default value   Description
-  ------------------------ --------------- ----------------------------------------------
-  muc\_event\_rate         0.5             The maximum number of events per second.
-  muc\_burst\_factor       6               Allow temporary bursts of this multiple.
-  muc\_max\_nick\_length   23              The maximum allowed length of user nicknames
+  Name                        Default value   Description
+  --------------------------- --------------- ----------------------------------------------------------
+  muc_event_rate              0.5             The maximum number of events per second.
+  muc_burst_factor            6               Allow temporary bursts of this multiple.
+  muc_max_nick_length         23              The maximum allowed length of user nicknames
+  muc_max_char_count          5664            The maximum allowed number of bytes in a message
+  muc_max_line_count          23              The maximum allowed number of lines in a message
+  muc_limit_base_cost         1               Base cost of sending a stanza
+  muc_line_count_multiplier   0.1             Additional cost of each newline in the body of a message
 
 For more understanding of how these values are used, see the algorithm
 section below.
@@ -66,15 +72,7 @@ the user the MUC is overactive, and asking them to try again.
 Compatibility
 =============
 
-  ------- ------------------
+  ------- -------
   trunk   Works
   0.11    Works
-  0.10    Works
-  0.9     Works
-  0.8     Doesn't work[^1]
-  ------- ------------------
-
-[^1]: This module can be made to work in 0.8 (and *maybe* previous
-    versions) of Prosody by copying the new
-    [util.throttle](http://hg.prosody.im/trunk/raw-file/fc8a22936b3c/util/throttle.lua)
-    into your Prosody source directory (into the util/ subdirectory).
+  ------- -------

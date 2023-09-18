@@ -67,6 +67,10 @@ function condition_handlers.FROM(from)
 	return compile_jid_match("from", from), { "split_from" };
 end
 
+function condition_handlers.FROM_FULL_JID()
+	return "not "..compile_jid_match_part("from_resource", nil), { "split_from" };
+end
+
 function condition_handlers.FROM_EXACTLY(from)
 	local metadeps = {};
 	return ("from == %s"):format(metaq(from, metadeps)), { "from", unpack(metadeps) };
@@ -310,7 +314,9 @@ function condition_handlers.USER_MARKED(name_and_time)
 		error("Error parsing mark name, see documentation for usage examples");
 	end
 	if time then
-		return ("(current_timestamp - (session.firewall_marks and session.firewall_marks.%s or 0)) < %d"):format(idsafe(name), tonumber(time)), { "timestamp" };
+		return ([[(
+			current_timestamp - (session.firewall_marks and session.firewall_marks.%s or 0)
+		) < %d]]):format(idsafe(name), tonumber(time)), { "timestamp" };
 	end
 	return ("not not (session.firewall_marks and session.firewall_marks."..idsafe(name)..")");
 end
@@ -341,7 +347,13 @@ function condition_handlers.SCAN(scan_expression)
 	if not (search_name) then
 		error("Error parsing SCAN expression, syntax: SEARCH for PATTERN in LIST");
 	end
-	return ("scan_list(list_%s, %s)"):format(list_name, "tokens_"..search_name.."_"..pattern_name), { "scan_list", "tokens:"..search_name.."-"..pattern_name, "list:"..list_name };
+	return ("scan_list(list_%s, %s)"):format(
+		list_name,
+		"tokens_"..search_name.."_"..pattern_name
+	), {
+			"scan_list",
+			"tokens:"..search_name.."-"..pattern_name, "list:"..list_name
+	};
 end
 
 -- COUNT: lines in body < 10
@@ -361,7 +373,12 @@ function condition_handlers.COUNT(count_expression)
 	end
 	local comp_op = comparator_expression:gsub("%s+", "");
 	assert(valid_comp_ops[comp_op], "Error parsing COUNT expression, unknown comparison operator: "..comp_op);
-	return ("it_count(search_%s:gmatch(pattern_%s)) %s %d"):format(search_name, pattern_name, comp_op, value), { "it_count", "search:"..search_name, "pattern:"..pattern_name };
+	return ("it_count(search_%s:gmatch(pattern_%s)) %s %d"):format(
+		search_name, pattern_name, comp_op, value
+	), {
+		"it_count",
+		"search:"..search_name, "pattern:"..pattern_name
+	};
 end
 
 return condition_handlers;

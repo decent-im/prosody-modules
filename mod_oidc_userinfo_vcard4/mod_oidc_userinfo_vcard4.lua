@@ -1,11 +1,14 @@
 -- Provide OpenID UserInfo data to mod_http_oauth2
 -- Alternatively, separate module for the whole HTTP endpoint?
 --
-local nodeprep = require "util.encodings".stringprep.nodeprep;
+module:add_item("openid-claim", "address");
+module:add_item("openid-claim", "email");
+module:add_item("openid-claim", "phone");
+module:add_item("openid-claim", "profile");
 
 local mod_pep = module:depends "pep";
 
-local gender_map = { M = "male"; F = "female"; O = "other"; N = "nnot applicable"; U = "unknown" }
+local gender_map = { M = "male"; F = "female"; O = "other"; N = "not applicable"; U = "unknown" }
 
 module:hook("token/userinfo", function(event)
 	local pep_service = mod_pep.get_pep_service(event.username);

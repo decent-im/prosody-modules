@@ -4,7 +4,6 @@ labels:
 summary: 'Serve a welcome page to users'
 rockspec:
   dependencies:
-  - mod_invites
   - mod_http_libjs
   build:
     copy_directories:

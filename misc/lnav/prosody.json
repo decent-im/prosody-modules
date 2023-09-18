@@ -14,7 +14,7 @@
       "ordered-by-time" : true,
       "regex" : {
          "standard" : {
-            "pattern" : "^(?<timestamp>\\w{3} \\d{2} \\d{2}:\\d{2}:\\d{2})\\s+(?<loggername>\\S+)\\s+(?<loglevel>debug|info|warn|error)\\s+(?<message>.+)$"
+            "pattern" : "^(?<timestamp>\\w{3} \\d{2} \\d{2}:\\d{2}:\\d{2}\\s+)(?<loggername>\\S+)\\s+(?<loglevel>debug|info|warn|error)\\s+(?<message>.+)$"
          }
       },
       "sample" : [
@@ -23,7 +23,9 @@
          }
       ],
       "timestamp-field" : "timestamp",
-      "timestamp-format" : "%b %d %H:%M:%S ",
+      "timestamp-format" : [
+         "%b %d %H:%M:%S "
+      ],
       "title" : "Prosody log",
       "url" : "https://prosody.im/doc/logging",
       "value" : {

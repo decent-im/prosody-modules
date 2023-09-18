@@ -1,6 +1,10 @@
 ---
 summary: HTTP directory listing
-...
+rockspec:
+  build:
+    copy_directories:
+      - resources
+---
 
 Introduction
 ============

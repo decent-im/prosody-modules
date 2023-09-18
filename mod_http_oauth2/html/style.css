@@ -1,6 +1,5 @@
 body
 {
-	margin-top:14%;
 	text-align:center;
 	background-color:#f8f8f8;
 	font-family:sans-serif
@@ -21,10 +20,26 @@ p
 
 .error
 {
-	margin: 0.75em;
+	margin: 0.75em auto;
 	background-color: #f8d7da;
 	color: #842029;
 	border: solid 1px #f5c2c7;
+}
+
+.oob
+{
+	background-color: #d7daf8;
+	border: solid 1px #c2c7f5;
+	color: #202984;
+	margin: 0.75em;
+}
+.oob input {
+	font-size: xx-large;
+	font-family: monospace;
+	background-color: inherit;
+	color: inherit;
+	border: none;
+	padding: 1ex 2em;
 }
 
 input {
@@ -37,7 +52,7 @@ h1, h2 {
 	text-align: left;
 }
 
-main {
+header, main, footer {
 	max-width: 600px;
 	padding: 0 1.5em 1.5em 1.5em;
 }
@@ -71,6 +86,10 @@ button, input[type=submit]
 		color: #f8d7da;
 		background-color: #842029;
 	}
+	.oob {
+		color: #d7daf8;
+		background-color: #202984;
+	}
 
 
 	:link
@@ -86,7 +105,10 @@ button, input[type=submit]
 
 @media(min-width: 768px)
 {
-	main
+	body {
+		margin-top:14vh;
+	}
+	header, main, footer
 	{
 		margin-left: auto;
 		margin-right: auto;

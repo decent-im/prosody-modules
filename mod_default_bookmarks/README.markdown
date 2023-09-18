@@ -31,13 +31,15 @@ Add "default\_bookmarks" to your modules\_enabled list:
 
 Then add a list of the default rooms you want:
 
-    default_bookmarks = {
-        { jid = "room@conference.example.com", name = "The Room" };
-        -- Specifying a password is supported:
-        { jid = "secret-room@conference.example.com", name = "A Secret Room", password = "secret" };
-        -- You can also use this compact syntax:
-        "yetanother@conference.example.com"; -- this will get "yetanother" as name
-    };
+``` lua
+default_bookmarks = {
+    { jid = "room@conference.example.com"; name = "The Room"; autojoin = true };
+    -- Specifying a password is supported:
+    { jid = "secret-room@conference.example.com"; name = "A Secret Room"; password = "secret"; autojoin = true };
+    -- You can also use this compact syntax:
+    "yetanother@conference.example.com"; -- this will get "yetanother" as name
+};
+```
 
 Compatibility
 -------------

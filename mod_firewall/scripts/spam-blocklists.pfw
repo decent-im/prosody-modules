@@ -8,3 +8,13 @@
 
 CHECK LIST: blocklist contains $<@from|host>
 BOUNCE=policy-violation (Your server is blocked due to spam)
+
+::user/spam_check_muc_invite_custom
+
+# Check the server we received the invitation from
+CHECK LIST: blocklist contains $<@from|host>
+BOUNCE=policy-violation (Your server is blocked due to spam)
+
+# Check the inviter's JID against the blocklist, too
+CHECK LIST: blocklist contains $<{http://jabber.org/protocol/muc#user}x/invite@from|host>
+BOUNCE=policy-violation (Your server is blocked due to spam)
