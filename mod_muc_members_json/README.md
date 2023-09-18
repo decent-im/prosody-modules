@@ -52,14 +52,14 @@ muc_members_json_mucs = {
 JSON format
 ===========
 
-```
+``` json
 {
   "members": [
     {
-      "jids": ["user@example.com"]
-    },
-    {
-      "jids": ["user2@example.com"]
+      "jids": [
+        "user@example.com",
+        "user2@example.com"
+      ]
     },
     {
       "jids": ["user3@example.com"],
