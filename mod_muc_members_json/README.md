@@ -63,7 +63,7 @@ JSON format
     },
     {
       "jids": ["user3@example.com"],
-      roles: ["janitor"]
+      "roles": ["janitor"]
     }
   ]
 }
