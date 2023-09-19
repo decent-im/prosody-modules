@@ -1,6 +1,6 @@
 ---
 labels:
-- 'Stage-Alpha
+- Stage-Alpha
 summary: Install adhoc command bots in MUCs
 ---
 
