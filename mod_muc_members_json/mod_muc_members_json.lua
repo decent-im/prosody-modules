@@ -80,7 +80,7 @@ function module.load()
 					end
 					-- Remove affiliation from folk who weren't in the source data but previously were
 					for jid, aff, data in muc:each_affiliation() do
-						if not jids[jid] and data.source == module.name then
+						if not jids[jid] and data and data.source == module.name then
 							muc:set_affiliation(true, jid, "none", "imported membership lost");
 						end
 					end
