@@ -407,17 +407,17 @@ local function logs_page(event, path)
 			local target_id = reactions.attr.id or reactions.attr.to;
 			for n = i - 1, 1, -1 do
 				if logs[n].archive_id == target_id then
-					local react_map = logs[n].reactions; -- { string : integer }
+					local react_map = logs[n].reactions; -- [occupant_id][emoji]boolean
 					if not react_map then
 						react_map = {};
 						logs[n].reactions = react_map;
 					end
+					local reacts = {};
 					for reaction_tag in reactions:childtags("reaction") do
-						-- FIXME This doesn't replace previous reactions by the same user
-						-- on the same message.
 						local reaction_text = reaction_tag:get_text() or "�";
-						react_map[reaction_text] = (react_map[reaction_text] or 0) + 1;
+						reacts[reaction_text] = true;
 					end
+					react_map[occupant_id] = reacts;
 					break
 				end
 			end
@@ -457,6 +457,20 @@ local function logs_page(event, path)
 		last = archive_id;
 	end
 	if i == 1 and not lazy then return end -- No items
+
+	-- collapse reactions[occupant-id][reaction]boolean into reactions[reaction]integer
+	for n = 1, #logs do
+		local reactions = logs[n].reactions;
+		if reactions then
+			local collated = {};
+			for _, reacts in pairs(reactions) do
+				for reaction_text in pairs(reacts) do
+					collated[reaction_text] = (collated[reaction_text] or 0) + 1;
+				end
+			end
+			logs[n].reactions = collated;
+		end
+	end
 
 	local next_when, prev_when = "", "";
 	local date_list = archive.dates and archive:dates(room);
