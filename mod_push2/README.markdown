@@ -45,6 +45,8 @@ Compatibility
 
 **Note:** This module should be used with Lua 5.3 and higher.
 
+Requires a slightly patches luaossl right now: https://github.com/wahern/luaossl/pull/214
+
 ------ -----------------------------------------------------------------------------
   trunk  Works
 ------ -----------------------------------------------------------------------------
