@@ -1,6 +1,6 @@
 ---
 labels:
-- 'Stage-Alpha
+- Stage-Alpha
 summary: 'Push 2.0'
 ---
 
