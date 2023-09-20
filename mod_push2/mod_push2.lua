@@ -201,6 +201,22 @@ local function add_sce_rfc8291(match, stanza, push_notification_payload)
 		envelope_bytes = tostring(envelope)
 	end
 	if string.len(envelope_bytes) > max_data_size then
+		local body = stanza:get_child_text("body")
+		if string.len(body) > 50 then
+			stanza_clone:maptags(function(el)
+				if el.name == "body" then
+					return nil
+				else
+					return el
+				end
+			end)
+
+			body = string.gsub(string.gsub("\n" .. body, "\n>[^\n]*", ""), "^%s", "")
+			stanza_clone:body(body:sub(1, utf8.offset(body, 50)) .. "…")
+			envelope_bytes = tostring(envelope)
+		end
+	end
+	if string.len(envelope_bytes) > max_data_size then
 		-- If still too big, get aggressive
 		stanza_clone:maptags(function(el)
 			if el.name == "body" or
