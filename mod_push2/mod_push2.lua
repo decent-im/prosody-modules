@@ -381,6 +381,13 @@ local function get_push_settings(stanza, session)
 	return node, (user_push_services or {})
 end
 
+-- publish on offline message
+module:hook("message/offline/handle", function(event)
+	local node, user_push_services = get_push_settings(event.stanza, event.origin);
+	module:log("debug", "Invoking handle_notify_request() for offline stanza");
+	handle_notify_request(event.stanza, node, user_push_services, true);
+end, 1);
+
 -- publish on bare groupchat
 -- this picks up MUC messages when there are no devices connected
 module:hook("message/bare/groupchat", function(event)
@@ -401,12 +408,6 @@ end, 1);
 
 local function process_stanza_queue(queue, session, queue_type)
 	if not session.push_registration_id then return; end
-	for _, match in ipairs(session.push_settings.matches) do
-		if match.match == "urn:xmpp:push2:match:archived-with-body" or match.match == "urn:xmpp:push2:match:archived" then
-			module:log("debug", "Not pushing because we are not archiving this stanza: %s", session.push_registration_id)
-			return
-		end
-	end
 	local user_push_services = {[session.push_registration_id] = session.push_settings};
 	local notified = { unimportant = false; important = false }
 	for i=1, #queue do
@@ -523,7 +524,8 @@ end
 -- archive message added
 local function archive_message_added(event)
 	-- event is: { origin = origin, stanza = stanza, for_user = store_user, id = id }
-	if not event.for_user then return; end
+	-- only notify for new mam messages when at least one device is online
+	if not event.for_user or not host_sessions[event.for_user] then return; end
 	-- Note that the stanza in the event is a clone not the same as other hooks, so dedupe doesn't work
 	-- This is a problem if you wan to to also hook offline message storage for example
 	local stanza = st.clone(event.stanza)
@@ -558,14 +560,6 @@ local function archive_message_added(event)
 				end
 				if identifier_found then
 					identifier_found.log("debug", "Not pushing '%s' of new MAM stanza (session still alive)", identifier)
-				elseif not has_body(stanza) then
-					for _, match in ipairs(push_info.matches) do
-						if match.match == "urn:xmpp:push2:match:archived-with-body" then
-							identifier_found.log("debug", "Not pushing '%s' of new MAM stanza (no body)", identifier)
-						else
-							notify_push_services[identifier] = push_info
-						end
-					end
 				else
 					notify_push_services[identifier] = push_info
 				end

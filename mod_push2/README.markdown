@@ -20,12 +20,8 @@ Configuration
 Internal design notes
 =====================
 
-App servers are notified about messages stored by [mod_mam]
+App servers are notified about offline messages, messages stored by [mod_mam]
 or messages waiting in the smacks queue.
-
-Currently messages that go into the offline queue but not into MAM are
-not delivered. Need to come up with a way to dedup these. Or just have
-your MAM set to always.
 
 To cooperate with [mod_smacks] this module consumes some events:
 `smacks-ack-delayed`, `smacks-hibernation-start` and `smacks-hibernation-end`.
