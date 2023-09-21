@@ -285,13 +285,14 @@ local function add_rfc8292(match, stanza, push_notification_payload)
 		key = "-----BEGIN PRIVATE KEY-----\n"..key.."\n-----END PRIVATE KEY-----"
 	end
 
+	local public_key = pkey.new(key):getParameters().pub_key:toBinary()
 	local signer = jwt.new_signer(match.jwt_alg, key)
 	local payload = {}
 	for k, v in pairs(match.jwt_claims or {}) do
 		payload[k] = v
 	end
 	payload.sub = contact_uri
-	push_notification_payload:text_tag("jwt", signer(payload))
+	push_notification_payload:text_tag("jwt", signer(payload), { key = base64.encode(public_key) })
 end
 
 local function handle_notify_request(stanza, node, user_push_services, log_push_decline)

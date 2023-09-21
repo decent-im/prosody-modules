@@ -105,7 +105,7 @@ Then a notification is sent:
         <encrypted xmlns="urn:xmpp:sce:rfc8291:0">
             <payload>Base64 encoded ciphertext</payload>
         </encrypted>
-        <jwt>the signed JWT, if present</jwt>
+        <jwt key="base64 encoded raw public key">the signed JWT, if present</jwt>
     </notification>
 </message>
 ```
