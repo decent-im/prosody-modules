@@ -639,7 +639,7 @@ local function get_auth_state(request)
 			user = {
 				username = username;
 				host = module.host;
-				token = new_user_token({ username = username; host = module.host; auth_time = os.time() });
+				token = new_user_token({ username = username; host = module.host; auth_time = os.time(); amr = { "pwd" } });
 			};
 		};
 	elseif form.user_token and form.consent then
@@ -925,6 +925,7 @@ local function handle_authorization_request(event)
 		aud = params.client_id;
 		auth_time = auth_state.user.auth_time;
 		nonce = params.nonce;
+		amr = auth_state.user.amr;
 	});
 	local response_type = params.response_type;
 	local response_handler = response_type_handlers[response_type];
