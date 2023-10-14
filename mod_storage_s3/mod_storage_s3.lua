@@ -218,6 +218,9 @@ function archive:find(username, query)
 	local bucket_path = url.build_path({ is_absolute = true; bucket; is_directory = true });
 	local prefix = { jid.escape(module.host); jid.escape(self.store); is_directory = true };
 	table.insert(prefix, jid.escape(username or "@"));
+	if not query then
+		query = {};
+	end
 	if query["with"] then
 		table.insert(prefix, sha256(jid.prep(query["with"]), true):sub(1,24));
 		if query["start"] and query["end"] and dt.date(query["start"]) == dt.date(query["end"]) then
