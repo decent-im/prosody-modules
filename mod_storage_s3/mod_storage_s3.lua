@@ -142,7 +142,12 @@ function keyval:get(user)
 end
 
 function keyval:set(user, data)
-	return async.wait_for(new_request("PUT", self:_path(user), data));
+
+	if data == nil or (type(data) == "table" and next(data) == nil) then
+		return async.wait_for(new_request("DELETE", self:_path(user)));
+	end
+
+	return async.wait_for(new_request("PUT", self:_path(user), nil, data));
 end
 
 function keyval:users()
