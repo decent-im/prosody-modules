@@ -151,7 +151,25 @@ function keyval:set(user, data)
 end
 
 function keyval:users()
-	return nil, "not-implemented";
+	local bucket_path = url.build_path({ is_absolute = true; bucket; is_directory = true });
+	local prefix = url.build_path({ jid.escape(module.host); jid.escape(self.store); is_directory = true });
+	local list_result, err = async.wait_for(new_request("GET", bucket_path, { prefix = prefix }))
+	if err or list_result.code ~= 200 then
+		return nil, err;
+	end
+	local list_bucket_result = xml.parse(list_result.body);
+	if list_bucket_result:get_child_text("IsTruncated") == "true" then
+		local max_keys = list_bucket_result:get_child_text("MaxKeys");
+		module:log("warn", "Paging truncated results not implemented, max %s %s returned", max_keys, self.store);
+	end
+	local keys = array();
+	for content in list_bucket_result:childtags("Contents") do
+		local key = url.parse_path(content:get_child_text("Key"));
+		keys:push(jid.unescape(key[3]));
+	end
+	return function()
+		return keys:pop();
+	end
 end
 
 module:provides("storage", driver);
