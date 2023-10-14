@@ -139,7 +139,7 @@ function keyval:_path(key)
 		bucket;
 		jid.escape(module.host);
 		jid.escape(self.store);
-		jid.escape(key or "");
+		jid.escape(key or "@");
 	})
 end
 
