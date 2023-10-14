@@ -35,7 +35,7 @@ driver.keyval = { __index = keyval; __name = module.name .. " keyval store" };
 
 local aws4_format = "AWS4-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s";
 
-local function new_request(method, path, payload)
+local function new_request(method, path, query, payload)
 	local request = url.parse(base_uri);
 	request.path = path;
 
@@ -68,6 +68,16 @@ local function new_request(method, path, payload)
 	local canonical_query = "";
 	local canonical_headers = array();
 	local signed_headers = array()
+
+	if query then
+		local sorted_query = array();
+		for name, value in it.sorted_pairs(query) do
+			sorted_query:push({ name = name; value = value });
+		end
+		sorted_query:sort(function (a,b) return a.name < b.name end)
+		canonical_query = httputil.formencode(sorted_query):gsub("%%%x%x", string.upper);
+		request.query = canonical_query;
+	end
 
 	for header_name, header_value in it.sorted_pairs(headers) do
 		header_name = header_name:lower();
