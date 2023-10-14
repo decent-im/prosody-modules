@@ -117,6 +117,9 @@ end
 
 -- coerce result back into Prosody data type
 local function on_result(response)
+	if response.code == 404 and response.request.method == "GET" then
+		return nil;
+	end
 	if response.code >= 400 then
 		error(response.body);
 	end
