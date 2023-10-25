@@ -20,6 +20,9 @@ local jsonmap = module:require"jsonmap";
 
 local tokens = module:depends("tokenauth");
 
+-- Lower than the default c2s size limit to account for possible JSON->XML size increase
+local stanza_size_limit = module:get_option_number("rest_stanza_size_limit", 1024 * 192);
+
 local auth_mechanisms = module:get_option_set("rest_auth_mechanisms", { "Basic", "Bearer" });
 
 local www_authenticate_header;
@@ -277,6 +280,7 @@ local post_errors = errors.init("mod_rest", {
 	iq_type = { code = 422; type = "modify"; condition = "invalid-xml"; text = "'iq' stanza must be of type 'get' or 'set'" };
 	iq_tags = { code = 422; type = "modify"; condition = "bad-format"; text = "'iq' stanza must have exactly one child tag" };
 	mediatype = { code = 415; type = "cancel"; condition = "bad-format"; text = "Unsupported media type" };
+	size = { code = 413; type = "modify"; condition = "resource-constraint", text = "Payload too large" };
 });
 
 -- GET → iq-get
@@ -312,6 +316,9 @@ local function handle_request(event, path)
 		origin.full_jid = from;
 		origin.type = "c2s";
 		origin.log = log;
+	end
+	if type(request.body) == "string" and #request.body > stanza_size_limit then
+		return post_errors.new("size", { size = #request.body; limit = stanza_size_limit });
 	end
 	local payload, err = parse_request(request, path);
 	if not payload then
