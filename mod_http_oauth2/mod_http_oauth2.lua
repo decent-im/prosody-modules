@@ -1099,15 +1099,17 @@ local function handle_introspection_request(event)
 	};
 end
 
+-- RFC 7009 says that the authorization server should validate that only the client that a token was issued to should be able to revoke it. However
+-- this would prevent someone who comes across a leaked token from doing the responsible thing and revoking it, so this is not enforced by default.
 local strict_auth_revoke = module:get_option_boolean("oauth2_require_auth_revoke", false);
 
 local function handle_revocation_request(event)
 	local request, response = event.request, event.response;
 	response.headers.cache_control = "no-store";
 	response.headers.pragma = "no-cache";
-	if request.headers.authorization then
-		local credentials = get_request_credentials(request);
-		if not credentials or credentials.type ~= "basic" then
+	local credentials = get_request_credentials(request);
+	if credentials then
+		if credentials.type ~= "basic" then
 			response.headers.www_authenticate = string.format("Basic realm=%q", module.host.."/"..module.name);
 			return 401;
 		end
@@ -1127,6 +1129,22 @@ local function handle_revocation_request(event)
 		response.headers.accept = "application/x-www-form-urlencoded";
 		return 415;
 	end
+
+	if credentials then
+		local client = check_client(credentials.username);
+		if not client then
+			return 401;
+		end
+		local token_info = tokens.get_token_info(form_data.token);
+		if not token_info then
+			return 404;
+		end
+		local token_client = token_info.grant.data.oauth2_client;
+		if not token_client or token_client.hash ~= client.client_hash then
+			return 403;
+		end
+	end
+
 	local ok, err = tokens.revoke_token(form_data.token);
 	if not ok then
 		module:log("warn", "Unable to revoke token: %s", tostring(err));
