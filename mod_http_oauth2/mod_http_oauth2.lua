@@ -1061,6 +1061,11 @@ local function handle_introspection_request(event)
 		return 401;
 	end
 
+	local client = check_client(credentials.username);
+	if not client then
+		return 401;
+	end
+
 	local form_data = http.formdecode(request.body or "=");
 	local token = form_data.token;
 	if not token then
@@ -1070,6 +1075,10 @@ local function handle_introspection_request(event)
 	local token_info = tokens.get_token_info(form_data.token);
 	if not token_info then
 		return { headers = { content_type = "application/json" }; body = json.encode { active = false } };
+	end
+	local token_client = token_info.grant.data.oauth2_client;
+	if not token_client or token_client.hash ~= client.client_hash then
+		return 403;
 	end
 
 	return {
@@ -1083,7 +1092,7 @@ local function handle_introspection_request(event)
 			exp = token.expires;
 			iat = token.created;
 			sub = url.build({ scheme = "xmpp"; path = token_info.jid });
-			aud = nil;
+			aud = credentials.username;
 			iss = get_issuer();
 			jti = token_info.id;
 		};
