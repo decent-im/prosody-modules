@@ -185,6 +185,9 @@ local function is_password_mechanism(mech_name)
 end
 
 local function is_client_active(client)
+	if not client.full_jid then
+		return nil;
+	end
 	local username, host = jid.split(client.full_jid);
 	local account_info = usermanager.get_account_info(username, host);
 	local last_password_change = account_info and account_info.password_updated;
