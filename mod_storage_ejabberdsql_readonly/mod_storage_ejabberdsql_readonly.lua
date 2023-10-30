@@ -25,9 +25,9 @@ local user, store;
 
 local function keyval_store_get()
 	if store == "accounts" then
-		--for row in engine:select("SELECT `password`,`created_at` FROM `users` WHERE `username`=?", user or "") do
+		--for row in engine:select("SELECT \"password\",\"created_at\" FROM \"users\" WHERE \"username\"=?", user or "") do
 		local result;
-		for row in engine:select("SELECT `password` FROM `users` WHERE `username`=? LIMIT 1", user or "") do result = row end
+		for row in engine:select("SELECT \"password\" FROM \"users\" WHERE \"username\"=? LIMIT 1", user or "") do result = row end
 		local password = result[1];
 		--local created_at = result[2];
 		return { password = password };
@@ -35,8 +35,8 @@ local function keyval_store_get()
 	elseif store == "roster" then
 		local roster = {};
 		local pending = nil;
-		--for row in engine:select("SELECT `jid`,`nick`,`subscription`,`ask`,`askmessage`,`server`,`subscribe`,`type`,`created_at` FROM `rosterusers` WHERE `username`=?", user or "") do
-		for row in engine:select("SELECT `jid`,`nick`,`subscription`,`ask` FROM `rosterusers` WHERE `username`=?", user or "") do
+		--for row in engine:select("SELECT \"jid\",\"nick\",\"subscription\",\"ask\",\"askmessage\",\"server\",\"subscribe\",\"type\",\"created_at\" FROM \"rosterusers\" WHERE \"username\"=?", user or "") do
+		for row in engine:select("SELECT \"jid\",\"nick\",\"subscription\",\"ask\" FROM \"rosterusers\" WHERE \"username\"=?", user or "") do
 			local contact = row[1];
 			local name = row[2];
 			if name == "" then name = nil; end
@@ -72,7 +72,7 @@ local function keyval_store_get()
 			--local created_at = row[9];
 
 			local groups = {};
-			for row in engine:select("SELECT `grp` FROM `rostergroups` WHERE `username`=? AND `jid`=?", user or "", contact) do
+			for row in engine:select("SELECT \"grp\" FROM \"rostergroups\" WHERE \"username\"=? AND \"jid\"=?", user or "", contact) do
 				local group = row[1];
 				groups[group] = true;
 			end
@@ -83,7 +83,7 @@ local function keyval_store_get()
 
 	elseif store == "vcard" then
 		local result = nil;
-		for row in engine:select("SELECT `vcard` FROM `vcard` WHERE `username`=? LIMIT 1", user or "") do result = row end
+		for row in engine:select("SELECT \"vcard\" FROM \"vcard\" WHERE \"username\"=? LIMIT 1", user or "") do result = row end
 		if not result then
 			return nil;
 		end
@@ -95,7 +95,7 @@ local function keyval_store_get()
 	elseif store == "private" then
 		local private = nil;
 		local result;
-		for row in engine:select("SELECT `namespace`,`data` FROM `private_storage` WHERE `username`=?", user or "") do
+		for row in engine:select("SELECT \"namespace\",\"data\" FROM \"private_storage\" WHERE \"username\"=?", user or "") do
 			if private == nil then private = {} end;
 			local namespace = row[1];
 			local data, err = xml_parse(row[2]);
@@ -125,7 +125,7 @@ end
 
 function keyval_store:users()
 	local ok, result = engine:transaction(function()
-		return engine:select("SELECT `username` FROM `users`");
+		return engine:select("SELECT \"username\" FROM \"users\"");
 	end);
 	if not ok then return ok, result end
 	return iterator(result);
