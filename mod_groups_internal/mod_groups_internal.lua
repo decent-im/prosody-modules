@@ -1,12 +1,13 @@
 local rostermanager = require"core.rostermanager";
 local modulemanager = require"core.modulemanager";
+local array = require "util.array";
 local id = require "util.id";
 local jid = require "util.jid";
 local st = require "util.stanza";
 local jid_join = jid.join;
 local host = module.host;
 
-local group_info_store = module:open_store("group_info");
+local group_info_store = module:open_store("group_info", "keyval+");
 local group_members_store = module:open_store("groups");
 local group_memberships = module:open_store("groups", "map");
 
@@ -76,8 +77,43 @@ module:hook("resource-bind", function(event)
 	do_all_group_subscriptions_by_user(event.session.username);
 end);
 
+local function _create_muc_room(name)
+	if not muc_host_name then
+		module:log("error", "cannot create group MUC: no MUC host configured")
+		return nil, "service-unavailable"
+	end
+	if not muc_host then
+		module:log("error", "cannot create group MUC: MUC host %s not configured properly", muc_host_name)
+		return nil, "internal-server-error"
+	end
+
+	local muc_jid = jid.prep(id.short() .. "@" .. muc_host_name);
+	local room = muc_host.create_room(muc_jid)
+	if not room then
+		return nil, "internal-server-error"
+	end
+
+	local ok = pcall(function ()
+		room:set_public(false);
+		room:set_persistent(true);
+		room:set_members_only(true);
+		room:set_allow_member_invites(false);
+		room:set_moderated(false);
+		room:set_whois("anyone");
+		room:set_name(name);
+	end);
+
+	if not ok then
+		module:log("error", "Failed to configure group MUC %s", muc_jid);
+		room:destroy();
+		return nil, "internal-server-error";
+	end
+
+	return muc_jid, room;
+end
+
 --luacheck: ignore 131
-function create(group_info, create_muc, group_id)
+function create(group_info, create_default_muc, group_id)
 	if not group_info.name then
 		return nil, "group-name-required";
 	end
@@ -91,29 +127,13 @@ function create(group_info, create_muc, group_id)
 
 	local muc_jid = nil
 	local room = nil
-	if create_muc then
-		if not muc_host_name then
-			module:log("error", "cannot create group with MUC: no MUC host configured")
-			return nil, "service-unavailable"
-		end
-		if not muc_host then
-			module:log("error", "cannot create group with MUC: MUC host %s not configured properly", muc_host_name)
-			return nil, "internal-server-error"
-		end
-
-		muc_jid = jid.prep(id.short() .. "@" .. muc_host_name);
-		room = muc_host.create_room(muc_jid)
-		if not room then
+	if create_default_muc then
+		muc_jid, room = _create_muc_room(group_info.name);
+		if not muc_jid then
+			-- MUC creation failed, fail to create group
 			delete(group_id)
-			return nil, "internal-server-error"
+			return nil, room;
 		end
-		room:set_public(false)
-		room:set_persistent(true)
-		room:set_members_only(true)
-		room:set_allow_member_invites(false)
-		room:set_moderated(false)
-		room:set_whois("anyone")
-		room:set_name(group_info.name)
 	end
 
 	local ok = group_info_store:set(group_id, {
@@ -158,7 +178,7 @@ function set_info(group_id, info)
 end
 
 function get_members(group_id)
-	return group_members_store:get(group_id);
+	return group_members_store:get(group_id) or {};
 end
 
 function exists(group_id)
@@ -264,6 +284,146 @@ function sync(group_id)
 	do_all_group_subscriptions_by_group(group_id);
 end
 
+function add_group_chat(group_id, name)
+	local group_info = group_info_store:get(group_id);
+	local mucs = group_info.mucs or {};
+
+	-- Create the MUC
+	local muc_jid, room = _create_muc_room(name);
+	if not muc_jid then return nil, room; end
+	table.insert(mucs, muc_jid);
+	if group_info.muc_jid then -- COMPAT include old muc_jid into array
+		table.insert(mucs, group_info.muc_jid);
+	end
+	local store_ok, store_err = group_info_store:set_key(group_id, "mucs", mucs);
+	if not store_ok then
+		module:log("error", "Failed to store new MUC association: %s", store_err);
+		room:destroy();
+		return nil, "internal-server-error";
+	end
+
+	-- COMPAT: clear old muc_jid (it's now in mucs array)
+	if group_info.muc_jid then
+		module:log("debug", "Clearing old single-MUC JID");
+		group_info.muc_jid = nil;
+		group_info_store:set_key(group_id, "muc_jid", nil);
+	end
+
+	-- Make existing group members, members of the MUC
+	for username in pairs(get_members(group_id)) do
+		local user_jid = username .. "@" ..module.host;
+		room:set_affiliation(true, user_jid, "member");
+		module:send(st.message(
+			{ from = muc_jid, to = user_jid }
+		):tag("x", {
+			xmlns = "jabber:x:conference",
+			jid = muc_jid
+		}):up());
+		module:log("debug", "set user %s to be member in %s and sent invite", user_jid, muc_jid);
+	end
+
+	-- Notify other modules (such as mod_groups_muc_bookmarks)
+	local muc = {
+		jid = muc_jid;
+		name = name;
+	};
+
+	module:fire_event("group-chat-added", {
+		group_id = group_id;
+		group_info = group_info;
+		muc = muc;
+	});
+
+	return muc;
+end
+
+function remove_group_chat(group_id, muc_id)
+	local group_info = group_info_store:get(group_id);
+	if not group_info then
+		return nil, "group-not-found";
+	end
+
+	local mucs = group_info.mucs;
+	if not mucs then
+		if not group_info.muc_jid then
+			return true;
+		end
+		-- COMPAT with old single-MUC groups - upgrade to new format
+		mucs = {};
+	end
+	if group_info.muc_jid then
+		table.insert(mucs, group_info.muc_jid);
+	end
+
+	local removed;
+	for i, muc_jid in ipairs(mucs) do
+		if muc_id == jid.node(muc_jid) then
+			removed = table.remove(mucs, i);
+			break;
+		end
+	end
+
+	if removed then
+		if not group_info_store:set_key(group_id, "mucs", mucs) then
+			return nil, "internal-server-error";
+		end
+
+		if group_info.muc_jid then
+			-- COMPAT: Now we've set the array, clean up muc_jid
+			group_info.muc_jid = nil;
+			group_info_store:set_key(group_id, "muc_jid", nil);
+		end
+
+		module:log("debug", "Updated group MUC list");
+
+		local room = muc_host.get_room_from_jid(removed);
+		if room then
+			room:destroy();
+		else
+			module:log("warn", "Removing a group chat, but associated MUC not found (%s)", removed);
+		end
+
+		module:fire_event(
+			"group-chat-removed",
+			{
+				group_id = group_id;
+				group_info = group_info;
+				muc = {
+					id = muc_id;
+					jid = removed;
+				};
+			}
+		);
+	else
+		module:log("warn", "Removal of a group chat that can't be found - %s", muc_id);
+	end
+
+	return true;
+end
+
+function get_group_chats(group_id)
+	local group_info, err = group_info_store:get(group_id);
+	if not group_info then
+		module:log("debug", "Unable to load group info: %s - %s", group_id, err);
+		return nil;
+	end
+
+	local mucs = group_info.mucs or {};
+
+	-- COMPAT with single-MUC groups
+	if group_info.muc_jid then
+		table.insert(mucs, group_info.muc_jid);
+	end
+
+	return array.map(mucs, function (muc_jid)
+		return {
+			id = jid.node(muc_jid);
+			jid = muc_jid;
+			name = muc_host.get_room_from_jid(muc_jid):get_name();
+		};
+	end);
+end
+
 function emit_member_events(group_id)
 	local group_info, err = get_info(group_id)
 	if group_info == nil then
@@ -287,7 +447,7 @@ end
 
 -- Returns iterator over group ids
 function groups()
-	return group_info_store:users();
+	return group_info_store:items();
 end
 
 local function setup()
