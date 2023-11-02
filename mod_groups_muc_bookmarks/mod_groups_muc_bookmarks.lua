@@ -41,6 +41,7 @@ local function find_matching_bookmark(storage, room)
 end
 
 local function inject_bookmark(jid, room, autojoin, name)
+	module:log("debug", "Injecting bookmark for %s into %s", room, jid);
 	local pep_service = mod_pep.get_pep_service(jid_split(jid))
 
 	local current, err = get_current_bookmarks(jid, pep_service);
@@ -97,3 +98,26 @@ end
 
 module:hook("group-user-added", handle_user_added)
 module:hook("group-user-removed", handle_user_removed)
+
+
+local function handle_muc_added(event)
+	-- Add MUC to all members' bookmarks
+	module:log("info", "Adding new group chat to all member bookmarks...");
+	local muc_jid, muc_name = event.muc.jid, event.muc.name;
+	for member_username in pairs(mod_groups.get_members(event.group_id)) do
+		local member_jid = member_username .. "@" .. module.host;
+		inject_bookmark(member_jid, muc_jid, true, muc_name);
+	end
+end
+
+local function handle_muc_removed(event)
+	-- Remove MUC from all members' bookmarks
+	local muc_jid = event.muc.jid;
+	for member_username in ipairs(mod_groups.get_members(event.group_id)) do
+		local member_jid = member_username .. "@" .. module.host;
+		remove_bookmark(member_jid, muc_jid);
+	end
+end
+
+module:hook("group-chat-added", handle_muc_added)
+module:hook("group-chat-removed", handle_muc_removed)
