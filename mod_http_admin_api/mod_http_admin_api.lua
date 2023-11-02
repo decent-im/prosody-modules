@@ -465,8 +465,8 @@ function list_groups(event)
 		table.insert(group_list, {
 			id = group_id;
 			name = group_info.name;
-			muc_jid = group_info.muc_jid;
 			members = mod_groups.get_members(group_id);
+			chats = mod_groups.get_group_chats(group_id);
 		});
 	end
 
@@ -485,8 +485,8 @@ function get_group_by_id(event, group_id)
 	return json.encode({
 		id = group_id;
 		name = group.name;
-		muc_jid = group.muc_jid;
 		members = mod_groups.get_members(group_id);
+		chats = mod_groups.get_group_chats(group_id);
 	});
 end
 
@@ -524,8 +524,8 @@ function create_group(event)
 	return json.encode({
 		id = group_id;
 		name = info.name;
-		muc_jid = info.muc_jid or nil;
 		members = {};
+		chats = {};
 	});
 end
 
@@ -568,14 +568,43 @@ function update_group(event, group) --luacheck: ignore 212/event
 	return 404;
 end
 
+function extend_group(event, subpath)
+	-- Add group chat
+	local group_id = subpath:match("^([^/]+)/chats$");
+	if group_id then
+		local muc_params = json.decode(event.request.body);
+		if not muc_params then
+			return 400;
+		end
+		local muc = mod_groups.add_group_chat(group_id, muc_params.name);
+		if not muc then
+			return 500;
+		end
+		return json.encode(muc);
+	end
+
+	return 404;
+end
+
 function delete_group(event, subpath) --luacheck: ignore 212/event
 	-- Check if this is a membership deletion and handle it
-	local group_id, member_name = subpath:match("^([^/]+)/members/([^/]+)$");
-	if group_id and member_name then
-		if mod_groups.remove_member(group_id, member_name) then
-			return 204;
+	local group_id, sub_resource_type, sub_resource_id = subpath:match("^([^/]+)/([^/]+)/([^/]+)$");
+	if group_id then
+		-- Operation is on a sub-resource
+		if sub_resource_type == "members" then
+			if mod_groups.remove_member(group_id, sub_resource_id) then
+				return 204;
+			else
+				return 500;
+			end
+		elseif sub_resource_type == "chats" then
+			if mod_groups.remove_group_chat(group_id, sub_resource_id) then
+				return 204;
+			else
+				return 500;
+			end
 		else
-			return 500;
+			return 404;
 		end
 	else
 		-- Action refers to the group
@@ -700,6 +729,7 @@ module:provides("http", {
 		["GET /groups"] = list_groups;
 		["GET /groups/*"] = get_group_by_id;
 		["POST /groups"] = create_group;
+		["POST /groups/*"] = extend_group;
 		["PUT /groups/*"] = update_group;
 		["DELETE /groups/*"] = delete_group;
 
