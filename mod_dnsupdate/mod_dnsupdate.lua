@@ -121,6 +121,7 @@ function module.command(arg)
 		if not opts.remove then
 			for port in ports do print(("add _%s._tcp.%s IN SRV 1 1 %d %s"):format(service, ihost, port, target)); end
 		end
+		if ports:empty() then print(("add _%s._tcp.%s IN SRV 0 0 0 ."):format(service, ihost)); end
 	end
 
 	print("show");
