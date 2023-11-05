@@ -97,6 +97,10 @@ function map:set(user, key, value)
 	return dm.append_raw(user, module.host, self.store, "map", data);
 end
 
+function map:items()
+	return dm.users(module.host, self.store, "map");
+end
+
 local keyval = { remove = REMOVE };
 local keyval_mt = { __index = keyval };
 
@@ -107,6 +111,10 @@ end
 function keyval:set(user, keyvalues)
 	local data = serialize_map(keyvalues);
 	return dm.store_raw(dm.getpath(user, module.host, self.store, "map"), data);
+end
+
+function keyval:users()
+	return dm.users(module.host, self.store, "map");
 end
 
 -- TODO some kind of periodic compaction thing?
