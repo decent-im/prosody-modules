@@ -1,11 +1,13 @@
 local dump = require "util.serialization".serialize;
 local load = require "util.envload".envloadfile;
+local datetime = require "util.datetime".datetime;
 local dm = require "core.storagemanager".olddm;
 
 local REMOVE = {}; -- Special value for removing keys
 
 local driver = {};
 
+local timestamps = module:get_option_boolean("appendmap_timestamps", true);
 
 local keywords = {
 	["do"] = true; ["and"] = true; ["else"] = true; ["break"] = true;
@@ -82,6 +84,9 @@ end
 
 function map:set_keys(user, keyvalues)
 	local data = serialize_map(keyvalues);
+	if timestamps then
+		data = "-- " .. datetime() .. "\n" .. data;
+	end
 	return dm.append_raw(user, module.host, self.store, "map", data);
 end
 
@@ -94,6 +99,9 @@ function map:set(user, key, value)
 		return os.remove(filename);
 	end
 	local data = serialize_pair(key, value);
+	if timestamps then
+		data = "-- " .. datetime() .. "\n" .. data;
+	end
 	return dm.append_raw(user, module.host, self.store, "map", data);
 end
 
@@ -110,6 +118,9 @@ end
 
 function keyval:set(user, keyvalues)
 	local data = serialize_map(keyvalues);
+	if timestamps then
+		data = "-- " .. datetime() .. "\n" .. data;
+	end
 	return dm.store_raw(dm.getpath(user, module.host, self.store, "map"), data);
 end
 
