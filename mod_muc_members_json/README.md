@@ -38,9 +38,9 @@ You can define (globally or per-MUC component) the following options:
 The `muc_members_json_mucs` setting determines which rooms will be managed by
 the plugin, and how to map roles to hats (if desired).
 
-```
+``` lua
 muc_members_json_mucs = {
--	-- This configures hats for the myroom@<this MUC host> MUC
+	-- This configures hats for the myroom@<this MUC host> MUC
 	myroom = {
 		-- The optional field 'member_hat' defines a hat that will be
 		-- added to any user that is listed in the members JSON
