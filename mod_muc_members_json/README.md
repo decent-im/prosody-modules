@@ -40,11 +40,24 @@ the plugin, and how to map roles to hats (if desired).
 
 ```
 muc_members_json_mucs = {
+-	-- This configures hats for the myroom@<this MUC host> MUC
 	myroom = {
+		-- The optional field 'member_hat' defines a hat that will be
+		-- added to any user that is listed in the members JSON
+		-- (regardless of what roles they have, if any)
 		member_hat = {
 			id = "urn:uuid:6a1b143a-1c5c-11ee-80aa-4ff1ce4867dc";
 			title = "Cool Member";
 		};
+		-- The optional field 'team_hats' defines one or more hats
+		-- that will be assigned to users that have the specified
+		-- roles in the JSON.
+		team_hats = {
+			janitor = {
+				id = "urn:uuid:ec32f550-7d5f-11ee-81ee-6b139cac3bf6";
+				title = "Janitor";
+			}
+		}
 	};
 }
 ```
@@ -69,7 +82,10 @@ JSON format
 }
 ```
 
-Each member must have a `jids` field, and optionally a `roles` field.
+The JSON format must be an object with a `members` array.
+
+Each member must have a `jids` field, and optionally a `roles` field (both are
+arrays of strings).
 
 Compatibility
 =============
