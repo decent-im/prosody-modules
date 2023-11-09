@@ -471,10 +471,24 @@ module:once(function ()
 			};
 			{
 				title = "Expires";
-				key = "expires";
+				key = "active";
 				width = date_or_time_width;
 				align = "right";
-				mapper = date_or_time;
+				mapper = function(active, client)
+					local grant = active and active.grant;
+					local expires = client and client.expires;
+					local tokens = grant and grant.tokens;
+					if expires or not tokens then
+						return date_or_time(expires);
+					end
+
+					for _, token in pairs(tokens) do
+						if token.expires and (not expires or token.expires > expires) then
+							expires = token.expires;
+						end
+					end
+					return date_or_time(expires);
+				end;
 			};
 			{
 				title = "Authentication";
