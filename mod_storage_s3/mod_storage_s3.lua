@@ -8,6 +8,7 @@ local uuid = require "prosody.util.uuid";
 local it = require "prosody.util.iterators";
 local jid = require "prosody.util.jid";
 local json = require "prosody.util.json";
+local promise = require "prosody.util.promise";
 local st = require "prosody.util.stanza";
 local xml = require "prosody.util.xml";
 local url = require "socket.url";
@@ -309,10 +310,14 @@ function archive:users()
 	return it.unique(keyval.users(self));
 end
 
---[[ TODO
+local function count(t) local n = 0; for _ in pairs(t) do n = n + 1; end return n; end
+
 function archive:delete(username, query)
-	return nil, "not-implemented";
+	local deletions = {};
+	for key, _, when, with in self:find(username, query) do
+		deletions[key] = new_request(self, "DELETE", self:_path(username or "@", dt.date(when), nil, with, key));
+	end
+	return async.wait_for(promise.all(deletions):next(count));
 end
---]]
 
 module:provides("storage", driver);
