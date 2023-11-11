@@ -4,12 +4,12 @@ local async = require "prosody.util.async";
 local dt = require "prosody.util.datetime";
 local hashes = require "prosody.util.hashes";
 local httputil = require "prosody.util.http";
-local uuid = require "prosody.util.uuid";
 local it = require "prosody.util.iterators";
 local jid = require "prosody.util.jid";
 local json = require "prosody.util.json";
 local promise = require "prosody.util.promise";
 local st = require "prosody.util.stanza";
+local uuid = require "prosody.util.uuid";
 local xml = require "prosody.util.xml";
 local url = require "socket.url";
 
