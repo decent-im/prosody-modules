@@ -281,7 +281,7 @@ function archive:find(username, query)
 		end
 	end
 	local i = 0;
-	return function()
+	local function get_next()
 		i = i + 1;
 		local item = keys[i];
 		if item == nil then
@@ -293,10 +293,16 @@ function archive:find(username, query)
 			module:log("error", "%s", err);
 			return nil;
 		end
-		local delay = value:get_child("delay", "urn:xmpp:delay");
+		local when = dt.parse(value:get_child_attr("delay", "urn:xmpp:delay", "stamp"));
 
-		return item.key, value.tags[2], dt.parse(delay.attr.stamp), item.with;
+		if (not query["start"] or query["start"] >= when) and (not query["end"] or query["end"] <= when) then
+			return item.key, value.tags[2], when, item.with;
+		else
+			-- date was correct but not the time
+			return get_next();
+		end
 	end
+	return get_next;
 end
 
 function archive:users()
