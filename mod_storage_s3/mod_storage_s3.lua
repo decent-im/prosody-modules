@@ -113,7 +113,7 @@ function driver:open(store, typ)
 	if not mt then
 		return nil, "unsupported-store";
 	end
-	local httpclient = http.new({});
+	local httpclient = http.new({ connection_pooling = true });
 	httpclient.events.add_handler("pre-request", aws_auth);
 	return setmetatable({ store = store; bucket = bucket; type = typ; http = httpclient }, mt);
 end
