@@ -144,7 +144,7 @@ local function on_result(response)
 	elseif content_type == "application/x-www-form-urlencoded" then
 		return httputil.formdecode(response.body);
 	else
-		response.log("warn", "Unknown response data type %s", content_type);
+		module:log("warn", "Unknown response data type %s", content_type);
 		return response.body;
 	end
 end
