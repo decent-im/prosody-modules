@@ -253,7 +253,7 @@ the protocol. Available presence is signalled by the omission of a type.
 Similarly, a message stanza with no type is equivalent to one of type
 'normal'. mod\_firewall handles these cases for you automatically.
 
-### Sender/recipient matching
+#### Sender/recipient matching
 
   Condition       Matches
   --------------- -------------------------------------------------------
