@@ -58,7 +58,7 @@ end
 
 function provider.get_sasl_handler()
 	local profile = {};
-	profile.http_client = http.default; -- TODO configurable
+	profile.http_client = http.new({ connection_pooling = true }); -- TODO configurable
 	local extra = { oidc_discovery_url = oidc_discovery_url };
 	if token_endpoint and allow_plain then
 		local map_username = function (username, _realm) return username; end; --jid.join; -- TODO configurable
