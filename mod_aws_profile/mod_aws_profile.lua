@@ -49,7 +49,7 @@ function refresh_credentials(force)
 		current_credentials.access_key = credentials.access_key;
 		current_credentials.secret_key = credentials.secret_key;
 		current_credentials.expiry = credentials.expiry;
-		module:timer(credentials.ttl or 240, refresh_credentials);
+		module:add_timer(credentials.ttl or 240, refresh_credentials);
 		module:fire_event("aws_profile/credentials-refreshed", current_credentials);
 	end);
 end
