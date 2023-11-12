@@ -263,7 +263,41 @@ local available_deps = {
 	};
 	scan_list = {
 		global_code = [[local function scan_list(list, items) for item in pairs(items) do if list:contains(item) then return true; end end end]];
-	}
+	};
+	iplib = {
+		global_code = [[local iplib = require "util.ip";]];
+	};
+	geoip_country = {
+		global_code = [[
+local geoip_country = require "geoip.country";
+local geov4 = geoip_country.open(module:get_option_string("geoip_ipv4_country", "/usr/share/GeoIP/GeoIP.dat"));
+local geov6 = geoip_country.open(module:get_option_string("geoip_ipv6_country", "/usr/share/GeoIP/GeoIPv6.dat"));
+local function get_geoip(ips, what)
+	if not ips then
+		return "--";
+	end
+	local ip = iplib.new_ip(ips);
+	if not ip then
+		return "--";
+	end
+	if ip.proto == "IPv6" and geov6 then
+		local geoinfo = geoinfo:query_by_addr6(ip.addr);
+		if geoinfo then
+			return geoinfo[what or "code"];
+		end
+	elseif ip.proto == "IPv4" and geov4 then
+		local geoinfo = geoinfo:query_by_addr(ip.addr);
+		if geoinfo then
+			return geoinfo[what or "code"];
+		end
+	end
+	return "--";
+end
+		]];
+		depends = {
+			"iplib"
+		}
+	};
 };
 
 local function include_dep(dependency, code)

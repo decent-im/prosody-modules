@@ -381,4 +381,30 @@ function condition_handlers.COUNT(count_expression)
 	};
 end
 
+-- FROM COUNTRY: SE
+-- FROM COUNTRY: code=SE
+-- FROM COUNTRY: SWE
+-- FROM COUNTRY: code3=SWE
+-- FROM COUNTRY: continent=EU
+-- FROM COUNTRY? --> NOT FROM COUNTRY: -- (for unknown/invalid)
+-- TODO list support?
+function condition_handlers.FROM_COUNTRY(geoip_spec)
+	local condition = "==";
+	if not geoip_spec then
+		geoip_spec = "--";
+		condition = "~=";
+	end
+	local field, country = geoip_spec:match("(%w+)=(%w+)");
+	if not field then
+		if #geoip_spec == 3 then
+			field, country = "code3", geoip_spec;
+		elseif #geoip_spec == 2 then
+			field, country = "code", geoip_spec;
+		else
+			error("Unknown country code type");
+		end
+	end
+	return ("get_geoip(session.ip, %q) %s %q"):format(field:lower(), condition, country:upper()), { "geoip_country" };
+end
+
 return condition_handlers;

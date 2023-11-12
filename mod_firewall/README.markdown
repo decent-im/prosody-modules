@@ -301,6 +301,31 @@ normalisation or validity checks on the to/from JIDs on an incoming
 stanza. It is not advisable to perform access control or similar rules
 on JIDs in these chains (see the [chain documentation](#chains) for more info).
 
+#### GeoIP matching
+
+  Condition        Matches
+  ---------------- --------------------------------------------------------------
+  `FROM COUNTRY`   Two or three letter country code looked up in GeoIP database
+
+This condition uses a GeoIP database to look up the origin country of
+the IP attached to the current session.
+
+For example:
+
+    # 3 letter country code
+    FROM COUNTRY: SWE
+
+    # or 2 letter
+    FROM COUNTRY: SE
+
+    # Explicit
+    FROM COUNTRY: code=SE
+    FROM COUNTRY: code3=SWE
+
+**Note:** This requires that the `lua-geoip` and `geoip-database`
+packages are installed (on Debian, package names may differ on other
+operating systems).
+
 #### INSPECT
 
 INSPECT takes a 'path' through the stanza to get a string (an attribute
