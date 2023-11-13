@@ -1,6 +1,7 @@
 module:depends("audit");
 -- luacheck: read globals module.audit
 
+local jid = require "util.jid";
 local st = require "util.stanza";
 
 module:hook("user-registered", function(event)
@@ -16,7 +17,7 @@ module:hook("user-registered", function(event)
 			}
 		))
 	end
-	module:audit(event.username, "user-registered", {
+	module:audit(jid.join(event.username, module.host), "user-registered", {
 		session = session,
 		custom = custom,
 	});
