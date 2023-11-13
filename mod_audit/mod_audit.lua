@@ -93,8 +93,9 @@ local function session_extra(session)
 	end
 	if attach_location and remote_ip then
 		local geoip_info = remote_ip.proto == "IPv6" and geoip6_country:query_by_addr6(remote_ip.normal) or geoip4_country:query_by_addr(remote_ip.normal);
-		stanza:tag("location", {
+		stanza:text_tag("location", geoip_info.name, {
 			country = geoip_info.code;
+			continent = geoip_info.continent;
 		}):up();
 	end
 	if session.client_id then
