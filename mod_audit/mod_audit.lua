@@ -91,7 +91,7 @@ local function session_extra(session)
 		stanza:text_tag("remote-ip", network or remote_ip);
 	end
 	if attach_location and session.ip then
-		local remote_ip = ip.new(session.ip);
+		local remote_ip = ip.new_ip(session.ip);
 		local geoip_country = ip.proto == "IPv6" and geoip6_country or geoip4_country;
 		stanza:tag("location", {
 			country = geoip_country:query_by_addr(remote_ip.normal);
