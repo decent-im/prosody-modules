@@ -61,13 +61,12 @@ local function prune_audit_log(host)
 end
 
 local function get_ip_network(ip_addr)
-	local _ip = ip.new_ip(ip_addr);
-	local proto = _ip.proto;
+	local proto = ip_addr.proto;
 	local network;
 	if proto == "IPv4" and attach_ipv4_prefix then
-		network = ip.truncate(_ip, attach_ipv4_prefix).normal.."/"..attach_ipv4_prefix;
+		network = ip.truncate(ip_addr, attach_ipv4_prefix).normal.."/"..attach_ipv4_prefix;
 	elseif proto == "IPv6" and attach_ipv6_prefix then
-		network = ip.truncate(_ip, attach_ipv6_prefix).normal.."/"..attach_ipv6_prefix;
+		network = ip.truncate(ip_addr, attach_ipv6_prefix).normal.."/"..attach_ipv6_prefix;
 	end
 	return network;
 end
