@@ -271,8 +271,8 @@ function module.command(arg_)
 				source = entry.attr.source;
 				event_type = entry.attr.type:gsub("%-", " ");
 				username = user;
-				ip = entry:get_child_text("remote-ip");
-				location = entry:find("location@country");
+				ip = entry:find("{xmpp:prosody.im/audit}session/remote-ip#");
+				country = entry:find("{xmpp:prosody.im/audit}session/location@country");
 				note = entry:get_child_text("note");
 			}));
 		end
