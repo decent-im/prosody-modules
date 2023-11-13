@@ -88,7 +88,7 @@ local function session_extra(session)
 		if attach_ipv4_prefix or attach_ipv6_prefix then
 			network = get_ip_network(remote_ip);
 		end
-		stanza:text_tag("remote-ip", network or remote_ip);
+		stanza:text_tag("remote-ip", network or remote_ip.normal);
 	end
 	if attach_location and session.ip then
 		local remote_ip = ip.new_ip(session.ip);
