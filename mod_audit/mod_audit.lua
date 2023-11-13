@@ -83,15 +83,15 @@ local function session_extra(session)
 		attr.type = session.type;
 	end
 	local stanza = st.stanza("session", attr);
-	if attach_ips and session.ip then
-		local remote_ip, network = session.ip;
+	local remote_ip = session.ip and ip.new_ip(session.ip);
+	if attach_ips and remote_ip then
+		local network;
 		if attach_ipv4_prefix or attach_ipv6_prefix then
 			network = get_ip_network(remote_ip);
 		end
 		stanza:text_tag("remote-ip", network or remote_ip.normal);
 	end
-	if attach_location and session.ip then
-		local remote_ip = ip.new_ip(session.ip);
+	if attach_location and remote_ip then
 		local geoip_country = ip.proto == "IPv6" and geoip6_country or geoip4_country;
 		stanza:tag("location", {
 			country = geoip_country:query_by_addr(remote_ip.normal);
