@@ -177,7 +177,7 @@ function module.command(arg_)
 		value_params = { "limit" };
 	 });
 
-	for k, v in pairs(arg) do print("U", k, v) end
+	module:log("debug", "arg = %q", arg);
 	local query_user, host = jid.prepped_split(arg[1]);
 
 	if arg.prune then
