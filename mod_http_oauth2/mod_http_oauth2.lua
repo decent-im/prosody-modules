@@ -111,7 +111,9 @@ local registration_ttl = module:get_option("oauth2_registration_ttl", nil);
 local registration_options = module:get_option("oauth2_registration_options",
 	{ default_ttl = registration_ttl; accept_expired = not registration_ttl });
 
+-- Flip these for Extra Security!
 local pkce_required = module:get_option_boolean("oauth2_require_code_challenge", false);
+local respect_prompt = module:get_option_boolean("oauth2_respect_oidc_prompt", true);
 
 local verification_key;
 local sign_client, verify_client;
@@ -861,37 +863,56 @@ local function handle_authorization_request(event)
 	end
 
 	-- The 'prompt' parameter from OpenID Core
-	local prompt = set.new(parse_scopes(params.prompt or "select_account login consent"));
-	if prompt:contains("none") then
-		-- Client wants no interaction, only confirmation of prior login and
-		-- consent, but this is not implemented.
-		return error_response(request, redirect_uri, oauth_error("interaction_required"));
-	elseif not prompt:contains("select_account") and not params.login_hint then
-		-- TODO If the login page is split into account selection followed by login
-		-- (e.g. password), and then the account selection could be skipped iff the
-		-- 'login_hint' parameter is present.
-		return error_response(request, redirect_uri, oauth_error("account_selection_required"));
-	elseif not prompt:contains("login") then
-		-- Currently no cookies or such are used, so login is required every time.
-		return error_response(request, redirect_uri, oauth_error("login_required"));
-	elseif not prompt:contains("consent") then
-		-- Are there any circumstances when consent would be implied or assumed?
-		return error_response(request, redirect_uri, oauth_error("consent_required"));
-	end
+	local prompt = set.new(parse_scopes(respect_prompt and params.prompt or "select_account login consent"));
 
 	local auth_state = get_auth_state(request);
 	if not auth_state.user then
+		if not prompt:contains("login") then
+			-- Currently no cookies or such are used, so login is required every time.
+			return error_response(request, redirect_uri, oauth_error("login_required"));
+		end
+
 		-- Render login page
 		local extra = {};
 		if params.login_hint then
 			extra.username_hint = (jid.prepped_split(params.login_hint));
+		elseif not prompt:contains("select_account") then
+			-- TODO If the login page is split into account selection followed by login
+			-- (e.g. password), and then the account selection could be skipped iff the
+			-- 'login_hint' parameter is present.
+			return error_response(request, redirect_uri, oauth_error("account_selection_required"));
 		end
 		return render_page(templates.login, { state = auth_state; client = client; extra = extra });
 	elseif auth_state.consent == nil then
-		-- Render consent page
 		local scopes, roles = split_scopes(requested_scopes);
 		roles = user_assumable_roles(auth_state.user.username, roles);
-		return render_page(templates.consent, { state = auth_state; client = client; scopes = scopes+roles }, true);
+
+		if not prompt:contains("consent") then
+			local grants = tokens.get_user_grants(auth_state.user.username);
+			local matching_grant;
+			if grants then
+				for grant_id, grant in pairs(grants) do
+					if grant.data and grant.data.oauth2_client and grant.data.oauth2_client.hash == client.client_hash then
+						if set.new(parse_scopes(grant.data.oauth2_scopes)) == set.new(scopes+roles) then
+							matching_grant = grant_id;
+							break
+						end
+					end
+				end
+			end
+
+			if not matching_grant then
+				return error_response(request, redirect_uri, oauth_error("consent_required"));
+			else
+				-- Consent for these scopes already granted to this exact client, continue
+				auth_state.scopes = scopes + roles;
+				auth_state.consent = "granted";
+			end
+
+		else
+			-- Render consent page
+			return render_page(templates.consent, { state = auth_state; client = client; scopes = scopes+roles }, true);
+		end
 	elseif not auth_state.consent then
 		-- Notify client of rejection
 		if redirect_uri == device_uri then
