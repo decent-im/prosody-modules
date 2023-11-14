@@ -111,9 +111,8 @@ local registration_ttl = module:get_option("oauth2_registration_ttl", nil);
 local registration_options = module:get_option("oauth2_registration_options",
 	{ default_ttl = registration_ttl; accept_expired = not registration_ttl });
 
--- Flip these for Extra Security!
-local pkce_required = module:get_option_boolean("oauth2_require_code_challenge", false);
-local respect_prompt = module:get_option_boolean("oauth2_respect_oidc_prompt", true);
+local pkce_required = module:get_option_boolean("oauth2_require_code_challenge", true);
+local respect_prompt = module:get_option_boolean("oauth2_respect_oidc_prompt", false);
 
 local verification_key;
 local sign_client, verify_client;
@@ -755,7 +754,6 @@ end
 
 local allowed_grant_type_handlers = module:get_option_set("allowed_oauth2_grant_types", {
 	"authorization_code";
-	"password"; -- TODO Disable. The resource owner password credentials grant [RFC6749] MUST NOT be used.
 	"refresh_token";
 	device_uri;
 })
@@ -785,7 +783,7 @@ for handler_type in pairs(response_type_handlers) do
 	end
 end
 
-local allowed_challenge_methods = module:get_option_set("allowed_oauth2_code_challenge_methods", { "plain"; "S256" })
+local allowed_challenge_methods = module:get_option_set("allowed_oauth2_code_challenge_methods", { "S256" })
 for handler_type in pairs(verifier_transforms) do
 	if not allowed_challenge_methods:contains(handler_type) then
 		module:log("debug", "Challenge method %q disabled", handler_type);

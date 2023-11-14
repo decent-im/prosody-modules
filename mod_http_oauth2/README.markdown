@@ -224,10 +224,10 @@ allowed_oauth2_response_types = {
 ```
 
 The [Proof Key for Code Exchange][RFC 7636] mitigation method is
-optional by default but can be made required:
+required by default but can be made optional:
 
 ```lua
-oauth2_require_code_challenge = true -- default is false
+oauth2_require_code_challenge = false -- default is true
 ```
 
 Further, individual challenge methods can be enabled or disabled:
@@ -235,7 +235,7 @@ Further, individual challenge methods can be enabled or disabled:
 ```lua
 -- These reflects the default
 allowed_oauth2_code_challenge_methods = {
-    "plain"; -- the insecure one
+    -- "plain"; -- insecure but backwards-compatible
     "S256";
 }
 ```
