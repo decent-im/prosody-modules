@@ -106,20 +106,18 @@
 	<script src="{static}/qrcode.min.js"></script>
 	<script src="{static}/platform.min.js"></script>
 	<script>
-		$(function () {
+		(function () {
 			// If QR lib loaded ok, show QR button on desktop devices
 			if(window.QRCode) {
-				$('#qr-modal').one('show.bs.modal', function (e) {
-					new QRCode(document.getElementById("qr-invite-page"), document.location.href);
-				});
-				$('#qr-button-container').addClass("d-md-block");
+				new QRCode(document.getElementById("qr-invite-page"), document.location.href);
+				document.getElementById('qr-button-container').classList.remove("d-none");
 			}
 
 			// Detect current platform and show/hide appropriate clients
 			if(window.platform) {
 				var platform_friendly = null;
 				var platform_classname = null;
-				 
+
 				switch(platform.os.family) {
 				case "Ubuntu":
 				case "Linux":
@@ -144,30 +142,41 @@
 				}
 
 				if(platform_friendly && platform_classname) {
-					if($('.client-card .client-platform-badge-'+platform_classname).length == 0) {
+					if(document.querySelectorAll('.client-card .client-platform-badge-'+platform_classname).length == 0) {
 						// No clients recognised for this platform, do nothing
 						return;
 					}
 					// Hide clients not for this platform
-					$('.client-card.app-platform-'+platform_classname).addClass("supported-platform");
-					$('.client-card').not(".supported-platform, .app-platform-web").hide();
-					$('.client-card .client-platform-badge')
-						.not(".client-platform-badge-"+platform_classname)
-							.addClass("badge-secondary")
-							.removeClass("badge-info");
-					$('.client-card .client-platform-badge-'+platform_classname)
-						.addClass("badge-success")
-						.removeClass("badge-info");
-					$('#show-all-clients-button-container .platform-name').text(platform_friendly);
-					$('#show-all-clients-button-container').removeClass("d-none");
-					$('#show-all-clients-button').click(function () {
-						$('.client-card').show();
-						$('#show-all-clients-button-container').hide();
+					const client_cards = document.getElementsByClassName('client-card');
+					for (let card of client_cards) {
+						if (card.classList.contains('app-platform-'+platform_classname))
+							card.classList.add('supported-platform');
+						else if (!card.classList.contains('app-platform-web'))
+							card.hidden = true;
+						const badges = card.querySelectorAll('.client-platform-badge');
+						for (let badge of badges) {
+							if (badge.classList.contains('client-platform-badge-'+platform_classname)) {
+								badge.classList.add("badge-success");
+								badge.classList.remove("badge-info");
+							} else {
+								badge.classList.add("badge-secondary");
+								badge.classList.remove("badge-info");
+							}
+						}
+					}
+					const show_all_clients_button_container = document.getElementById('show-all-clients-button-container');
+					show_all_clients_button_container.querySelector('.platform-name').innerHTML = platform_friendly;
+					show_all_clients_button_container.classList.remove("d-none");
+					document.getElementById('show-all-clients-button').addEventListener('click', function (e) {
+						for (let card of client_cards)
+							card.hidden = false;
+						show_all_clients_button_container.hidden = true;
+						e.preventDefaults();
 					});
 				}
 			}
-		});
-			
+		})();
+
 	</script>
 </body>
 </html>
