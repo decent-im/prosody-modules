@@ -7,8 +7,8 @@
 
 	// Detect current platform and show/hide appropriate clients
 	if(window.platform) {
-		var platform_friendly = null;
-		var platform_classname = null;
+		let platform_friendly = null;
+		let platform_classname = null;
 
 		switch(platform.os.family) {
 		case "Ubuntu":
@@ -18,6 +18,14 @@
 		case "SuSE":
 			platform_friendly = platform.os.family + " (Linux)";
 			platform_classname = "linux";
+			break;
+		case "Linux aarch64":
+			platform_friendly = "Linux mobile";
+			platform_classname = "linux";
+			break;
+		case "Haiku R1":
+			platform_friendly = "Haiku";
+			platform_classname = "haiku";
 			break;
 		case "Windows Phone":
 			platform_friendly = "Windows Phone";
