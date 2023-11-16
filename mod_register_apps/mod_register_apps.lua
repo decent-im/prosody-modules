@@ -144,6 +144,18 @@ local app_config = module:get_option("site_apps", {
 			};
 		};
 	};
+	{
+		name  = "Renga";
+		text  = [[XMPP client for Haiku]];
+		image = "assets/logos/renga.svg";
+		link  = "https://pulkomandy.tk/projects/renga";
+		platforms = { "Haiku" };
+		download = {
+			buttons = {
+				{ text = "Download Renga for Haiku", url = "https://depot.haiku-os.org/#!/pkg/renga?bcguid=bc233-PQIA", target="_blank" };
+			};
+		};
+	};
 });
 
 local show_apps = module:get_option_set("site_apps_show");
