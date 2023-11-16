@@ -2,7 +2,7 @@
 	// If QR lib loaded ok, show QR button on desktop devices
 	if(window.QRCode) {
 		new QRCode(document.getElementById("qr-invite-page"), document.location.href);
-		document.getElementById('qr-button-container').classList.remove("d-none");
+		document.getElementById('qr-button-container').classList.add("d-md-block");
 	}
 
 	// Detect current platform and show/hide appropriate clients
