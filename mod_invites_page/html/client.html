@@ -116,15 +116,13 @@
 	<script src="/share/bootstrap4/js/bootstrap.min.js"></script>
 	<script src="{static}/qrcode.min.js"></script>
 	<script>
-		$(function () {
+		(function () {
 			// If QR lib loaded ok, show QR button on desktop devices
 			if(window.QRCode) {
-				$('#qr-modal').one('show.bs.modal', function (e) {
-					new QRCode(document.getElementById("qr-invite-page"), document.location.href);
-				});
-				$('#qr-button-container').addClass("d-md-block");
+				new QRCode(document.getElementById("qr-invite-page"), document.location.href);
+				document.getElementById('qr-button-container').classList.add("d-md-block");
 			}
-		});
+		})();
 	</script>
 </body>
 </html>
