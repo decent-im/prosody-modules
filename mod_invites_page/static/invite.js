@@ -63,7 +63,7 @@
 				for (let card of client_cards)
 					card.hidden = false;
 				show_all_clients_button_container.hidden = true;
-				e.preventDefaults();
+				e.preventDefault();
 			});
 		}
 	}
