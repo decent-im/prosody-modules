@@ -29,7 +29,8 @@ local function get_avatar(event, path)
 		end
 	end
 	if not photo_type or not binval then
-		response.status_code = 404;
+		-- FIXME: should be a 404, but Firefox won’t display it in that case…
+		--response.status_code = 404;
 		response.headers.content_type = "image/svg+xml";
 		return default_avatar;
 	end
