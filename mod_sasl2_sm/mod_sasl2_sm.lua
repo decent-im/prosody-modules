@@ -54,10 +54,6 @@ end, 110);
 
 -- Bind 2 integration (for enable)
 
-module:hook("advertise-bind-features", function (event)
-	event.features:tag("feature", { var = xmlns_sm }):up();
-end);
-
 module:hook("enable-bind-features", function (event)
 	local sm_enable = event.request:get_child("enable", xmlns_sm);
 	if not sm_enable then return; end
