@@ -29,7 +29,7 @@ are the optional parameters you can specify into your global
 server/hostname configuration:
 
     registration_whitelist = { "*your whitelisted web server ip address*" }
-    registrarion_url = "*your web registration page url*"
+    registration_url = "*your web registration page url*"
     registration_text = "Your custom instructions banner here"
     registration_oob = true (default) or false, in the case there's no applicable OOB method (e.g. the server admins needs to be contacted by phone)
 
