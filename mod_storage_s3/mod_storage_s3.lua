@@ -206,8 +206,8 @@ function archive:_path(username, date, when, with, key)
 		bucket;
 		jid.escape(module.host);
 		jid.escape(self.store);
-		jid.escape(username);
-		jid.escape(jid.prep(with));
+		jid.escape(username or "@");
+		jid.escape(with and jid.prep(with) or "@");
 		date or dt.date(when);
 		key;
 	})
