@@ -13,6 +13,7 @@ local dt = require"util.datetime";
 local new_stream = require "util.xmppstream".new;
 local xml = require "util.xml";
 local async = require "util.async";
+local it = require "util.iterators";
 local empty = {};
 
 if not dm.append_raw then
@@ -438,8 +439,13 @@ function archive:dates(username)
 	return dates;
 end
 
+-- filter out the 'user@yyyy-mm-dd' stores
+local function skip_at_date(item)
+	return not item:find("@");
+end
+
 function archive:users()
-	return dm.users(module.host, self.store, "list");
+	return it.filter(skip_at_date, dm.users(module.host, self.store, "list"));
 end
 
 local provider = {};
