@@ -34,7 +34,7 @@ local function not_implemented()
 	return nil, "method not implemented"
 end
 
--- With proper OAuth 2, most of these should be handled at the atuhorization
+-- With proper OAuth 2, most of these should be handled at the authorization
 -- server, no there.
 provider.test_password = not_implemented;
 provider.get_password = not_implemented;
