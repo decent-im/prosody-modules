@@ -198,6 +198,7 @@ local archive = {};
 driver.archive = { __index = archive };
 
 archive.caps = {
+	full_id_range = true; -- both before and after used
 };
 
 function archive:_path(username, date, when, with, key)
