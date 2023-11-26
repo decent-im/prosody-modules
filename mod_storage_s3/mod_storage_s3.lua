@@ -8,6 +8,7 @@ local it = require "prosody.util.iterators";
 local jid = require "prosody.util.jid";
 local json = require "prosody.util.json";
 local promise = require "prosody.util.promise";
+local set = require "prosody.util.set";
 local st = require "prosody.util.stanza";
 local uuid = require "prosody.util.uuid";
 local xml = require "prosody.util.xml";
@@ -199,6 +200,7 @@ driver.archive = { __index = archive };
 
 archive.caps = {
 	full_id_range = true; -- both before and after used
+	ids = true;
 };
 
 function archive:_path(username, date, when, with, key)
@@ -266,6 +268,7 @@ function archive:find(username, query)
 		query["before"], query["after"] = query["after"], query["before"];
 		iterwrap = it.reverse;
 	end
+	local ids = query["ids"] and set.new(query["ids"]);
 	local found = not query["after"];
 	for content in iterwrap(list_bucket_result:childtags("Contents")) do
 		local key = url.parse_path(content:get_child_text("Key"));
@@ -275,6 +278,7 @@ function archive:find(username, query)
 		if (not query["with"] or query["with"] == jid.unescape(key[5]))
 		and (not query["start"] or dt.date(query["start"]) >= key[6])
 		and (not query["end"] or dt.date(query["end"]) <= key[6])
+		and (not ids or ids:contains(key[6]))
 		and found then
 			keys:push({ key = key[6]; date = key[5]; with = jid.unescape(key[4]) });
 		end
