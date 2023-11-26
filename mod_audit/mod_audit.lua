@@ -1,19 +1,13 @@
 module:set_global();
 
 local time_now = os.time;
-local parse_duration = require "util.human.io".parse_duration;
 local ip = require "util.ip";
 local st = require "util.stanza";
 local moduleapi = require "core.moduleapi";
 
 local host_wide_user = "@";
 
-local cleanup_after = module:get_option_string("audit_log_expires_after", "28d");
-if cleanup_after == "never" then
-	cleanup_after = nil;
-else
-	cleanup_after = parse_duration(cleanup_after);
-end
+local cleanup_after = module:get_option_period("audit_log_expires_after", "28d");
 
 local attach_ips = module:get_option_boolean("audit_log_ips", true);
 local attach_ipv4_prefix = module:get_option_number("audit_log_ipv4_prefix", nil);
@@ -140,7 +134,7 @@ local function audit(host, user, source, event_type, extra)
 		if err == "quota-limit" then
 			local limit = store.caps and store.caps.quota or 1000;
 			local truncate_to = math.floor(limit * 0.99);
-			if type(cleanup_after) == "number" then
+			if cleanup_after ~= math.huge then
 				module:log("debug", "Audit log has reached quota - forcing prune");
 				if prune_audit_log(host) then
 					-- Retry append
