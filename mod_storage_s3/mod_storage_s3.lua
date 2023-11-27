@@ -241,9 +241,9 @@ function archive:find(username, query)
 		query = {};
 	end
 	if query["with"] then
-		table.insert(prefix, sha256(jid.prep(query["with"]), true):sub(1,24));
+		table.insert(prefix, jid.escape(jid.prep(query["with"]), true):sub(1,24));
 		if query["start"] and query["end"] and dt.date(query["start"]) == dt.date(query["end"]) then
-			table.insert(prefix, sha256(jid.prep(query["with"]), true):sub(1,24));
+			table.insert(prefix, dt.date(query["start"]));
 		end
 	end
 
