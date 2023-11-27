@@ -155,8 +155,8 @@ function keyval:_path(key)
 		is_absolute = true;
 		bucket;
 		jid.escape(module.host);
-		jid.escape(self.store);
 		jid.escape(key or "@");
+		jid.escape(self.store);
 	})
 end
 
@@ -175,7 +175,7 @@ end
 
 function keyval:users()
 	local bucket_path = url.build_path({ is_absolute = true; bucket; is_directory = true });
-	local prefix = url.build_path({ jid.escape(module.host); jid.escape(self.store); is_directory = true });
+	local prefix = url.build_path({ jid.escape(module.host); is_directory = true });
 	local list_result, err = async.wait_for(new_request(self, "GET", bucket_path, { prefix = prefix }))
 	if err or list_result.code ~= 200 then
 		return nil, err;
@@ -186,9 +186,12 @@ function keyval:users()
 		module:log("warn", "Paging truncated results not implemented, max %s %s returned", max_keys, self.store);
 	end
 	local keys = array();
+	local store_part = jid.escape(self.store);
 	for content in list_bucket_result:childtags("Contents") do
 		local key = url.parse_path(content:get_child_text("Key"));
-		keys:push(jid.unescape(key[3]));
+		if key[3] == store_part then
+			keys:push(jid.unescape(key[2]));
+		end
 	end
 	return function()
 		return keys:pop();
@@ -208,10 +211,10 @@ function archive:_path(username, date, when, with, key)
 		is_absolute = true;
 		bucket;
 		jid.escape(module.host);
-		jid.escape(self.store);
 		jid.escape(username or "@");
-		jid.escape(with and jid.prep(with) or "@");
+		jid.escape(self.store);
 		date or dt.date(when);
+		jid.escape(with and jid.prep(with) or "@");
 		key;
 	})
 end
@@ -235,15 +238,15 @@ end
 
 function archive:find(username, query)
 	local bucket_path = url.build_path({ is_absolute = true; bucket; is_directory = true });
-	local prefix = { jid.escape(module.host); jid.escape(self.store); is_directory = true };
-	table.insert(prefix, jid.escape(username or "@"));
+	local prefix = { jid.escape(module.host); jid.escape(username or "@"); jid.escape(self.store); is_directory = true };
 	if not query then
 		query = {};
 	end
-	if query["with"] then
-		table.insert(prefix, jid.escape(jid.prep(query["with"]), true):sub(1,24));
-		if query["start"] and query["end"] and dt.date(query["start"]) == dt.date(query["end"]) then
-			table.insert(prefix, dt.date(query["start"]));
+
+	if query["start"] and query["end"] and dt.date(query["start"]) == dt.date(query["end"]) then
+		table.insert(prefix, dt.date(query["start"]));
+		if query["with"] then
+			table.insert(prefix, jid.escape(query["with"]));
 		end
 	end
 
@@ -271,18 +274,19 @@ function archive:find(username, query)
 	local ids = query["ids"] and set.new(query["ids"]);
 	local found = not query["after"];
 	for content in iterwrap(list_bucket_result:childtags("Contents")) do
-		local key = url.parse_path(content:get_child_text("Key"));
-		if found and query["before"] == key[6] then
+		local when, with, id = table.unpack(url.parse_path(content:get_child_text("Key")), 4);
+		with = jid.unescape(with);
+		if found and query["before"] == id then
 			break
 		end
-		if (not query["with"] or query["with"] == jid.unescape(key[5]))
-		and (not query["start"] or dt.date(query["start"]) >= key[6])
-		and (not query["end"] or dt.date(query["end"]) <= key[6])
-		and (not ids or ids:contains(key[6]))
+		if (not query["with"] or query["with"] == with)
+		and (not query["start"] or dt.date(query["start"]) >= when)
+		and (not query["end"] or dt.date(query["end"]) <= when)
+		and (not ids or ids:contains(id))
 		and found then
-			keys:push({ key = key[6]; date = key[5]; with = jid.unescape(key[4]) });
+			keys:push({ key = id; date = when; with = with });
 		end
-		if not found and key[6] == query["after"] then
+		if not found and id == query["after"] then
 			found = not found
 		end
 	end
