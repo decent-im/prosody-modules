@@ -274,21 +274,34 @@ function archive:find(username, query)
 	local ids = query["ids"] and set.new(query["ids"]);
 	local found = not query["after"];
 	for content in iterwrap(list_bucket_result:childtags("Contents")) do
-		local when, with, id = table.unpack(url.parse_path(content:get_child_text("Key")), 4);
+		local date, with, id = table.unpack(url.parse_path(content:get_child_text("Key")), 4);
+		local when = dt.parse(content:get_child_text("LastModified"));
 		with = jid.unescape(with);
 		if found and query["before"] == id then
 			break
 		end
 		if (not query["with"] or query["with"] == with)
-		and (not query["start"] or dt.date(query["start"]) >= when)
-		and (not query["end"] or dt.date(query["end"]) <= when)
+		and (not query["start"] or query["start"] <= when)
+		and (not query["end"] or query["end"] >= when)
 		and (not ids or ids:contains(id))
 		and found then
-			keys:push({ key = id; date = when; with = with });
+			keys:push({ key = id; date = date; when = when; with = with });
 		end
 		if not found and id == query["after"] then
 			found = not found
 		end
+	end
+	keys:sort(function(a, b)
+		if a.date ~= b.date then
+			return a.date < b.date
+		end
+		if a.when ~= b.when then
+			return a.when < b.when;
+		end
+		return a.id < b.id;
+	end);
+	if query["reverse"] then
+		keys:reverse();
 	end
 	local i = 0;
 	local function get_next()
@@ -303,14 +316,7 @@ function archive:find(username, query)
 			module:log("error", "%s", err);
 			return nil;
 		end
-		local when = dt.parse(value:get_child_attr("delay", "urn:xmpp:delay", "stamp"));
-
-		if (not query["start"] or query["start"] >= when) and (not query["end"] or query["end"] <= when) then
-			return item.key, value.tags[2], when, item.with;
-		else
-			-- date was correct but not the time
-			return get_next();
-		end
+		return item.key, value, item.when, item.with;
 	end
 	return get_next;
 end
