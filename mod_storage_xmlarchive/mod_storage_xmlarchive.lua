@@ -445,7 +445,7 @@ local function skip_at_date(item)
 end
 
 function archive:users()
-	return it.filter(skip_at_date, dm.users(module.host, self.store, "list"));
+	return it.filter(skip_at_date, dm.users(self.host, self.store, "list"));
 end
 
 local provider = {};
@@ -548,13 +548,19 @@ function module.command(arg)
 
 		local store = arg[4];
 		if arg[3] == "internal" then
-			for i = 5, #arg do
-				local user, host = jid.prepped_split(arg[i]);
-				if not user then
-					print(string.format("Argument #%d (%q) is an invalid JID, aborting", i, arg[i]));
-					os.exit(1);
+			if arg[5] then
+				for i = 5, #arg do
+					local user, host = jid.prepped_split(arg[i]);
+					if not user then
+						print(string.format("Argument #%d (%q) is an invalid JID, aborting", i, arg[i]));
+						os.exit(1);
+					end
+					convert(user, host, store);
 				end
-				convert(user, host, store);
+			else
+				for user in archive.users({ host = host; store = store }) do
+					convert(user, host, store);
+				end
 			end
 			print("Done");
 			return 0;
@@ -563,6 +569,6 @@ function module.command(arg)
 			print("Check out https://modules.prosody.im/mod_migrate");
 		end
 	end
-	print("prosodyctl mod_storage_xmlarchive convert (from|to) internal (archive|archive2|muc_log) user@host");
+	print("prosodyctl mod_storage_xmlarchive convert (from|to) internal (archive|archive2|muc_log) [user@host]");
 end
 
