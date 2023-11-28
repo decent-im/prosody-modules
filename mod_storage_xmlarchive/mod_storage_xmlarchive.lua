@@ -548,18 +548,17 @@ function module.command(arg)
 
 		local store = arg[4];
 		if arg[3] == "internal" then
-			if arg[5] then
-				for i = 5, #arg do
-					local user, host = jid.prepped_split(arg[i]);
-					if not user then
-						print(string.format("Argument #%d (%q) is an invalid JID, aborting", i, arg[i]));
-						os.exit(1);
+			for i = 5, #arg do
+				local user, host = jid.prepped_split(arg[i]);
+				if user then
+					print(arg[i]);
+					convert(user, host, store);
+				else
+					-- luacheck: ignore 421/user
+					for user in archive.users({ host = host; store = store }) do
+						print(user.."@"..host);
+						convert(user, host, store);
 					end
-					convert(user, host, store);
-				end
-			else
-				for user in archive.users({ host = host; store = store }) do
-					convert(user, host, store);
 				end
 			end
 			print("Done");

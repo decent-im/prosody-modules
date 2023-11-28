@@ -63,13 +63,14 @@ To mitigate this, an migration command has been added to
 `mod_storage_xmlarchive`:
 
 ``` bash
-prosodyctl mod_storage_xmlarchive convert $DIR internal $STORE [$JID]
+prosodyctl mod_storage_xmlarchive convert $DIR internal $STORE $JID+
 ```
 
 Where `$DIR` is `to` or `from`, `$STORE` is e.g. `archive` or `archive2`
 for MAM and `muc_log` for MUC logs. Finally, `$JID` is one or more JID
-of the users or MUC rooms to be migrated. If omitted, all users/rooms
-are migrated.
+of the users or MUC rooms to be migrated.
+
+To migrate all users/rooms on a particular host, pass a bare hostname.
 
 ::: {.alert .alert-danger}
 Since this is a destructive command, don't forget to backup your data
