@@ -28,8 +28,13 @@ module:hook_global("server-stopped", function ()
 end);
 
 if heartbeat_interval then
+	local async = require "util.async";
+	local heartbeat_writer = async.runner(function (timestamp)
+		store:set_key(nil, "heartbeat", timestamp);
+	end);
+
 	module:add_timer(0, function ()
-		store:set_key(nil, "heartbeat", os.time());
+		heartbeat_writer:run(os.time());
 		return heartbeat_interval;
 	end);
 end
