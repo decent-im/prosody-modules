@@ -34,7 +34,7 @@ local is_stanza = st.is_stanza or function (s)
 	return getmetatable(s) == st.stanza_mt;
 end
 
-function archive:append(username, _, data, when, with)
+function archive:append(username, id, data, when, with)
 	if not is_stanza(data) then
 		module:log("error", "Attempt to store non-stanza object, traceback: %s", debug.traceback());
 		return nil, "unsupported-datatype";
@@ -57,7 +57,7 @@ function archive:append(username, _, data, when, with)
 
 	local offset = ok and err or 0;
 
-	local id = day .. "-" .. hmac_sha256(username.."@"..day.."+"..offset, data, true):sub(-16);
+	id = id or day .. "-" .. hmac_sha256(username.."@"..day.."+"..offset, data, true):sub(-16);
 	ok, err = dm.list_append(username.."@"..day, self.host, self.store,
 		{ id = id, when = dt.datetime(when), with = with, offset = offset, length = #data });
 	if ok and first_of_day then
