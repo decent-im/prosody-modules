@@ -113,7 +113,7 @@ for _, property_list in ipairs({ iq_namespaces, legacy_storage_nodes, pep_nodes 
 	end
 end
 
-module:default_permission("prosody:restricted", "xmpp:account:presence:write");
+module:default_permission(limited_user_role, "xmpp:account:presence:write");
 module:hook("pre-presence/bare", function (event)
 	if not event.to_self then return; end
 	local stanza = event.stanza;
