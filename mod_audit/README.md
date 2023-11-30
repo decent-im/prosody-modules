@@ -12,7 +12,7 @@ incidents as well as user-specific.
 
 This module, however, only provides the infrastructure for audit logging. It
 does not, by itself, generate such logs. For that, other modules, such as
-`mod_audit_auth` or `mod_audit_register` need to be loaded.
+`mod_audit_auth` or `mod_audit_user_accounts` need to be loaded.
 
 ## A note on privacy
 
