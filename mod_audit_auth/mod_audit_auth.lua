@@ -1,4 +1,5 @@
 local jid = require"util.jid";
+local st = require "util.stanza";
 
 module:depends("audit");
 -- luacheck: read globals module.audit
@@ -21,3 +22,21 @@ module:hook("authentication-success", function(event)
 		session = session,
 	});
 end)
+
+module:hook("client_management/new-client", function (event)
+	local session, client = event.session, event.client;
+
+	local client_info = st.stanza("client", { id = client.id });
+	if client.user_agent then
+		client_info:text_tag("agent", client.user_agent);
+	end
+	if client.legacy then
+		client_info:text_tag("legacy");
+	end
+
+	module:audit(jid.join(session.username, module.host), "new-client", {
+		session = session;
+		custom = {
+		};
+	});
+end);
