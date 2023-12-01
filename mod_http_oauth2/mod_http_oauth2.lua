@@ -640,11 +640,26 @@ local function get_auth_state(request)
 		-- First step: login
 		local username = encodings.stringprep.nodeprep(form.username);
 		local password = encodings.stringprep.saslprep(form.password);
+		-- Many things hooked to authentication-{success,failure} don't expect
+		-- non-XMPP sessions so here's something close enough...
+		local auth_event = {
+			session = {
+				type = "http";
+				ip = request.ip;
+				conn = request.conn;
+				username = username;
+				host = module.host;
+				sasl_handler = { username = username; selected = "x-www-form" };
+				client_id = request.headers.user_agent;
+			};
+		};
 		if not (username and password) or not usermanager.test_password(username, module.host, password) then
+			module:fire_event("authentication-failure", auth_event);
 			return {
 				error = "Invalid username/password";
 			};
 		end
+		module:fire_event("authentication-success", auth_event);
 		return {
 			user = {
 				username = username;
