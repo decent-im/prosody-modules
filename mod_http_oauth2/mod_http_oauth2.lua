@@ -215,12 +215,19 @@ local function code_expired(code) --> boolean, true: has expired, false: still v
 	return code_expires_in(code) < 0;
 end
 
+-- LRU cache for short-term storage of authorization codes and device codes
 local codes = cache.new(10000, function (_, code)
+	-- If the cache is full and the oldest item hasn't expired yet then we
+	-- might be under some kind of DoS attack, so might as well reject further
+	-- entries for a bit.
 	return code_expired(code)
 end);
 
 -- Clear out unredeemed codes so they don't linger in memory.
 module:daily("Clear expired authorization codes", function()
+	-- The tail should be the least recently touched item, and most likely to
+	-- have expired already, so check and remove that one until encountering
+	-- one that has not expired.
 	local k, code = codes:tail();
 	while code and code_expired(code) do
 		codes:set(k, nil);
