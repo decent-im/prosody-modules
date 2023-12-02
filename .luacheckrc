@@ -62,7 +62,7 @@ read_globals = {
 	"module.may",
 	"module.measure",
 	"module.metric",
-	"module.once",
+	"module.on_ready",
 	"module.open_store",
 	"module.provides",
 	"module.remove_item",
