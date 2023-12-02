@@ -222,12 +222,8 @@ end
 
 -- PUT .../with/when/id
 function archive:append(username, key, value, when, with)
-	local wrapper = st.stanza("wrapper");
-	-- Minio had trouble with timestamps, probably the ':' characters, in paths.
-	wrapper:tag("delay", { xmlns = "urn:xmpp:delay"; stamp = dt.datetime(when) }):up();
-	wrapper:add_direct_child(value);
 	key = key or new_uuid();
-	return async.wait_for(new_request(self, "PUT", self:_path(username, nil, when, with, key), nil, wrapper):next(function(r)
+	return async.wait_for(new_request(self, "PUT", self:_path(username, nil, when, with, key), nil, value):next(function(r)
 		if r.code == 200 then
 			return key;
 		else
