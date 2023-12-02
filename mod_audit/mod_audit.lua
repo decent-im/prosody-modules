@@ -221,7 +221,7 @@ function module.command(arg_)
 	end
 
 	local colspec = {
-		{ title = "Date", key = "when", width = 19, mapper = function (when) return os.date("%Y-%m-%d %R:%S", when); end };
+		{ title = "Date", key = "when", width = 19, mapper = function (when) return os.date("%Y-%m-%d %R:%S", math.floor(when)); end };
 		{ title = "Source", key = "source", width = "2p" };
 		{ title = "Event", key = "event_type", width = "2p" };
 	};
