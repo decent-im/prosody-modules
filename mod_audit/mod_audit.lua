@@ -207,7 +207,7 @@ function module.command(arg_)
 		end
 		query_jid = "@";
 	elseif host == query_jid then
-		query_jid = "@";
+		query_jid = nil;
 	end
 
 	local results, err = store:find(nil, {
