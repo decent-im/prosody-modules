@@ -298,7 +298,7 @@ function archive:find(username, query)
 		if a.when ~= b.when then
 			return a.when < b.when;
 		end
-		return a.id < b.id;
+		return a.key < b.key;
 	end);
 	if query["reverse"] then
 		keys:reverse();
