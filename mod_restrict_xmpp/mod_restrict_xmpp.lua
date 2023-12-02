@@ -56,6 +56,7 @@ local pep_nodes = {
 	["storage:bookmarks"] = "bookmarks";
 	["urn:xmpp:bookmarks:1"] = "bookmarks";
 
+	["urn:xmpp:vcard4"] = "profile";
 	["urn:xmpp:avatar:data"] = "profile";
 	["urn:xmpp:avatar:metadata"] = "profile";
 	["http://jabber.org/protocol/nick"] = "profile";
