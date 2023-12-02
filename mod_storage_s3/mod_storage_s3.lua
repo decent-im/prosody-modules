@@ -249,7 +249,7 @@ function archive:find(username, query)
 	prefix = table.concat(prefix, "/").."/";
 	local list_result, err = async.wait_for(new_request(self, "GET", bucket_path, {
 		prefix = prefix;
-		["max-keys"] = query["max"] and tostring(query["max"]);
+		["max-keys"] = query["limit"] and tostring(query["limit"]);
 	}));
 	if err or list_result.code ~= 200 then
 		return nil, err;
