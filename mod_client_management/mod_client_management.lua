@@ -79,7 +79,7 @@ module:hook("sasl2/c2s/success", function (event)
 		client_store:set_key(username, client_id, client_state);
 
 		if is_new_client then
-			module:fire_event("client_management/new-client", { client = client_state });
+			module:fire_event("client_management/new-client", { client = client_state; session = session });
 		end
 	end
 end);
