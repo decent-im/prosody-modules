@@ -175,7 +175,7 @@ end
 
 function keyval:users()
 	local bucket_path = url.build_path({ is_absolute = true; bucket; is_directory = true });
-	local prefix = url.build_path({ jid.escape(module.host); is_directory = true });
+	local prefix = jid.escape(module.host) .. "/";
 	local list_result, err = async.wait_for(new_request(self, "GET", bucket_path, { prefix = prefix }))
 	if err or list_result.code ~= 200 then
 		return nil, err;
@@ -238,7 +238,7 @@ end
 
 function archive:find(username, query)
 	local bucket_path = url.build_path({ is_absolute = true; bucket; is_directory = true });
-	local prefix = { jid.escape(module.host); jid.escape(username or "@"); jid.escape(self.store); is_directory = true };
+	local prefix = { jid.escape(module.host); jid.escape(username or "@"); jid.escape(self.store) };
 	if not query then
 		query = {};
 	end
@@ -250,7 +250,7 @@ function archive:find(username, query)
 		end
 	end
 
-	prefix = url.build_path(prefix);
+	prefix = table.concat(prefix, "/").."/";
 	local list_result, err = async.wait_for(new_request(self, "GET", bucket_path, {
 		prefix = prefix;
 		["max-keys"] = query["max"] and tostring(query["max"]);
