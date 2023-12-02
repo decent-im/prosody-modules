@@ -172,7 +172,8 @@ function module.command(arg_)
 	 });
 
 	module:log("debug", "arg = %q", arg);
-	local query_user, host = jid.prepped_split(arg[1]);
+	local query_jid = jid.prep(arg[1]);
+	local host = jid.host(query_jid);
 
 	if arg.prune then
 		local sm = require "core.storagemanager";
@@ -201,14 +202,16 @@ function module.command(arg_)
 	local c = 0;
 
 	if arg.global then
-		if query_user then
+		if jid.node(query_jid) then
 			print("WW: Specifying a user account is incompatible with --global. Showing only global events.");
 		end
-		query_user = "@";
+		query_jid = "@";
+	elseif host == query_jid then
+		query_jid = "@";
 	end
 
 	local results, err = store:find(nil, {
-		with = query_user;
+		with = query_jid;
 		limit = arg.limit and tonumber(arg.limit) or nil;
 		reverse = true;
 	})
@@ -223,7 +226,7 @@ function module.command(arg_)
 		{ title = "Event", key = "event_type", width = "2p" };
 	};
 
-	if arg.show_user ~= false and (not arg.global and not query_user) or arg.show_user then
+	if arg.show_user ~= false and (not arg.global and not query_jid) or arg.show_user then
 		table.insert(colspec, {
 			title = "User", key = "username", width = "2p",
 			mapper = function (user)
