@@ -133,7 +133,7 @@ module:hook("resource-bind", function (event)
 	client_store:set_key(session.username, client_state.id, client_state);
 
 	if is_new_client then
-		module:fire_event("client_management/new-client", { client = client_state });
+		module:fire_event("client_management/new-client", { client = client_state; session = session });
 	end
 end);
 
@@ -425,7 +425,7 @@ end);
 
 -- Command
 
-module:once(function ()
+module:on_ready(function ()
 	local console_env = module:shared("/*/admin_shell/env");
 	if not console_env.user then return; end -- admin_shell probably not loaded
 
