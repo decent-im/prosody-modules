@@ -1,4 +1,17 @@
+---
+labels:
+- Stage-Obsolete
+---
+
 # Introduction
+
+::: {.alert .alert-warning}
+This behavior has now been merged into
+[mod_s2s][doc:modules:mod_s2s] in trunk and is therefore obsolete
+when used with trunk.
+
+It can still be used with Prosody 0.12 to get this behavior.
+:::
 
 This module closes s2s connections when
 [mod_smacks][doc:modules:mod_smacks] reports that a connection has not
