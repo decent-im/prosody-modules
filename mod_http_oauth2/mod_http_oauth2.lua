@@ -895,7 +895,7 @@ local function handle_authorization_request(event)
 		-- Render login page
 		local extra = {};
 		if params.login_hint then
-			extra.username_hint = (jid.prepped_split(params.login_hint));
+			extra.username_hint = (jid.prepped_split(params.login_hint) or encodings.stringprep.nodeprep(params.login_hint));
 		elseif not prompt:contains("select_account") then
 			-- TODO If the login page is split into account selection followed by login
 			-- (e.g. password), and then the account selection could be skipped iff the
