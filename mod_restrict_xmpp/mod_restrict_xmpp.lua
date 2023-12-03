@@ -78,6 +78,7 @@ module:hook("pre-iq/bare", function (event)
 
 	local payload = stanza.tags[1];
 	local ns = payload and payload.attr.xmlns;
+	if ns == "urn:xmpp:ping" then return end
 	local proto = iq_namespaces[ns];
 	if proto == "pep" then
 		local pubsub = payload:get_child("pubsub", "http://jabber.org/protocol/pubsub");
