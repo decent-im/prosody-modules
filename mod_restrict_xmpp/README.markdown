@@ -25,25 +25,35 @@ Permissions
 ===========
 
 `xmpp:federate`
-: Communicate with other users and services on other hosts on the XMPP network
+:   Communicate with other users and services on other hosts on the XMPP
+    network
+
 `xmpp:account:messages:read`
-: Read incoming messages
+:   Read incoming messages
+
 `xmpp:account:messages:write`
-: Send outgoing messages
+:   Send outgoing messages
+
 `xmpp:account:presence:write`
-: Update presence for the account
+:   Update presence for the account
+
 `xmpp:account:contacts:read`/`xmpp:account:contacts:write`
-: Controls access to the contact list (roster)
+:   Controls access to the contact list (roster)
+
 `xmpp:account:bookmarks:read`/`xmpp:account:bookmarks:write`
-: Controls access to the bookmarks (group chats list)
+:   Controls access to the bookmarks (group chats list)
+
 `xmpp:account:profile:read`/`xmpp:account:profile:write`
-: Controls access to the user's profile (e.g. vCard/avatar)
+:   Controls access to the user's profile (e.g. vCard/avatar)
+
 `xmpp:account:omemo:read`/`xmpp:account:omemo:write`
-: Controls access to the user's OMEMO data
+:   Controls access to the user's OMEMO data
+
 `xmpp:account:blocklist:read`/`xmpp:account:blocklist:write`
-: Controls access to the user's block list
+:   Controls access to the user's block list
+
 `xmpp:account:disco:read`
-: Controls access to the user's service discovery information
+:   Controls access to the user's service discovery information
 
 Compatibility
 =============
