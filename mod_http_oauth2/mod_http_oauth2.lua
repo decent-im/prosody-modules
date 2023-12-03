@@ -1344,8 +1344,24 @@ local function redirect_uri_allowed(redirect_uri, client_uri, app_type)
 end
 
 function create_client(client_metadata)
-	if not schema.validate(registration_schema, client_metadata) then
-		return nil, oauth_error("invalid_request", "Failed schema validation.");
+	local valid, validation_errors = schema.validate(registration_schema, client_metadata);
+	if not valid then
+		return nil, errors.new({
+			type = "modify";
+			condition = "bad-request";
+			code = 400;
+			text = "Failed schema validation.";
+			extra = {
+				oauth2_response = {
+					error = "invalid_request";
+					error_description = "Client registration data failed schema validation."; -- TODO Generate from validation_errors?
+					-- JSON Schema Output Format
+					-- https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-basic
+					valid = false;
+					errors = validation_errors;
+				};
+			};
+		});
 	end
 
 	local client_uri = url.parse(client_metadata.client_uri);
