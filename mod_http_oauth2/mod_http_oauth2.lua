@@ -649,6 +649,7 @@ local function get_auth_state(request)
 				conn = request.conn;
 				username = username;
 				host = module.host;
+				log = request.log;
 				sasl_handler = { username = username; selected = "x-www-form" };
 				client_id = request.headers.user_agent;
 			};
