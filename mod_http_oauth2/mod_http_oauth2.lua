@@ -1420,12 +1420,6 @@ function create_client(client_metadata)
 		return nil, oauth_error("invalid_client_metadata", "No allowed 'response_types' specified");
 	end
 
-	-- Do we want to keep everything?
-	local client_id = sign_client(client_metadata);
-
-	client_metadata.client_id = client_id;
-	client_metadata.client_id_issued_at = os.time();
-
 	if client_metadata.token_endpoint_auth_method ~= "none" then
 		-- Ensure that each client_id JWT with a client_secret is unique.
 		-- A short ID along with the issued at timestamp should be sufficient to
@@ -1433,8 +1427,16 @@ function create_client(client_metadata)
 		-- Not needed for public clients without a secret, but those are expected
 		-- to be uncommon since they can only do the insecure implicit flow.
 		client_metadata.nonce = id.short();
+	end
 
-		local client_secret = make_client_secret(client_id, client_metadata);
+	-- Do we want to keep everything?
+	local client_id = sign_client(client_metadata);
+
+	client_metadata.client_id = client_id;
+	client_metadata.client_id_issued_at = os.time();
+
+	if client_metadata.token_endpoint_auth_method ~= "none" then
+		local client_secret = make_client_secret(client_id);
 		client_metadata.client_secret = client_secret;
 		client_metadata.client_secret_expires_at = 0;
 
