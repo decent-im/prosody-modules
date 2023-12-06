@@ -4,9 +4,15 @@ local measure_d1 = module:measure("active_users_1d", "amount");
 local measure_d7 = module:measure("active_users_7d", "amount");
 local measure_d30 = module:measure("active_users_30d", "amount");
 
+local is_enabled = require "core.usermanager".user_is_enabled;
+
+-- Exclude disabled user accounts from the counts if usermanager supports that API
+local count_disabled = not module:get_option_boolean("measure_active_users_count_disabled", is_enabled == nil);
+
 function update_calculations()
 	module:log("debug", "Calculating active users");
-	local host_user_sessions = prosody.hosts[module.host].sessions;
+	local host = module.host;
+	local host_user_sessions = prosody.hosts[host].sessions;
 	local active_d1, active_d7, active_d30 = 0, 0, 0;
 	local now = os.time();
 	for username in store:users() do
@@ -14,7 +20,7 @@ function update_calculations()
 			-- Active now
 			active_d1, active_d7, active_d30 =
 				active_d1 + 1, active_d7 + 1, active_d30 + 1;
-		else
+		elseif count_disabled or is_enabled(username, host) then
 			local lastlog_data = store:get(username);
 			if lastlog_data then
 				-- Due to server restarts/crashes/etc. some events
