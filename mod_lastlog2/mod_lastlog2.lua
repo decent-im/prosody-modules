@@ -56,7 +56,9 @@ do
 		else
 			local last_activity = kv_store:get(username);
 			if not last_activity then return nil; end
-			local latest = math.max(last_activity.login or 0, last_activity.logout or 0);
+			local last_login = last_activity.login;
+			local last_logout = last_activity.logout;
+			local latest = math.max(last_login and last_login.timestamp or 0, last_logout and last_logout.timestamp or 0);
 			if latest == 0 then
 				return nil; -- Never logged in
 			end
