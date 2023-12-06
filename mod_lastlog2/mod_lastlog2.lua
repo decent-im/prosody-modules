@@ -47,6 +47,24 @@ if module:get_host_type() == "component" then
 	end);
 end
 
+do
+	local user_sessions = prosody.hosts[module.host].sessions;
+	local kv_store = module:open_store();
+	function get_last_active(username) --luacheck: ignore 131/get_last_active
+		if user_sessions[username] then
+			return os.time(); -- Currently connected
+		else
+			local last_activity = kv_store:get(username);
+			if not last_activity then return nil; end
+			local latest = math.max(last_activity.login or 0, last_activity.logout or 0);
+			if latest == 0 then
+				return nil; -- Never logged in
+			end
+			return latest;
+		end
+	end
+end
+
 function module.command(arg)
 	if not arg[1] or arg[1] == "--help" then
 		require"util.prosodyctl".show_usage([[mod_lastlog <user@host>]], [[Show when user last logged in or out]]);
