@@ -31,6 +31,8 @@ local xmlns_nick = "http://jabber.org/protocol/nick";
 
 assert(mod_lastlog2.get_last_active, "Newer version of mod_lastlog2 is required to use this module");
 
+local deleted_users = module:open_store("accounts_cleanup");
+
 local function check_credentials(request)
 	local auth_type, auth_data = string.match(request.headers.authorization or "", "^(%S+)%s(.+)$");
 	if not (auth_type and auth_data) then
@@ -211,6 +213,7 @@ local function get_user_info(username)
 		roles = legacy_roles; -- COMPAT w/0.12
 		enabled = enabled;
 		last_active = mod_lastlog2.get_last_active(username);
+		deletion_request = deleted_users:get(username);
 	};
 end
 
