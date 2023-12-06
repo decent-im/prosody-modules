@@ -14,6 +14,7 @@ local invites = module:depends("invites");
 local tokens = module:depends("tokenauth");
 local mod_pep = module:depends("pep");
 local mod_groups = module:depends("groups_internal");
+local mod_lastlog2 = module:depends("lastlog2");
 
 local push_errors = module:shared("cloud_notify/push_errors");
 
@@ -27,6 +28,8 @@ local www_authenticate_header = ("Bearer realm=%q"):format(module.host.."/"..mod
 
 local xmlns_pubsub = "http://jabber.org/protocol/pubsub";
 local xmlns_nick = "http://jabber.org/protocol/nick";
+
+assert(mod_lastlog2.get_last_active, "Newer version of mod_lastlog2 is required to use this module");
 
 local function check_credentials(request)
 	local auth_type, auth_data = string.match(request.headers.authorization or "", "^(%S+)%s(.+)$");
@@ -195,12 +198,19 @@ local function get_user_info(username)
 		end
 	end
 
+	local enabled = true; -- Assume all enabled if on a version without is_enabled
+	if usermanager.user_is_enabled then
+		enabled = usermanager.user_is_enabled(username, module.host);
+	end
+
 	return {
 		username = username;
 		display_name = display_name;
 		role = primary_role and primary_role.name or nil;
 		secondary_roles = secondary_roles;
 		roles = legacy_roles; -- COMPAT w/0.12
+		enabled = enabled;
+		last_active = mod_lastlog2.get_last_active(username);
 	};
 end
 
