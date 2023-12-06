@@ -9,6 +9,8 @@ local is_enabled = require "core.usermanager".user_is_enabled;
 -- Exclude disabled user accounts from the counts if usermanager supports that API
 local count_disabled = not module:get_option_boolean("measure_active_users_count_disabled", is_enabled == nil);
 
+local get_last_active = module:depends("lastlog2").get_last_active;
+
 function update_calculations()
 	module:log("debug", "Calculating active users");
 	local host = module.host;
@@ -21,15 +23,8 @@ function update_calculations()
 			active_d1, active_d7, active_d30 =
 				active_d1 + 1, active_d7 + 1, active_d30 + 1;
 		elseif count_disabled or is_enabled(username, host) then
-			local lastlog_data = store:get(username);
-			if lastlog_data then
-				-- Due to server restarts/crashes/etc. some events
-				-- may not always get recorded, so we'll just take the
-				-- latest as a sign of last activity
-				local last_active = math.max(
-					lastlog_data.login and lastlog_data.login.timestamp or 0,
-					lastlog_data.logout and lastlog_data.logout.timestamp or 0
-				);
+			local last_active = get_last_active(username);
+			if last_active then
 				if now - last_active < 86400 then
 					active_d1 = active_d1 + 1;
 				end
