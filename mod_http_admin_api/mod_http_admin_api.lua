@@ -1,10 +1,11 @@
 local usermanager = require "core.usermanager";
 
-local jid = require "util.jid";
-local it = require "util.iterators";
-local json = require "util.json";
-local st = require "util.stanza";
 local array = require "util.array";
+local it = require "util.iterators";
+local jid = require "util.jid";
+local json = require "util.json";
+local set = require "util.set";
+local st = require "util.stanza";
 local statsmanager = require "core.statsmanager";
 
 module:depends("http");
@@ -444,6 +445,37 @@ local user_attribute_writers = {
 };
 local writable_user_attributes = set.new(array.collect(it.keys(user_attribute_writers)));
 
+function patch_user(event, username)
+	if not username then return; end
+
+	local current_user = get_user_info(username);
+	if not current_user then return 404; end
+
+	local request = event.request;
+	if request.headers.content_type ~= json_content_type
+	or (not request.body or #request.body == 0) then
+		return 400;
+	end
+	local new_user = json.decode(event.request.body);
+	if not new_user then
+		return 400;
+	end
+
+	local updated_attributes = set.new(array.collect(it.keys(new_user)));
+	if not (updated_attributes - writable_user_attributes):empty() then
+		module:log("warn", "Unable to service PATCH user request, unsupported attributes: %s", (updated_attributes - writable_user_attributes));
+		return 400;
+	end
+
+	if new_user.enabled ~= nil and new_user.enabled ~= current_user.enabled then
+		if not user_attribute_writers.enabled(username, new_user.enabled) then
+			return 500;
+		end
+	end
+
+	return 200;
+end
+
 function update_user(event, username)
 	local current_user = get_user_info(username);
 
@@ -784,6 +816,7 @@ module:provides("http", {
 		["GET /users"] = list_users;
 		["GET /users/*"] = get_user_by_name;
 		["PUT /users/*"] = update_user;
+		["PATCH /users/*"] = patch_user;
 		["DELETE /users/*"] = delete_user;
 
 		["GET /groups"] = list_groups;
