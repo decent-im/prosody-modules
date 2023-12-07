@@ -477,7 +477,6 @@ function patch_user(event, username)
 end
 
 function update_user(event, username)
-	local current_user = get_user_info(username);
 
 	local request = event.request;
 	if request.headers.content_type ~= json_content_type
@@ -493,19 +492,15 @@ function update_user(event, username)
 		return 400;
 	end
 
-	local final_user = {};
-
 	if new_user.display_name then
 		local pep_service = mod_pep.get_pep_service(username);
 		-- TODO: publish
 		local nick_item = st.stanza("item", { xmlns = xmlns_pubsub, id = "current" })
 			:text_tag("nick", new_user.display_name, { xmlns = xmlns_nick });
-		if pep_service:publish(xmlns_nick, true, "current", nick_item, {
+		pep_service:publish(xmlns_nick, true, "current", nick_item, {
 			access_model = "open";
 			_defaults_only = true;
-		}) then
-			final_user.display_name = new_user.display_name;
-		end
+		});
 	end
 
 	if new_user.role then
@@ -527,9 +522,9 @@ function update_user(event, username)
 		for _, role in ipairs(new_user.roles) do
 			backend_roles[role] = true;
 		end
-		local jid = username.."@"..module.host;
+		local user_jid = username.."@"..module.host;
 		if not usermanager.set_user_roles(username, module.host, backend_roles) then
-			module:log("error", "failed to set roles %q for %s", backend_roles, jid)
+			module:log("error", "failed to set roles %q for %s", backend_roles, user_jid)
 			return 500
 		end
 	end
@@ -623,41 +618,41 @@ end
 
 function update_group(event, group) --luacheck: ignore 212/event
 	-- Add member
-	local group_id, member_name = group:match("^([^/]+)/members/([^/]+)$");
-	if group_id and member_name then
-		if not mod_groups.add_member(group_id, member_name) then
-			return 500;
+	do
+		local group_id, member_name = group:match("^([^/]+)/members/([^/]+)$");
+		if group_id and member_name then
+			if not mod_groups.add_member(group_id, member_name) then
+				return 500;
+			end
+			return 204;
 		end
-		return 204;
 	end
 
 	local group_id = group:match("^([^/]+)$")
-	if group_id then
-		local request = event.request;
-		if request.headers.content_type ~= json_content_type or (not request.body or #request.body == 0) then
-			return 400;
-		end
+	if not group_id then return 404; end
 
-		local update = json.decode(event.request.body);
-		if not update then
-			return 400;
-		end
-
-		local group_info = mod_groups.get_info(group_id);
-		if not group_info then
-			return 404;
-		end
-
-		if update.name then
-			group_info["name"] = update.name;
-		end
-		if mod_groups.set_info(group_id, group_info) then
-			return 204;
-		else
-			return 500;
-		end
+	local request = event.request;
+	if request.headers.content_type ~= json_content_type or (not request.body or #request.body == 0) then
+		return 400;
 	end
-	return 404;
+
+	local update = json.decode(event.request.body);
+	if not update then
+		return 400;
+	end
+
+	local group_info = mod_groups.get_info(group_id);
+	if not group_info then
+		return 404;
+	end
+
+	if update.name then
+		group_info["name"] = update.name;
+	end
+	if not mod_groups.set_info(group_id, group_info) then
+		return 500;
+	end
+	return 204;
 end
 
 function extend_group(event, subpath)
