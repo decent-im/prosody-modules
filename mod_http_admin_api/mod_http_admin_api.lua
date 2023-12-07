@@ -234,7 +234,7 @@ local function get_user_info(username)
 		roles = legacy_roles; -- COMPAT w/0.12
 		enabled = enabled;
 		last_active = mod_lastlog2.get_last_active(username);
-		deletion_request = deleted_users:get(username);
+		deletion_request = not enabled and deleted_users:get(username) or nil;
 		avatar_info = get_user_avatar_info(username);
 	};
 end
