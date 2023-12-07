@@ -175,6 +175,27 @@ function delete_invite(event, invite_id) --luacheck: ignore 212/event
 	return 200;
 end
 
+local function get_user_avatar_info(username)
+	local pep_service = mod_pep.get_pep_service(username);
+	local ok, _, avatar_item = pep_service:get_last_item("urn:xmpp:avatar:metadata", true);
+	avatar_item = avatar_item and avatar_item:get_child("metadata", "urn:xmpp:avatar:metadata");
+	if not ok or not avatar_item then return; end
+
+	local avatar_info = {};
+
+	for avatar in avatar_item:childtags("info") do
+		table.insert(avatar_info, {
+			bytes = tonumber(avatar.attr.bytes);
+			hash = avatar.attr.id;
+			type = avatar.attr.type;
+			width = tonumber(avatar.attr.width);
+			height = tonumber(avatar.attr.height);
+		});
+	end
+
+	return avatar_info;
+end
+
 local function get_user_info(username)
 	if not usermanager.user_exists(username, module.host) then
 		return nil;
@@ -214,6 +235,7 @@ local function get_user_info(username)
 		enabled = enabled;
 		last_active = mod_lastlog2.get_last_active(username);
 		deletion_request = deleted_users:get(username);
+		avatar_info = get_user_avatar_info(username);
 	};
 end
 
