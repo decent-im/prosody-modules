@@ -425,6 +425,25 @@ function get_user_by_name(event, username)
 	return json.encode(user_info);
 end
 
+local user_attribute_writers = {
+	enabled = function (username, enabled)
+		local ok, err;
+		if enabled == true then
+			ok, err = usermanager.enable_user(username, module.host);
+		elseif enabled == false then
+			ok, err = usermanager.disable_user(username, module.host);
+		else
+			ok, err = nil, "Invalid value provided for 'enabled'";
+		end
+		if not ok then
+			module:log("error", "Unable to %s user '%s': %s", enabled and "enable" or "disable", username, err);
+			return nil, err;
+		end
+		return true;
+	end;
+};
+local writable_user_attributes = set.new(array.collect(it.keys(user_attribute_writers)));
+
 function update_user(event, username)
 	local current_user = get_user_info(username);
 
@@ -480,6 +499,12 @@ function update_user(event, username)
 		if not usermanager.set_user_roles(username, module.host, backend_roles) then
 			module:log("error", "failed to set roles %q for %s", backend_roles, jid)
 			return 500
+		end
+	end
+
+	if new_user.enabled ~= nil then
+		if not user_attribute_writers.enabled(username, new_user.enabled) then
+			return 500;
 		end
 	end
 
