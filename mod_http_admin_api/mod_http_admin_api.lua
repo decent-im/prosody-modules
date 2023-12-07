@@ -477,6 +477,9 @@ function patch_user(event, username)
 end
 
 function update_user(event, username)
+	if not username then
+		return 400;
+	end
 
 	local request = event.request;
 	if request.headers.content_type ~= json_content_type
