@@ -15,7 +15,7 @@ local function handle_sessions(event)
 		if in_count[session.ip].starttls_c then in_count[session.ip].c = in_count[session.ip].starttls_c else in_count[session.ip].c = in_count[session.ip].c + 1 end
 
 		if in_count[session.ip].c > logins_count and time() - in_count[session.ip].t < throttle_time then
-			module:log("error", "Exceeded login count for %s, closing connection", session.ip)
+			module:log("info", "Exceeded login count for %s, closing connection", session.ip)
 			session:close{ condition = "policy-violation", text = "You exceeded the number of connections/logins allowed in "..throttle_time.." seconds, good bye." }
 			return true
 		elseif time() - in_count[session.ip].t > throttle_time then
