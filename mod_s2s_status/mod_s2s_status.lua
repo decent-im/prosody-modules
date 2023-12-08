@@ -18,6 +18,7 @@ local function get_domain_log_out(peer_domain)
 		domain_log = {};
 		status_out[peer_domain] = domain_log;
 	end
+	return domain_log;
 end
 
 local function get_connection_record(domain_log, id)
