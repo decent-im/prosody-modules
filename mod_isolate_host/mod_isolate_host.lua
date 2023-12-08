@@ -58,7 +58,7 @@ function set_session_isolation_flag(event)
 	if not is_jid_isolated(bare_jid) then
 		session.no_host_isolation = true;
 	end
-	module:log("debug", "%s is %sisolated", session.full_jid or "[?]", session.no_host_isolation and "" or "not ");
+	module:log("debug", "%s is %sisolated", session.full_jid or "[?]", session.no_host_isolation and "not " or "");
 end
 
 module:hook("resource-bind", set_session_isolation_flag);
