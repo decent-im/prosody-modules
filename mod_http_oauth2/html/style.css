@@ -1,7 +1,10 @@
+:root
+{
+	color-scheme:light dark;
+}
 body
 {
 	text-align:center;
-	background-color:#f8f8f8;
 	font-family:sans-serif
 }
 
@@ -76,12 +79,6 @@ button, input[type=submit]
 
 @media(prefers-color-scheme:dark)
 {
-	body
-	{
-		background-color:#161616;
-		color:#eee;
-	}
-
 	.error {
 		color: #f8d7da;
 		background-color: #842029;
@@ -89,17 +86,6 @@ button, input[type=submit]
 	.oob {
 		color: #d7daf8;
 		background-color: #202984;
-	}
-
-
-	:link
-	{
-		color: #6197df;
-	}
-
-	:visited
-	{
-		color: #9a61df;
 	}
 }
 
