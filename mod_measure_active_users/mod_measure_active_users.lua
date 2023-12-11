@@ -7,7 +7,7 @@ local measure_d30 = module:measure("active_users_30d", "amount");
 local is_enabled = require "core.usermanager".user_is_enabled;
 
 -- Exclude disabled user accounts from the counts if usermanager supports that API
-local count_disabled = not module:get_option_boolean("measure_active_users_count_disabled", is_enabled == nil);
+local count_disabled = module:get_option_boolean("measure_active_users_count_disabled", is_enabled == nil);
 
 local get_last_active = module:depends("lastlog2").get_last_active;
 
