@@ -205,11 +205,11 @@ function condition_handlers.MAY(permission_to_check)
 end
 
 function condition_handlers.TO_ROLE(role_name)
-	return ("get_jid_role(bare_to, current_host) == %q"):format(role_name), { "get_jid_role", "current_host", "bare_to" };
+	return ("get_jid_role(bare_to, current_host).name == %q"):format(role_name), { "get_jid_role", "current_host", "bare_to" };
 end
 
 function condition_handlers.FROM_ROLE(role_name)
-	return ("get_jid_role(bare_from, current_host) == %q"):format(role_name), { "get_jid_role", "current_host", "bare_from" };
+	return ("get_jid_role(bare_from, current_host).name == %q"):format(role_name), { "get_jid_role", "current_host", "bare_from" };
 end
 
 local day_numbers = { sun = 0, mon = 2, tue = 3, wed = 4, thu = 5, fri = 6, sat = 7 };
