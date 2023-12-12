@@ -261,6 +261,14 @@ local available_deps = {
 			return code, { "search:"..search_name, "pattern:"..pattern_name };
 		end;
 	};
+	sender_role = {
+		local_code = [[local sender_role = get_jid_role(bare_from, current_host)]];
+		depends = { "bare_from", "current_host", "get_jid_role" };
+	};
+	recipient_role = {
+		local_code = [[local recipient_role = get_jid_role(bare_to, current_host)]];
+		depends = { "bare_to", "current_host", "get_jid_role" };
+	};
 	scan_list = {
 		global_code = [[local function scan_list(list, items) for item in pairs(items) do if list:contains(item) then return true; end end end]];
 	};
