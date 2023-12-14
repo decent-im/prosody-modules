@@ -419,7 +419,7 @@ function get_group_chats(group_id)
 		return {
 			id = jid.node(muc_jid);
 			jid = muc_jid;
-			name = muc_host.get_room_from_jid(muc_jid):get_name();
+			name = muc_host.get_room_from_jid(muc_jid):get_name() or group_info.name;
 		};
 	end);
 end
