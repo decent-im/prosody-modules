@@ -400,13 +400,15 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 	end
 	local granted_scopes, granted_role = filter_scopes(request_username, params.scope);
 
-	if pkce_required and not params.code_challenge then
+	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
+
+	if pkce_required and not params.code_challenge and redirect_uri ~= device_uri and redirect_uri ~= oob_uri then
 		return oauth_error("invalid_request", "PKCE required");
 	end
 
 	local prefix = "authorization_code:";
 	local code = id.medium();
-	if params.redirect_uri == device_uri then
+	if redirect_uri == device_uri then
 		local is_device, device_state = verify_device_token(params.state);
 		if is_device then
 			-- reconstruct the device_code
@@ -429,7 +431,6 @@ function response_type_handlers.code(client, params, granted_jid, id_token)
 		return oauth_error("temporarily_unavailable");
 	end
 
-	local redirect_uri = get_redirect_uri(client, params.redirect_uri);
 	if redirect_uri == oob_uri then
 		return render_page(templates.oob, { client = client; authorization_code = code }, true);
 	elseif redirect_uri == device_uri then
@@ -755,7 +756,7 @@ end
 -- the redirect_uri is missing or invalid. In those cases, we render an
 -- error directly to the user-agent.
 local function error_response(request, redirect_uri, err)
-	if not redirect_uri or redirect_uri == oob_uri then
+	if not redirect_uri or redirect_uri == oob_uri or redirect_uri == device_uri then
 		return render_error(err);
 	end
 	local q = strict_formdecode(request.url.query);
