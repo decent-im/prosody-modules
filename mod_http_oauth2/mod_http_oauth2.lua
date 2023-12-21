@@ -1198,6 +1198,7 @@ end
 
 local registration_schema = {
 	title = "OAuth 2.0 Dynamic Client Registration Protocol";
+	description = "This endpoint allows dynamically registering an OAuth 2.0 client.";
 	type = "object";
 	required = {
 		-- These are shown to users in the template
@@ -1212,16 +1213,30 @@ local registration_schema = {
 			type = "array";
 			minItems = 1;
 			uniqueItems = true;
-			items = { title = "Redirect URI"; type = "string"; format = "uri" };
+			items = {
+				title = "Redirect URI";
+				type = "string";
+				format = "uri";
+				examples = {
+					"https://app.example.com/redirect";
+					"http://localhost:8080/redirect";
+					"com.example.app:/redirect";
+					oob_uri;
+					device_uri;
+				};
+			};
 		};
 		token_endpoint_auth_method = {
 			title = "Token Endpoint Authentication Method";
+			description = "Authentication method the client intends to use. Recommended is `client_secret_basic`. \z
+			`none` is only allowed for use with the insecure Implicit flow.";
 			type = "string";
 			enum = { "none"; "client_secret_post"; "client_secret_basic" };
 			default = "client_secret_basic";
 		};
 		grant_types = {
 			title = "Grant Types";
+			description = "List of grant types the client intends to use.";
 			type = "array";
 			minItems = 1;
 			uniqueItems = true;
@@ -1243,8 +1258,9 @@ local registration_schema = {
 		application_type = {
 			title = "Application Type";
 			description = "Determines which kinds of redirect URIs the client may register. \z
-			The value 'web' limits the client to https:// URLs with the same hostname as in 'client_uri' \z
-			while the value 'native' allows either loopback http:// URLs or application specific URIs.";
+			The value `web` limits the client to `https://` URLs with the same hostname as \z
+			in `client_uri` while the value `native` allows either loopback URLs like \z
+			`http://localhost:8080/` or application specific URIs like `com.example.app:/redirect`.";
 			type = "string";
 			enum = { "native"; "web" };
 			default = "web";
@@ -1264,10 +1280,12 @@ local registration_schema = {
 		};
 		client_uri = {
 			title = "Client URL";
-			description = "Should be an link to a page with information about the client.";
+			description = "Should be an link to a page with information about the client. \z
+			The hostname in this URL must be the same as in every other '_uri' property.";
 			type = "string";
 			format = "uri";
 			pattern = "^https:";
+			examples = { "https://app.example.com/" };
 		};
 		logo_uri = {
 			title = "Logo URL";
@@ -1275,11 +1293,13 @@ local registration_schema = {
 			type = "string";
 			format = "uri";
 			pattern = "^https:";
+			examples = { "https://app.example.com/appicon.png" };
 		};
 		scope = {
 			title = "Scopes";
 			description = "Space-separated list of scopes the client promises to restrict itself to.";
 			type = "string";
+			examples = { "openid xmpp" };
 		};
 		contacts = {
 			title = "Contact Addresses";
@@ -1291,17 +1311,19 @@ local registration_schema = {
 		tos_uri = {
 			title = "Terms of Service URL";
 			description = "Link to Terms of Service for the client, presented to the user in the consent dialog. \z
-			MUST be a https:// URL with hostname matching that of 'client_uri'.";
+			MUST be a `https://` URL with hostname matching that of `client_uri`.";
 			type = "string";
 			format = "uri";
 			pattern = "^https:";
+			examples = { "https://app.example.com/tos.html" };
 		};
 		policy_uri = {
 			title = "Privacy Policy URL";
-			description = "Link to a Privacy Policy for the client. MUST be a https:// URL with hostname matching that of 'client_uri'.";
+			description = "Link to a Privacy Policy for the client. MUST be a `https://` URL with hostname matching that of `client_uri`.";
 			type = "string";
 			format = "uri";
 			pattern = "^https:";
+			examples = { "https://app.example.com/policy.pdf" };
 		};
 		software_id = {
 			title = "Software ID";
@@ -1314,7 +1336,7 @@ local registration_schema = {
 			description = "Version of the client software being registered. \z
 			E.g. to allow revoking all related tokens in the event of a security incident.";
 			type = "string";
-			example = "2.3.1";
+			examples = { "2.3.1" };
 		};
 	};
 }
