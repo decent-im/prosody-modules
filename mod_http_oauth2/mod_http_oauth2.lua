@@ -252,7 +252,7 @@ local function oauth_error(err_name, err_desc)
 		type = "modify";
 		condition = "bad-request";
 		code = err_name == "invalid_client" and 401 or 400;
-		text = err_desc and (err_name..": "..err_desc) or err_name;
+		text = err_desc or err_name:gsub("^.", string.upper):gsub("_", " ");
 		extra = { oauth2_response = { error = err_name, error_description = err_desc } };
 	});
 end
