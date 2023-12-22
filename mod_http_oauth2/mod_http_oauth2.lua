@@ -765,7 +765,7 @@ local function error_response(request, redirect_uri, err)
 	redirect_uri = redirect_uri
 		.. sep .. http.formencode(err.extra.oauth2_response)
 		.. "&" .. http.formencode({ state = q.state, iss = get_issuer() });
-	module:log("warn", "Sending error response to client via redirect to %s", redirect_uri);
+	module:log("debug", "Sending error response to client via redirect to %s", redirect_uri);
 	return {
 		status_code = 303;
 		headers = {
