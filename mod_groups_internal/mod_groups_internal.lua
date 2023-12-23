@@ -18,7 +18,7 @@ local is_contact_subscribed = rostermanager.is_contact_subscribed;
 
 -- Make a *one-way* subscription. User will see when contact is online,
 -- contact will not see when user is online.
-local function subscribe(user, user_jid, contact, contact_jid)
+local function subscribe(user, user_jid, contact, contact_jid, group_name)
 	-- Update user's roster to say subscription request is pending...
 	rostermanager.set_contact_pending_out(user, host, contact_jid);
 	-- Update contact's roster to say subscription request is pending...
@@ -27,6 +27,11 @@ local function subscribe(user, user_jid, contact, contact_jid)
 	rostermanager.subscribed(contact, host, user_jid);
 	-- Update user's roster to say subscription request approved...
 	rostermanager.process_inbound_subscription_approval(user, host, contact_jid);
+
+	if group_name then
+		local user_roster = rostermanager.load_roster(user, host);
+		user_roster[contact_jid].groups[group_name] = true;
+	end
 
 	-- Push updates to both rosters
 	rostermanager.roster_push(user, host, contact_jid);
@@ -40,17 +45,18 @@ end
 local function do_single_group_subscriptions(username, group_id)
 	local members = group_members_store:get(group_id);
 	if not members then return; end
+	local group_name = group_info_store:get_key(group_id, "name");
 	local user_jid = jid_join(username, host);
 	for membername in pairs(members) do
 		if membername ~= username then
 			local member_jid = jid_join(membername, host);
 			if not is_contact_subscribed(username, host, member_jid) then
 				module:log("debug", "[group %s] Subscribing %s to %s", member_jid, user_jid);
-				subscribe(membername, member_jid, username, user_jid);
+				subscribe(membername, member_jid, username, user_jid, group_name);
 			end
 			if not is_contact_subscribed(membername, host, user_jid) then
 				module:log("debug", "[group %s] Subscribing %s to %s", user_jid, member_jid);
-				subscribe(username, user_jid, membername, member_jid);
+				subscribe(username, user_jid, membername, member_jid, group_name);
 			end
 		end
 	end
