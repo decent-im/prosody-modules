@@ -88,7 +88,13 @@ local function is_important(stanza, session)
 	local st_name = stanza and stanza.name or nil;
 	if not st_name then return true; end	-- nonzas are always important
 	if st_name == "presence" then
-		-- TODO check for MUC status codes?
+		local st_type = stanza.attr.type;
+		-- subscription requests are important
+		if st_type == "subscribe" then return true; end
+		-- muc status codes are important, too
+		local muc_x = stanza:get_child("x", "http://jabber.org/protocol/muc#user")
+		local muc_status = muc_x and muc_x:get_child("status") or nil
+		if muc_status and muc_status.attr.code then return true; end
 		return false;
 	elseif st_name == "message" then
 		-- unpack carbon copies
@@ -122,7 +128,7 @@ local function is_important(stanza, session)
 
 		-- check xep373 pgp (OX) https://xmpp.org/extensions/xep-0373.html
 		if stanza:get_child("openpgp", "urn:xmpp:openpgp:0") then return true; end
-		
+
 		-- check eme
 		if stanza:get_child("encryption", "urn:xmpp:eme:0") then return true; end
 
