@@ -226,7 +226,7 @@ function does_opt_in(remoteDomain)
 			if response.stanza ~= nil and response.stanza.attr.type == "result" then
 				local query = response.stanza:get_child("query", "http://jabber.org/protocol/disco#info")
 				if query ~= nil then
-					for feature in query:childtags("feature", "http://jabber.org/protocol/disco#info") do
+					for feature in query:childtags("feature") do
 						module:log("debug", "Disco/info feature for '%s': %s", remoteDomain, feature)
 						if feature.attr.var == 'urn:xmpp:serverinfo:0' then
 							module:log("debug", "Disco/info response included opt-in for '%s'", remoteDomain)
