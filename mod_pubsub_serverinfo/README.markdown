@@ -46,6 +46,11 @@ a cached value will remain in cache for one hour. This duration can be modified 
 
     pubsub_serverinfo_cache_ttl = 1800 -- or any other number of seconds
 
+Compatibility
+=============
+
+Incompatible with 0.11 or lower.
+
 Known Issues / TODOs
 ====================
 
