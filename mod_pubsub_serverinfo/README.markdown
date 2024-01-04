@@ -47,3 +47,9 @@ discovery request to each remote domain. To prevent a continuous flood of disco/
 a cached value will remain in cache for one hour. This duration can be modified by adding this configuration option:
 
     pubsub_serverinfo_cache_ttl = 1800 -- or any other number of seconds
+
+Known Issues / TODOs
+====================
+
+This module will not report connections between domains that are served by the same instance of Prosody (since they're not s2s connections, but are
+routed internally).
