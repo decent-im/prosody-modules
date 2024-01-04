@@ -7,6 +7,7 @@ local service = module:get_option(module.name .. "_service") or "pubsub." .. loc
 local node = module:get_option(module.name .. "_node") or "serverinfo";
 local actor = module.host .. "/modules/" .. module.name;
 local publication_interval = module:get_option(module.name .. "_publication_interval") or 300;
+local cache_ttl = module:get_option(module.name .. "_cache_ttl") or 3600;
 
 local opt_in_reports
 
@@ -213,7 +214,7 @@ function does_opt_in(remoteDomain)
 						if feature.attr.var == 'urn:xmpp:serverinfo:0' then
 							opt_in_cache[remoteDomain] = {
 								opt_in = true;
-								expires = os.time() + 3600;
+								expires = os.time() + cache_ttl;
 							}
 							return; -- prevent 'false' to be cached, down below.
 						end
@@ -222,13 +223,13 @@ function does_opt_in(remoteDomain)
 			end
 			opt_in_cache[remoteDomain] = {
 				opt_in = false;
-				expires = os.time() + 3600;
+				expires = os.time() + cache_ttl;
 			}
 		end,
 		function(response)
 			opt_in_cache[remoteDomain] = {
 				opt_in = false;
-				expires = os.time() + 3600;
+				expires = os.time() + cache_ttl;
 			}
 		end
 	);

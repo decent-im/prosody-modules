@@ -41,3 +41,9 @@ To prevent a surplus of event notifications, this module will only publish new d
 is 300 seconds (5 minutes). To change this simply put in the config:
 
     pubsub_serverinfo_publication_interval = 180 -- or any other number of seconds
+
+To detect if remote domains allow their domain name to be included in the data that this module publishes, this module will perform a service
+discovery request to each remote domain. To prevent a continuous flood of disco/info requests, the response to these requests is cached. By default,
+a cached value will remain in cache for one hour. This duration can be modified by adding this configuration option:
+
+    pubsub_serverinfo_cache_ttl = 1800 -- or any other number of seconds
