@@ -5,11 +5,9 @@ labels:
 
 Exposes server information over Pub/Sub per ProtoXEP: PubSub Server Information.
 
-This version, announces support (used to 'opt-in', per the XEP) and publishes the name of the local domain via a Pub/Sub node. The published data
-will contain an unnamed 'remote-domain' element for each inbound or outgoing s2s connection.
-
-Features yet to be implemented:
-- For 'remote-domain' elements, add domain name _only if_ through service discovery that domain advertises the 'urn:xmpp:serverinfo:0' feature.
+The module announces support (used to 'opt-in', per the XEP) and publishes the name of the local domain via a Pub/Sub node. The published data
+will contain a 'remote-domain' element for inbound and outgoing s2s connections. These elements will be named only when the remote domain announces
+support ('opts in') too.
 
 Installation
 ============
