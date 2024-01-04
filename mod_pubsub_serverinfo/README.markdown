@@ -49,5 +49,6 @@ a cached value will remain in cache for one hour. This duration can be modified 
 Known Issues / TODOs
 ====================
 
-This module will not report connections between domains that are served by the same instance of Prosody (since they're not s2s connections, but are
-routed internally).
+The reported data does not contain the optional 'connection' child elements. These can be used to describe the direction of a connection.
+
+More generic server information (eg: user counts, software version) should be included in the data that is published.

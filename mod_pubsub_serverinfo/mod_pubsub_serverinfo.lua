@@ -122,6 +122,7 @@ function publish_serverinfo()
 	local domains_by_host = {}
 	for session, _ in pairs(prosody.incoming_s2s) do
 		if session ~= nil and session.from_host ~= nil and local_domain == session.to_host then
+			module:log("debug", "Local host '%s' has remote '%s' (inbound)", session.to_host, session.from_host);
 			local sessions = domains_by_host[session.to_host]
 			if sessions == nil then sessions = {} end; -- instantiate a new entry if none existed
 			sessions[session.from_host] = true
@@ -129,7 +130,10 @@ function publish_serverinfo()
 		end
 	end
 
-	-- At an earlier stage, the code iterated voer all prosody.hosts - but that turned out to be to noisy.
+	-- At an earlier stage, the code iterated over all prosody.hosts, trying to generate one pubsub item for all local hosts. That turned out to be
+	-- to noisy. Instead, this code now creates an item that includes the local vhost only. It is assumed that this module will also be loaded for
+	-- other vhosts. Their data should then be published to distinct pub/sub services and nodes.
+
 	-- for host, data in pairs(prosody.hosts) do
 	local host = local_domain
 	local data = prosody.hosts[host]
@@ -139,9 +143,19 @@ function publish_serverinfo()
 		if data.s2sout ~= nil then
 			for _, session in pairs(data.s2sout) do
 				if session.to_host ~= nil then
+					module:log("debug", "Local host '%s' has remote '%s' (outbound)", host, session.to_host);
 					sessions[session.to_host] = true
 					domains_by_host[host] = sessions
 				end
+			end
+		end
+
+		-- When the instance of Prosody hosts more than one host, the other hosts can be thought of as having a 'permanent' s2s connection.
+		for host_name, host_info in pairs(prosody.hosts) do
+			if host ~= host_name and host_info.type ~= "component" then
+				module:log("debug", "Local host '%s' has remote '%s' (vhost)", host, host_name);
+				sessions[host_name] = true;
+				domains_by_host[host] = sessions
 			end
 		end
 	end
@@ -196,12 +210,14 @@ function does_opt_in(remoteDomain)
 	-- try to read answer from cache.
 	local cached_value = opt_in_cache[remoteDomain]
 	if cached_value ~= nil and os.difftime(cached_value.expires, os.time()) > 0 then
+		module:log("debug", "Opt-in status (from cache) for '%s': %s", remoteDomain, cached_value.opt_in)
 		return cached_value.opt_in;
 	end
 
 	-- TODO worry about not having multiple requests in flight to the same domain.cached_value
 
 	-- Cache could not provide an answer. Perform service discovery.
+	module:log("debug", "No cached opt-in status for '%s': performing disco/info to determine opt-in.", remoteDomain)
     local discoRequest = st.iq({ type = "get", to = remoteDomain, from = actor, id = new_id() })
     	:tag("query", { xmlns = "http://jabber.org/protocol/disco#info" })
 
@@ -211,7 +227,9 @@ function does_opt_in(remoteDomain)
 				local query = response.stanza:get_child("query", "http://jabber.org/protocol/disco#info")
 				if query ~= nil then
 					for feature in query:childtags("feature", "http://jabber.org/protocol/disco#info") do
+						module:log("debug", "Disco/info feature for '%s': %s", remoteDomain, feature)
 						if feature.attr.var == 'urn:xmpp:serverinfo:0' then
+							module:log("debug", "Disco/info response included opt-in for '%s'", remoteDomain)
 							opt_in_cache[remoteDomain] = {
 								opt_in = true;
 								expires = os.time() + cache_ttl;
@@ -221,12 +239,14 @@ function does_opt_in(remoteDomain)
 					end
 				end
 			end
+			module:log("debug", "Disco/info response did not include opt-in for '%s'", remoteDomain)
 			opt_in_cache[remoteDomain] = {
 				opt_in = false;
 				expires = os.time() + cache_ttl;
 			}
 		end,
 		function(response)
+			module:log("debug", "An error occurred while performing a disco/info request to determine opt-in for '%s'", remoteDomain, response)
 			opt_in_cache[remoteDomain] = {
 				opt_in = false;
 				expires = os.time() + cache_ttl;
