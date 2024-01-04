@@ -11,8 +11,15 @@ local publication_interval = module:get_option(module.name .. "_publication_inte
 local opt_in_reports
 
 function module.load()
-	-- Will error out with a 'conflict' if the node already exists. TODO: create the node only when it's missing.
-	create_node():next()
+	discover_node():next(
+		function(exists)
+			if not exists then create_node() end
+		end
+	):catch(
+		function(error)
+			module:log("warn", "Error prevented discovery or creation of pub/sub node at %s: %s", service, error)
+		end
+	)
 
 	module:add_feature("urn:xmpp:serverinfo:0");
 
@@ -29,7 +36,35 @@ function module.unload()
 	delete_node(); -- Should this block, to delay unload() until the node is deleted?
 end
 
--- Returns a promise
+-- Returns a promise of a boolean
+function discover_node()
+    local request = st.iq({ type = "get", to = service, from = actor, id = new_id() })
+    	:tag("query", { xmlns = "http://jabber.org/protocol/disco#items" })
+
+	module:log("debug", "Sending request to discover existence of pub/sub node '%s' at %s", node, service)
+	return module:send_iq(request):next(
+		function(response)
+			if response.stanza == nil or response.stanza.attr.type ~= "result" then
+				module:log("warn", "Unexpected response to service discovery items request at %s: %s", service, response.stanza)
+				return false
+			end
+
+			local query = response.stanza:get_child("query", "http://jabber.org/protocol/disco#items")
+			if query ~= nil then
+				for item in query:childtags("item") do
+					if item.attr.jid == service and item.attr.node == node then
+						module:log("debug", "pub/sub node '%s' at %s does exists.", node, service)
+						return true
+					end
+				end
+			end
+			module:log("debug", "pub/sub node '%s' at %s does not exist.", node, service)
+			return false;
+		end
+	);
+end
+
+-- Returns a promise of a boolean
 function create_node()
 	local request = st.iq({ type = "set", to = service, from = actor, id = new_id() })
 		:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
@@ -44,16 +79,39 @@ function create_node()
 						:up()
 					:tag("field", { var = "pubsub#persist_items" })
 						:text_tag("value", "0")
-	return module:send_iq(request);
+
+	module:log("debug", "Sending request to create pub/sub node '%s' at %s", node, service)
+	return module:send_iq(request):next(
+		function(response)
+			if response.stanza == nil or response.stanza.attr.type ~= "result" then
+				module:log("warn", "Unexpected response to pub/sub node '%s' creation request at %s: %s", node, service, response.stanza)
+				return false
+			else
+				module:log("debug", "Successfully created pub/sub node '%s' at %s", node, service)
+				return true
+			end
+		end
+	)
 end
 
--- Returns a promise
+-- Returns a promise of a boolean
 function delete_node()
 	local request = st.iq({ type = "set", to = service, from = actor, id = new_id() })
 		:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
 			:tag("delete", { node = node });
 
-	return module:send_iq(request);
+	module:log("debug", "Sending request to delete pub/sub node '%s' at %s", node, service)
+	return module:send_iq(request):next(
+		function(response)
+			if response.stanza == nil or response.stanza.attr.type ~= "result" then
+				module:log("warn", "Unexpected response to pub/sub node '%s' deletion request at %s: %s", node, service, response.stanza)
+				return false
+			else
+				module:log("debug", "Successfully deleted pub/sub node '%s' at %s", node, service)
+				return true
+			end
+		end
+	)
 end
 
 function publish_serverinfo()
@@ -112,7 +170,20 @@ function publish_serverinfo()
 
 	request:up():up()
 
-	module:send_iq(request):next()
+	module:send_iq(request):next(
+		function(response)
+			if response.stanza == nil or response.stanza.attr.type ~= "result" then
+				module:log("warn", "Unexpected response to item publication at pub/sub node '%s' on %s: %s", node, service, response.stanza)
+				return false
+			else
+				module:log("debug", "Successfully published item on pub/sub node '%s' at %s", node, service)
+				return true
+			end
+		end,
+		function(error)
+			module:log("warn", "Error prevented publication of item on pub/sub node at %s: %s", service, error)
+		end
+	)
 
 	return publication_interval;
 end
