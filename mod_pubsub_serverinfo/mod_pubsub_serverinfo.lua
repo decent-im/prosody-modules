@@ -29,6 +29,7 @@ function module.load()
 		{ name = "serverinfo-pubsub-node", type = "text-single" },
 	}:form({ ["serverinfo-pubsub-node"] = ("xmpp:%s?;node=%s"):format(service, node) }, "result"));
 
+	cache_warm_up()
 	module:add_timer(10, publish_serverinfo);
 end
 
@@ -39,8 +40,8 @@ end
 
 -- Returns a promise of a boolean
 function discover_node()
-    local request = st.iq({ type = "get", to = service, from = actor, id = new_id() })
-    	:tag("query", { xmlns = "http://jabber.org/protocol/disco#items" })
+	local request = st.iq({ type = "get", to = service, from = actor, id = new_id() })
+		:tag("query", { xmlns = "http://jabber.org/protocol/disco#items" })
 
 	module:log("debug", "Sending request to discover existence of pub/sub node '%s' at %s", node, service)
 	return module:send_iq(request):next(
@@ -115,7 +116,7 @@ function delete_node()
 	)
 end
 
-function publish_serverinfo()
+function get_remote_domain_names()
 	-- Iterate over s2s sessions, adding them to a multimap, where the key is the local domain name,
 	-- mapped to a collection of remote domain names. De-duplicate all remote domain names by using
 	-- them as an index in a table.
@@ -160,6 +161,12 @@ function publish_serverinfo()
 		end
 	end
 
+	return domains_by_host
+end
+
+function publish_serverinfo()
+	local domains_by_host = get_remote_domain_names()
+
 	-- Build the publication stanza.
 	local request = st.iq({ type = "set", to = service, from = actor, id = new_id() })
 		:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
@@ -170,7 +177,7 @@ function publish_serverinfo()
 	request:tag("domain", { name = local_domain })
 		:tag("federation")
 
-	local remotes = domains_by_host[host]
+	local remotes = domains_by_host[local_domain]
 
 	if remotes ~= nil then
 		for remote, _ in pairs(remotes) do
@@ -205,6 +212,17 @@ end
 
 local opt_in_cache = {}
 
+function cache_warm_up()
+	module:log("debug", "Warming up opt-in cache")
+	local domains_by_host = get_remote_domain_names()
+	local remotes = domains_by_host[local_domain]
+	if remotes ~= nil then
+		for remote, _ in pairs(remotes) do
+			does_opt_in(remote)
+		end
+	end
+end
+
 function does_opt_in(remoteDomain)
 
 	-- try to read answer from cache.
@@ -218,8 +236,8 @@ function does_opt_in(remoteDomain)
 
 	-- Cache could not provide an answer. Perform service discovery.
 	module:log("debug", "No cached opt-in status for '%s': performing disco/info to determine opt-in.", remoteDomain)
-    local discoRequest = st.iq({ type = "get", to = remoteDomain, from = actor, id = new_id() })
-    	:tag("query", { xmlns = "http://jabber.org/protocol/disco#info" })
+	local discoRequest = st.iq({ type = "get", to = remoteDomain, from = actor, id = new_id() })
+		:tag("query", { xmlns = "http://jabber.org/protocol/disco#info" })
 
 	module:send_iq(discoRequest):next(
 		function(response)
