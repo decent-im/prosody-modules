@@ -1,3 +1,5 @@
+local http = require "net.http";
+local json = require "util.json";
 local st = require "util.stanza";
 local new_id = require"util.id".medium;
 local dataform = require "util.dataforms".new;
@@ -8,6 +10,7 @@ local node = module:get_option(module.name .. "_node") or "serverinfo";
 local actor = module.host .. "/modules/" .. module.name;
 local publication_interval = module:get_option(module.name .. "_publication_interval") or 300;
 local cache_ttl = module:get_option(module.name .. "_cache_ttl") or 3600;
+local public_providers_url = module:get_option_string(module.name.."_public_providers_url", "https://data.xmpp.net/providers/v2/providers-Ds.json");
 local delete_node_on_unload = module:get_option_boolean(module.name.."_delete_node_on_unload", false);
 local persist_items = module:get_option_boolean(module.name.."_persist_items", true);
 
@@ -221,15 +224,45 @@ end
 
 local opt_in_cache = {}
 
+-- Public providers are already public, so we fetch the list of providers
+-- registered on providers.xmpp.net so we don't have to disco them individually
+local function update_public_providers()
+	return http.request(public_providers_url)
+		:next(function (response)
+			assert(
+				response.headers["content-type"] == "application/json",
+				"invalid mimetype: "..tostring(response.headers["content-type"])
+			);
+			return json.decode(response.body);
+		end)
+		:next(function (public_server_domains)
+			module:log("debug", "Retrieved list of %d public providers", #public_server_domains);
+			for _, domain in ipairs(public_server_domains) do
+				opt_in_cache[domain] = {
+					opt_in = true;
+					expires = os.time() + (86400 * 1.5);
+				};
+			end
+		end, function (err)
+			module:log("warn", "Failed to fetch/decode provider list: %s", err);
+		end);
+end
+
+module:daily("update public provider list", update_public_providers);
+
 function cache_warm_up()
 	module:log("debug", "Warming up opt-in cache")
-	local domains_by_host = get_remote_domain_names()
-	local remotes = domains_by_host[local_domain]
-	if remotes ~= nil then
-		for remote, _ in pairs(remotes) do
-			does_opt_in(remote)
+
+	update_public_providers():finally(function ()
+		module:log("debug", "Querying known domains for opt-in cache...");
+		local domains_by_host = get_remote_domain_names()
+		local remotes = domains_by_host[local_domain]
+		if remotes ~= nil then
+			for remote in pairs(remotes) do
+				does_opt_in(remote)
+			end
 		end
-	end
+	end);
 end
 
 function does_opt_in(remoteDomain)
