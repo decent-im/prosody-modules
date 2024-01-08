@@ -9,7 +9,6 @@ local actor = module.host .. "/modules/" .. module.name;
 local publication_interval = module:get_option(module.name .. "_publication_interval") or 300;
 local cache_ttl = module:get_option(module.name .. "_cache_ttl") or 3600;
 
-local opt_in_reports
 
 function module.load()
 	discover_node():next(
