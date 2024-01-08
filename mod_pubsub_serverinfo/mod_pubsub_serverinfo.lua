@@ -9,6 +9,7 @@ local actor = module.host .. "/modules/" .. module.name;
 local publication_interval = module:get_option(module.name .. "_publication_interval") or 300;
 local cache_ttl = module:get_option(module.name .. "_cache_ttl") or 3600;
 
+local xmlns_pubsub = "http://jabber.org/protocol/pubsub";
 
 function module.load()
 	discover_node():next(
@@ -72,9 +73,9 @@ end
 -- Returns a promise of a boolean
 function create_node()
 	local request = st.iq({ type = "set", to = service, from = actor, id = new_id() })
-		:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
-			:tag("create", { node = node }):up()
-			:tag("configure")
+		:tag("pubsub", { xmlns = xmlns_pubsub })
+			:tag("create", { node = node, xmlns = xmlns_pubsub }):up()
+			:tag("configure", { xmlns = xmlns_pubsub })
 				:tag("x", { xmlns = "jabber:x:data", type = "submit" })
 					:tag("field", { var = "FORM_TYPE", type = "hidden"})
 						:text_tag("value", "http://jabber.org/protocol/pubsub#node_config")
@@ -102,8 +103,8 @@ end
 -- Returns a promise of a boolean
 function delete_node()
 	local request = st.iq({ type = "set", to = service, from = actor, id = new_id() })
-		:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
-			:tag("delete", { node = node });
+		:tag("pubsub", { xmlns = xmlns_pubsub })
+			:tag("delete", { node = node, xmlns = xmlns_pubsub });
 
 	module:log("debug", "Sending request to delete pub/sub node '%s' at %s", node, service)
 	return module:send_iq(request):next(
@@ -173,9 +174,9 @@ function publish_serverinfo()
 
 	-- Build the publication stanza.
 	local request = st.iq({ type = "set", to = service, from = actor, id = new_id() })
-		:tag("pubsub", { xmlns = "http://jabber.org/protocol/pubsub" })
-			:tag("publish", { node = node, xmlns = "http://jabber.org/protocol/pubsub" })
-				:tag("item", { id = "current", xmlns = "http://jabber.org/protocol/pubsub" })
+		:tag("pubsub", { xmlns = xmlns_pubsub })
+			:tag("publish", { node = node, xmlns = xmlns_pubsub })
+				:tag("item", { id = "current", xmlns = xmlns_pubsub })
 					:tag("serverinfo", { xmlns = "urn:xmpp:serverinfo:0" })
 
 	request:tag("domain", { name = local_domain })
