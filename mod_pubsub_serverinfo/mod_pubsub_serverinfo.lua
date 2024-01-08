@@ -29,6 +29,10 @@ function module.load()
 		{ name = "serverinfo-pubsub-node", type = "text-single" },
 	}:form({ ["serverinfo-pubsub-node"] = ("xmpp:%s?;node=%s"):format(service, node) }, "result"));
 
+	if cache_ttl < publication_interval then
+		module:log("warn", "It is recommended to have a cache interval higher than the publication interval");
+	end
+
 	cache_warm_up()
 	module:add_timer(10, publish_serverinfo);
 end
@@ -55,7 +59,7 @@ function discover_node()
 			if query ~= nil then
 				for item in query:childtags("item") do
 					if item.attr.jid == service and item.attr.node == node then
-						module:log("debug", "pub/sub node '%s' at %s does exists.", node, service)
+						module:log("debug", "pub/sub node '%s' at %s does exist.", node, service)
 						return true
 					end
 				end
@@ -165,6 +169,7 @@ function get_remote_domain_names()
 end
 
 function publish_serverinfo()
+	module:log("debug", "Publishing server info...");
 	local domains_by_host = get_remote_domain_names()
 
 	-- Build the publication stanza.
@@ -236,7 +241,7 @@ function does_opt_in(remoteDomain)
 	-- We don't have a cached value, or it is nearing expiration - refresh it now
 	-- TODO worry about not having multiple requests in flight to the same domain.cached_value
 
-	module:log("debug", "No cached opt-in status for '%s': performing disco/info to determine opt-in.", remoteDomain)
+	module:log("debug", "%s: performing disco/info to determine opt-in", remoteDomain)
 	local discoRequest = st.iq({ type = "get", to = remoteDomain, from = actor, id = new_id() })
 		:tag("query", { xmlns = "http://jabber.org/protocol/disco#info" })
 
@@ -246,7 +251,7 @@ function does_opt_in(remoteDomain)
 				local query = response.stanza:get_child("query", "http://jabber.org/protocol/disco#info")
 				if query ~= nil then
 					for feature in query:childtags("feature") do
-						module:log("debug", "Disco/info feature for '%s': %s", remoteDomain, feature)
+						--module:log("debug", "Disco/info feature for '%s': %s", remoteDomain, feature)
 						if feature.attr.var == 'urn:xmpp:serverinfo:0' then
 							module:log("debug", "Disco/info response included opt-in for '%s'", remoteDomain)
 							opt_in_cache[remoteDomain] = {
