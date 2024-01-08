@@ -227,14 +227,15 @@ function does_opt_in(remoteDomain)
 
 	-- try to read answer from cache.
 	local cached_value = opt_in_cache[remoteDomain]
-	if cached_value ~= nil and os.difftime(cached_value.expires, os.time()) > 0 then
+	local ttl = cached_value and os.difftime(cached_value.expires, os.time());
+	if cached_value and ttl > (publication_interval + 60) then
 		module:log("debug", "Opt-in status (from cache) for '%s': %s", remoteDomain, cached_value.opt_in)
 		return cached_value.opt_in;
 	end
 
+	-- We don't have a cached value, or it is nearing expiration - refresh it now
 	-- TODO worry about not having multiple requests in flight to the same domain.cached_value
 
-	-- Cache could not provide an answer. Perform service discovery.
 	module:log("debug", "No cached opt-in status for '%s': performing disco/info to determine opt-in.", remoteDomain)
 	local discoRequest = st.iq({ type = "get", to = remoteDomain, from = actor, id = new_id() })
 		:tag("query", { xmlns = "http://jabber.org/protocol/disco#info" })
@@ -272,7 +273,11 @@ function does_opt_in(remoteDomain)
 		end
 	);
 
-	-- return 'false' for now. Better luck next time...
-	return false;
+	if ttl and ttl <= 0 then
+		-- Cache entry expired, remove it and assume not opted in
+		opt_in_cache[remoteDomain] = nil;
+		return false;
+	end
 
+	return cached_value and cached_value.opt_in;
 end
