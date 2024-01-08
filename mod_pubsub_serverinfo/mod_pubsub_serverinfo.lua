@@ -8,6 +8,8 @@ local node = module:get_option(module.name .. "_node") or "serverinfo";
 local actor = module.host .. "/modules/" .. module.name;
 local publication_interval = module:get_option(module.name .. "_publication_interval") or 300;
 local cache_ttl = module:get_option(module.name .. "_cache_ttl") or 3600;
+local delete_node_on_unload = module:get_option_boolean(module.name.."_delete_node_on_unload", false);
+local persist_items = module:get_option_boolean(module.name.."_persist_items", true);
 
 local xmlns_pubsub = "http://jabber.org/protocol/pubsub";
 
@@ -39,7 +41,9 @@ end
 
 function module.unload()
 	-- This removes all subscribers, which may or may not be desirable, depending on the reason for the unload.
-	delete_node(); -- Should this block, to delay unload() until the node is deleted?
+	if delete_node_on_unload then
+		delete_node();
+	end
 end
 
 -- Returns a promise of a boolean
@@ -84,7 +88,7 @@ function create_node()
 						:text_tag("value", "1")
 						:up()
 					:tag("field", { var = "pubsub#persist_items" })
-						:text_tag("value", "0")
+						:text_tag("value", persist_items and "1" or "0")
 
 	module:log("debug", "Sending request to create pub/sub node '%s' at %s", node, service)
 	return module:send_iq(request):next(
