@@ -100,7 +100,7 @@ function handler(event)
 				local pw_ok, pw_err, pw_failed_policy = check_password(password, additional_info);
 				if not pw_ok then
 					module:log("debug", "Password failed check against '%s' policy", pw_failed_policy);
-					origin.send(st.error_reply(stanza, "cancel", "not-acceptable", pw_err));
+					origin.send(st.error_reply(stanza, "modify", "not-acceptable", pw_err));
 					return true;
 				end
 			end
