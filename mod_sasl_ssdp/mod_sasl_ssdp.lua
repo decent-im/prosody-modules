@@ -31,6 +31,6 @@ function add_ssdp_info(event)
 	sasl_handler.state.server_first_message = event.message;
 end
 
-module:hook("sasl/reply/challenge", add_ssdp_info, 1);
+module:hook("sasl/c2s/challenge", add_ssdp_info, 1);
 module:hook("sasl2/c2s/challenge", add_ssdp_info, 1);
 
