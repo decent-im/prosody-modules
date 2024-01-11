@@ -422,10 +422,11 @@ function get_group_chats(group_id)
 	end
 
 	return array.map(mucs, function (muc_jid)
+		local room = muc_host.get_room_from_jid(muc_jid);
 		return {
 			id = jid.node(muc_jid);
 			jid = muc_jid;
-			name = muc_host.get_room_from_jid(muc_jid):get_name() or group_info.name;
+			name = room and room:get_name() or group_info.name;
 		};
 	end);
 end
