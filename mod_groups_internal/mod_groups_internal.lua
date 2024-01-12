@@ -464,6 +464,7 @@ function get_group_chats(group_id)
 			id = jid.node(muc_jid);
 			jid = muc_jid;
 			name = room and room:get_name() or group_info.name;
+			deleted = not room or room._data.destroyed;
 		};
 	end);
 end
