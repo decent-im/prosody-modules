@@ -226,6 +226,7 @@ function add_member(group_id, username, delay_update)
 	if not group_memberships:set(group_id, username, {}) then
 		return nil, "internal-server-error";
 	end
+
 	if group_info.muc_jid then
 		local room = muc_host.get_room_from_jid(group_info.muc_jid);
 		if room then
@@ -241,7 +242,29 @@ function add_member(group_id, username, delay_update)
 		else
 			module:log("warn", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
 		end
+	elseif group_info.mucs then
+		local user_jid = username .. "@" .. host;
+		for i = #group_info.mucs, 1, -1 do
+			local muc_jid = group_info.mucs[i];
+			local room = muc_host.get_room_from_jid(muc_jid);
+			if not room then
+				-- MUC no longer available, for some reason
+				-- Let's remove it from the circle metadata...
+				table.remove(group_info.mucs, i);
+				group_info_store:set_key(group_id, "mucs", group_info.mucs);
+			else
+				room:set_affiliation(true, user_jid, "member");
+				module:send(st.message(
+					{ from = muc_jid, to = user_jid }
+				):tag("x", {
+					xmlns = "jabber:x:conference",
+					jid = muc_jid
+				}):up());
+				module:log("debug", "set user %s to be member in %s and sent invite", username, muc_jid);
+			end
+		end
 	end
+
 	module:fire_event(
 		"group-user-added",
 		{
@@ -273,7 +296,18 @@ function remove_member(group_id, username)
 		else
 			module:log("warn", "failed to update affiliation for %s in %s", username, group_info.muc_jid);
 		end
+	elseif group_info.mucs then
+		local user_jid = username .. "@" .. host;
+		for _, muc_jid in ipairs(group_info.mucs) do
+			local room = muc_host.get_room_from_jid(muc_jid);
+			if room then
+				room:set_affiliation(true, user_jid, nil);
+			else
+				module:log("warn", "failed to update affiliation for %s in %s", username, muc_jid);
+			end
+		end
 	end
+
 	module:fire_event(
 		"group-user-removed",
 		{
@@ -300,6 +334,7 @@ function add_group_chat(group_id, name)
 	room:save(); -- This ensures the room is committed to storage
 
 	table.insert(mucs, muc_jid);
+
 	if group_info.muc_jid then -- COMPAT include old muc_jid into array
 		table.insert(mucs, group_info.muc_jid);
 	end
