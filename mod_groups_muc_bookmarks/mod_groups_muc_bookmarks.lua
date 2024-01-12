@@ -70,30 +70,43 @@ local function inject_bookmark(jid, room, autojoin, name)
 	update_bookmark(jid, pep_service, room, found)
 end
 
-local function remove_bookmark(jid, room, autojoin, name)
+local function remove_bookmark(jid, room)
 	local pep_service = mod_pep.get_pep_service(jid_split(jid))
 
 	return pep_service:retract(XMLNS_BM2, jid, room, st.stanza("retract", { id = room }));
 end
 
 local function handle_user_added(event)
-	if not event.group_info.muc_jid then
-		module:log("debug", "ignoring user added event on group %s because it has no MUC", event.id)
-		return
-	end
+	local group_info = event.group_info;
+
 	local jid = event.user .. "@" .. event.host
-	inject_bookmark(jid, event.group_info.muc_jid, true, event.group_info.name)
+
+	if group_info.muc_jid then
+		inject_bookmark(jid, group_info.muc_jid, true, group_info.name);
+	elseif group_info.mucs then
+		for _, chat in ipairs(mod_groups.get_group_chats(event.id)) do
+			inject_bookmark(jid, chat.jid, true, chat.name);
+		end
+	else
+		module:log("debug", "ignoring user added event on group %s because it has no MUCs", event.id)
+	end
 end
 
 local function handle_user_removed(event)
-	if not event.group_info.muc_jid then
-		module:log("debug", "ignoring user removed event on group %s because it has no MUC", event.id)
-		return
-	end
 	-- Removing the bookmark is fine as the user just lost any privilege to
 	-- be in the MUC (as group MUCs are members-only).
+	local group_info = event.group_info;
 	local jid = event.user .. "@" .. event.host
-	remove_bookmark(jid, event.group_info.muc_jid, true, event.group_info.name)
+
+	if group_info.muc_jid then
+		remove_bookmark(jid, event.group_info.muc_jid);
+	elseif group_info.mucs then
+		for _, muc_jid in ipairs(group_info.mucs) do
+			remove_bookmark(jid, muc_jid);
+		end
+	else
+		module:log("debug", "ignoring user removed event on group %s because it has no MUC", event.id)
+	end
 end
 
 module:hook("group-user-added", handle_user_added)
