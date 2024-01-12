@@ -247,7 +247,7 @@ function add_member(group_id, username, delay_update)
 		for i = #group_info.mucs, 1, -1 do
 			local muc_jid = group_info.mucs[i];
 			local room = muc_host.get_room_from_jid(muc_jid);
-			if not room then
+			if not room or room._data.destroyed then
 				-- MUC no longer available, for some reason
 				-- Let's remove it from the circle metadata...
 				table.remove(group_info.mucs, i);
