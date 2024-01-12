@@ -297,6 +297,8 @@ function add_group_chat(group_id, name)
 	-- Create the MUC
 	local muc_jid, room = _create_muc_room(name);
 	if not muc_jid then return nil, room; end
+	room:save(); -- This ensures the room is committed to storage
+
 	table.insert(mucs, muc_jid);
 	if group_info.muc_jid then -- COMPAT include old muc_jid into array
 		table.insert(mucs, group_info.muc_jid);
