@@ -85,7 +85,9 @@ local function handle_user_added(event)
 		inject_bookmark(jid, group_info.muc_jid, true, group_info.name);
 	elseif group_info.mucs then
 		for _, chat in ipairs(mod_groups.get_group_chats(event.id)) do
-			inject_bookmark(jid, chat.jid, true, chat.name);
+			if not chat.deleted then
+				inject_bookmark(jid, chat.jid, true, chat.name);
+			end
 		end
 	else
 		module:log("debug", "ignoring user added event on group %s because it has no MUCs", event.id)
