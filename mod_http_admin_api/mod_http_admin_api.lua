@@ -748,7 +748,7 @@ local function maybe_export_summed_gauge(mf)
 	for _, metric in mf:iter_metrics() do
 		sum = sum + metric.value;
 	end
-	return sum;
+	return (sum == sum) and sum or nil; -- Filter out nan
 end
 
 local function get_server_metrics(event)
