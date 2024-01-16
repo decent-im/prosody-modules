@@ -542,7 +542,7 @@ local function list_rooms(event)
 	local request, response = event.request, event.response;
 	local room_list, i = {}, 1;
 	for room in each_room() do
-		if not (room.get_hidden or room.is_hidden)(room) then
+		if room:get_public() then
 			local localpart = jid_split(room.jid);
 			room_list[i], i = {
 				jid = room.jid;
