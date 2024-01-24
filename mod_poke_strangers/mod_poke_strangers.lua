@@ -11,12 +11,12 @@ local version_id = uuid_generate();
 local disco_id = uuid_generate();
 
 module:hook("iq-result/host/" .. version_id, function (event)
-	module:log("info", "Stranger " .. event.stanza.attr.from .. " version: " .. tostring(event.stanza));
+	module:log("info", "Stranger <%s> version: %s", event.stanza.attr.from, event.stanza);
 	return true;
 end);
 
 module:hook("iq-result/host/" .. disco_id, function (event)
-	module:log("info", "Stranger " .. event.stanza.attr.from .. " disco: " .. tostring(event.stanza));
+	module:log("info", "Stranger <%s> disco: %s", event.stanza.attr.from, event.stanza);
 	return true;
 end);
 
@@ -27,7 +27,7 @@ function check_subscribed(event)
 	local stranger_jid = stanza.attr.from;
 
 	if recently_queried:contains(stranger_jid) then
-		module:log("debug", "Not re-poking " .. stranger_jid);
+		module:log("debug", "Not re-poking <%s>", stranger_jid);
 		return nil;
 	end
 
