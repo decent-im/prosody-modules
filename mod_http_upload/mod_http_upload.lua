@@ -11,7 +11,7 @@
 module:depends("http");
 module:depends("disco");
 
-if module:http_url():match("^http://") then
+if (prosody.process_type == "prosody" or prosody.shutdown) and module:http_url():match("^http://") then
 	error("File upload MUST happen with TLS but it isn’t enabled, see https://prosody.im/doc/http for how to fix this issue");
 end
 
