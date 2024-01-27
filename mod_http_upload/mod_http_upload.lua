@@ -117,7 +117,7 @@ local pending_slots = module:shared("upload_slots");
 local storage_path = module:get_option_string(module.name .. "_path", join_path(prosody.paths.data, module.name));
 lfs.mkdir(storage_path);
 
-local function expire(username, host)
+local function expire(username, host, max_age)
 	if not max_age then return true; end
 	local uploads, err = datamanager.list_load(username, host, module.name);
 	if err then return false, err; end
@@ -429,22 +429,46 @@ module:log("info", "Storage path: '%s'", storage_path);
 function module.command(args)
 	datamanager = require "core.storagemanager".olddm;
 	-- luacheck: ignore 421/user
-	if args[1] == "expire" and args[2] then
-		local split = require "util.jid".prepped_split;
-		for i = 2, #args do
-			local user, host = split(args[i]);
-			if user then
-				assert(expire(user, host));
-			else
-				for user in assert(datamanager.users(host, module.name, "list")) do
-					expire(user, host);
+	if args[1] == "expire" then
+		if #args >= 2 then
+			local split = require "util.jid".prepped_split;
+			for i = 2, #args do
+				local user, host = split(args[i]);
+				if user then
+					assert(expire(user, host, max_age));
+				else
+					for user in assert(datamanager.users(host, module.name, "list")) do
+						expire(user, host, max_age);
+					end
 				end
 			end
+		else
+			print("prosodyctl mod_http_upload expire [host or user@host]+")
+			print("\tProcess upload expiry for the given list of hosts and/or users");
+			return 1;
 		end
-	else
-		print("prosodyctl mod_http_upload expire [host or user@host]+")
-		print("\tProcess upload expiry for the given list of hosts and/or users");
-		return 1;
 	end
+
+	if args[1] == "expire-after" then
+		if #args >= 3 then
+			local max_age = args[2]
+			local split = require "util.jid".prepped_split;
+			for i = 3, #args do
+				local user, host = split(args[i]);
+				if user then
+					assert(expire(user, host, max_age));
+				else
+					for user in assert(datamanager.users(host, module.name, "list")) do
+						expire(user, host, max_age);
+					end
+				end
+			end
+		else
+			print("prosodyctl mod_http_upload expire-after <max-age> [host or user@host]+")
+			print("\tProcess upload expiry with custom max age for the given list of hosts and/or users");
+			return 1;
+		end
+	end
+
 end
 
